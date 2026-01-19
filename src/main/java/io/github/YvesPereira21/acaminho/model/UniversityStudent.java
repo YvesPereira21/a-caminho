@@ -10,6 +10,8 @@ public class UniversityStudent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID universityStudentId;
+    @Column
+    private String studentName;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "userId")
     private User user;
@@ -19,8 +21,9 @@ public class UniversityStudent {
 
     public UniversityStudent() {}
 
-    public UniversityStudent(UUID universityStudentId, User user, University university) {
+    public UniversityStudent(UUID universityStudentId, String studentName, User user, University university) {
         this.universityStudentId = universityStudentId;
+        this.studentName = studentName;
         this.user = user;
         this.university = university;
     }
@@ -29,8 +32,12 @@ public class UniversityStudent {
         return universityStudentId;
     }
 
-    public void setUniversityStudentId(UUID universityStudentId) {
-        this.universityStudentId = universityStudentId;
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
 
     public User getUser() {

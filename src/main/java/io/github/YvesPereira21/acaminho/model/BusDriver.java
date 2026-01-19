@@ -30,10 +30,6 @@ public class BusDriver {
         return busDriverId;
     }
 
-    public void setBusDriverId(UUID busDriverId) {
-        this.busDriverId = busDriverId;
-    }
-
     public String getBusDriverName() {
         return busDriverName;
     }
