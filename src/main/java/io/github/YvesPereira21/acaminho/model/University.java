@@ -1,0 +1,69 @@
+package io.github.YvesPereira21.acaminho.model;
+
+import jakarta.persistence.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Table(name = "tb_university")
+public class University {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private UUID universityId;
+    @Column
+    private String name;
+    @Column
+    private String city;
+    @OneToMany(mappedBy = "university")
+    private List<UniversityStudent> students;
+    @ManyToMany(mappedBy = "universities")
+    private List<Bus> fleet;
+
+    public University() {}
+
+    public University(UUID universityId, String name, String city, List<UniversityStudent> students, List<Bus> fleet) {
+        this.universityId = universityId;
+        this.name = name;
+        this.city = city;
+        this.students = students;
+        this.fleet = fleet;
+    }
+
+    public UUID getUniversityId() {
+        return universityId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public List<UniversityStudent> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<UniversityStudent> students) {
+        this.students = students;
+    }
+
+    public List<Bus> getFleet() {
+        return fleet;
+    }
+
+    public void setFleet(List<Bus> fleet) {
+        this.fleet = fleet;
+    }
+}

@@ -1,0 +1,47 @@
+package io.github.YvesPereira21.acaminho.model;
+
+import jakarta.persistence.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Table(name = "tb_city_hall")
+public class Municipality {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private UUID municipalityId;
+    @Column(unique = true)
+    private String cityName;
+    @OneToMany(mappedBy = "municipality", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Bus> fleet;
+
+    public Municipality() {}
+
+    public Municipality(UUID municipalityId, List<Bus> fleet, String cityName) {
+        this.municipalityId = municipalityId;
+        this.fleet = fleet;
+        this.cityName = cityName;
+    }
+
+    public UUID getMunicipalityId() {
+        return municipalityId;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public List<Bus> getFleet() {
+        return fleet;
+    }
+
+    public void setFleet(List<Bus> fleet) {
+        this.fleet = fleet;
+    }
+}
