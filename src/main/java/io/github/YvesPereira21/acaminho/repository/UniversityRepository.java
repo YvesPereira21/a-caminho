@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UniversityRepository extends JpaRepository<University, UUID> {
-    List<University> findAllUniversityByName(String name);
+    List<University> findAllUniversityByNameContainingIgnoreCase(String name);
 }
