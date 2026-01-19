@@ -1,7 +1,6 @@
 package io.github.YvesPereira21.acaminho.model;
 
 import jakarta.persistence.*;
-import java.awt.*;
 import java.util.UUID;
 import java.util.List;
 
@@ -14,8 +13,6 @@ public class Bus {
     private UUID busId;
     @Column
     private String busName;
-    @Column(columnDefinition = "geometry(Point, 4326)")
-    private Point localizationBusDriver;
     @ManyToOne
     @JoinColumn(name = "municipalityId")
     private Municipality municipality;
@@ -32,10 +29,9 @@ public class Bus {
 
     public Bus() {}
 
-    public Bus(UUID busId, String busName, Point localizationBusDriver, Municipality municipality, BusDriver busDriver, List<University> universities) {
+    public Bus(UUID busId, String busName, Municipality municipality, BusDriver busDriver, List<University> universities) {
         this.busId = busId;
         this.busName = busName;
-        this.localizationBusDriver = localizationBusDriver;
         this.municipality = municipality;
         this.busDriver = busDriver;
         this.universities = universities;
@@ -51,14 +47,6 @@ public class Bus {
 
     public void setBusName(String busName) {
         this.busName = busName;
-    }
-
-    public Point getLocalizationBusDriver() {
-        return localizationBusDriver;
-    }
-
-    public void setLocalizationBusDriver(Point localizationBusDriver) {
-        this.localizationBusDriver = localizationBusDriver;
     }
 
     public Municipality getMunicipality() {

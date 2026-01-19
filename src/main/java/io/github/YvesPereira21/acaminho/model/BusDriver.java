@@ -15,6 +15,8 @@ public class BusDriver {
     @OneToOne
     @JoinColumn(name = "userId")
     private User user;
+    @OneToOne(mappedBy = "busDriver")
+    private Bus bus;
 
     public BusDriver() {
     }
