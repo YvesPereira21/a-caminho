@@ -17,13 +17,18 @@ public class BusDriver {
     private User user;
     @OneToOne(mappedBy = "busDriver")
     private Bus bus;
+    @ManyToOne
+    private Municipality municipality;
 
     public BusDriver() {
     }
 
-    public BusDriver(String busDriverName, User user) {
+    public BusDriver(UUID busDriverId, String busDriverName, User user, Bus bus, Municipality municipality) {
+        this.busDriverId = busDriverId;
         this.busDriverName = busDriverName;
         this.user = user;
+        this.bus = bus;
+        this.municipality = municipality;
     }
 
     public UUID getBusDriverId() {
@@ -44,5 +49,21 @@ public class BusDriver {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Bus getBus() {
+        return bus;
+    }
+
+    public void setBus(Bus bus) {
+        this.bus = bus;
+    }
+
+    public Municipality getMunicipality() {
+        return municipality;
+    }
+
+    public void setMunicipality(Municipality municipality) {
+        this.municipality = municipality;
     }
 }
