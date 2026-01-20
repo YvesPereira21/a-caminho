@@ -6,12 +6,15 @@ public class UniversityDTO {
 
     @NotBlank
     private String name;
+    @NotBlank
+    private String cityName;
 
     public UniversityDTO() {
     }
 
-    public UniversityDTO(String name) {
+    public UniversityDTO(String name, String cityName) {
         this.name = name;
+        this.cityName = cityName;
     }
 
     public String getName() {
@@ -20,5 +23,13 @@ public class UniversityDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
     }
 }

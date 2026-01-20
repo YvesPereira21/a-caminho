@@ -13,13 +13,16 @@ public class BusDriverDTO {
     @Valid
     private UserDTO user;
     @NotNull
+    private UUID busId;
+    @NotNull
     private UUID municipalityId;
 
     public BusDriverDTO() {}
 
-    public BusDriverDTO(String busDriverName, UserDTO user, UUID municipalityId) {
+    public BusDriverDTO(String busDriverName, UserDTO user, UUID busId, UUID municipalityId) {
         this.busDriverName = busDriverName;
         this.user = user;
+        this.busId = busId;
         this.municipalityId = municipalityId;
     }
 
@@ -37,6 +40,14 @@ public class BusDriverDTO {
 
     public void setUser(UserDTO user) {
         this.user = user;
+    }
+
+    public UUID getBusId() {
+        return busId;
+    }
+
+    public void setBusId(UUID busId) {
+        this.busId = busId;
     }
 
     public UUID getMunicipalityId() {
