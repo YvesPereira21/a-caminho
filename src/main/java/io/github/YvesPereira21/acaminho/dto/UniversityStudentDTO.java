@@ -13,14 +13,17 @@ public class UniversityStudentDTO {
     @Valid
     private UserDTO user;
     @NotNull
+    private UUID municipalityId;
+    @NotNull
     private UUID universityId;
 
     public UniversityStudentDTO() {
     }
 
-    public UniversityStudentDTO(String studentName, UserDTO user, UUID universityId) {
+    public UniversityStudentDTO(String studentName, UserDTO user, UUID municipalityId, UUID universityId) {
         this.studentName = studentName;
         this.user = user;
+        this.municipalityId = municipalityId;
         this.universityId = universityId;
     }
 
@@ -38,6 +41,14 @@ public class UniversityStudentDTO {
 
     public void setUser(UserDTO user) {
         this.user = user;
+    }
+
+    public UUID getMunicipalityId() {
+        return municipalityId;
+    }
+
+    public void setMunicipalityId(UUID municipalityId) {
+        this.municipalityId = municipalityId;
     }
 
     public UUID getUniversityId() {

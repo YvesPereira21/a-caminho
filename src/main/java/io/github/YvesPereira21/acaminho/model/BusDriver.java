@@ -18,6 +18,7 @@ public class BusDriver {
     @OneToOne(mappedBy = "busDriver")
     private Bus bus;
     @ManyToOne
+    @JoinColumn(name = "municipalityId")
     private Municipality municipality;
 
     public BusDriver() {
