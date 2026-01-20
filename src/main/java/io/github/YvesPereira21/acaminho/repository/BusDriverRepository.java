@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface BusDriverRepository extends JpaRepository<BusDriver, UUID> {
-    Optional<BusDriver> findBusDriverByBusDriverId(UUID id);
+    Optional<BusDriver> findByBusDriverId(UUID id);
     List<BusDriver> findAllByBusDriverNameContainingIgnoreCase(String name);
     List<BusDriver> findAllByMunicipality_CityName(String cityName);
 }
