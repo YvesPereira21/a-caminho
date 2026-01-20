@@ -16,15 +16,19 @@ public class UniversityStudent {
     @JoinColumn(name = "userId")
     private User user;
     @ManyToOne
+    @JoinColumn(name = "municipalityId")
+    private Municipality municipality;
+    @ManyToOne
     @JoinColumn(name = "universityId")
     private University university;
 
     public UniversityStudent() {}
 
-    public UniversityStudent(UUID universityStudentId, String studentName, User user, University university) {
+    public UniversityStudent(UUID universityStudentId, User user, String studentName, Municipality municipality, University university) {
         this.universityStudentId = universityStudentId;
-        this.studentName = studentName;
         this.user = user;
+        this.studentName = studentName;
+        this.municipality = municipality;
         this.university = university;
     }
 
@@ -46,6 +50,14 @@ public class UniversityStudent {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Municipality getMunicipality() {
+        return municipality;
+    }
+
+    public void setMunicipality(Municipality municipality) {
+        this.municipality = municipality;
     }
 
     public University getUniversity() {

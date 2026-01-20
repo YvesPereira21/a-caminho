@@ -21,16 +21,19 @@ public class Municipality {
     private List<Bus> fleet;
     @OneToMany(mappedBy = "municipality", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<BusDriver> busDrivers;
+    @OneToMany(mappedBy = "municipality")
+    private List<UniversityStudent> universityStudents;
 
     public Municipality() {}
 
-    public Municipality(UUID municipalityId, String municipalityName, User user, City city, List<Bus> fleet, List<BusDriver> busDrivers) {
+    public Municipality(UUID municipalityId, String municipalityName, User user, City city, List<Bus> fleet, List<BusDriver> busDrivers, List<UniversityStudent> universityStudents) {
         this.municipalityId = municipalityId;
         this.municipalityName = municipalityName;
         this.user = user;
         this.city = city;
         this.fleet = fleet;
         this.busDrivers = busDrivers;
+        this.universityStudents = universityStudents;
     }
 
     public UUID getMunicipalityId() {
@@ -75,5 +78,13 @@ public class Municipality {
 
     public void setBusDrivers(List<BusDriver> busDrivers) {
         this.busDrivers = busDrivers;
+    }
+
+    public List<UniversityStudent> getUniversityStudents() {
+        return universityStudents;
+    }
+
+    public void setUniversityStudents(List<UniversityStudent> universityStudents) {
+        this.universityStudents = universityStudents;
     }
 }
