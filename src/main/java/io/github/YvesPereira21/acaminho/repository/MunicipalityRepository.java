@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 public interface MunicipalityRepository extends JpaRepository<Municipality, UUID> {
-    Municipality findMunicipalityByCityName(String cityName);
+    Municipality findByMunicipalityName(String municipalityName);
 }

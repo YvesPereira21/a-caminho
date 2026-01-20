@@ -17,12 +17,12 @@ public class MunicipalityService {
     }
 
     public Municipality getMunicipalityByCityName(String cityName) {
-        return municipalityRepository.findMunicipalityByCityName(cityName);
+        return municipalityRepository.findByMunicipalityName(cityName);
     }
 
     public Municipality updateMunicipality(String cityName, Municipality newMunicipality) {
         Municipality municipality = getMunicipalityByCityName(cityName);
-        municipality.setCityName(newMunicipality.getCityName());
+        municipality = newMunicipality;
         return municipalityRepository.save(municipality);
     }
 

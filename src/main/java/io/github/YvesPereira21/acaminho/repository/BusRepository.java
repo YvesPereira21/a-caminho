@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface BusRepository extends JpaRepository<Bus, UUID> {
     Optional<Bus> findByBusId(UUID id);
-    List<Bus> findAllByMunicipality_CityName(String cityName);
+    List<Bus> findAllByMunicipality_MunicipalityName(String municipalityName);
 }

@@ -11,7 +11,7 @@ public class Municipality {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID municipalityId;
-    @Column
+    @Column(unique = true)
     private String municipalityName;
     @OneToOne
     private User user;

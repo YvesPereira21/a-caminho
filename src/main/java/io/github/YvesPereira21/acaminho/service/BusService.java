@@ -34,6 +34,6 @@ public class BusService {
     }
 
     public List<Bus> findAllByMunicipalityName(String cityName) {
-        return busRepository.findAllByMunicipality_CityName(cityName);
+        return busRepository.findAllByMunicipality_MunicipalityName(cityName);
     }
 }
