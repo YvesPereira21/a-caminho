@@ -1,7 +1,7 @@
 package io.github.YvesPereira21.acaminho.model;
 
 import jakarta.persistence.*;
-
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,15 +17,18 @@ public class City {
     private Municipality municipality;
     @ManyToOne
     private State state;
+    @OneToMany(mappedBy = "city")
+    private List<University> university;
 
     public City() {
     }
 
-    public City(UUID cityId, String cityName, Municipality municipality, State state) {
+    public City(UUID cityId, String cityName, Municipality municipality, State state, List<University> university) {
         this.cityId = cityId;
         this.cityName = cityName;
         this.municipality = municipality;
         this.state = state;
+        this.university = university;
     }
 
     public UUID getCityId() {
@@ -54,5 +57,13 @@ public class City {
 
     public void setState(State state) {
         this.state = state;
+    }
+
+    public List<University> getUniversity() {
+        return university;
+    }
+
+    public void setUniversity(List<University> university) {
+        this.university = university;
     }
 }

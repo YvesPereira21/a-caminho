@@ -1,7 +1,6 @@
 package io.github.YvesPereira21.acaminho.model;
 
 import jakarta.persistence.*;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -14,8 +13,8 @@ public class University {
     private UUID universityId;
     @Column
     private String name;
-    @Column
-    private String city;
+    @ManyToOne
+    private City city;
     @OneToMany(mappedBy = "university")
     private List<UniversityStudent> students;
     @ManyToMany(mappedBy = "universities")
@@ -23,7 +22,7 @@ public class University {
 
     public University() {}
 
-    public University(UUID universityId, String name, String city, List<UniversityStudent> students, List<Bus> fleet) {
+    public University(UUID universityId, String name, City city, List<UniversityStudent> students, List<Bus> fleet) {
         this.universityId = universityId;
         this.name = name;
         this.city = city;
@@ -43,11 +42,11 @@ public class University {
         this.name = name;
     }
 
-    public String getCity() {
+    public City getCity() {
         return city;
     }
 
-    public void setCity(String city) {
+    public void setCity(City city) {
         this.city = city;
     }
 
