@@ -11,10 +11,12 @@ public class Municipality {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID municipalityId;
-    @Column(unique = true)
-    private String cityName;
+    @Column
+    private String municipalityName;
     @OneToOne
     private User user;
+    @OneToOne
+    private City city;
     @OneToMany(mappedBy = "municipality", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Bus> fleet;
     @OneToMany(mappedBy = "municipality", orphanRemoval = true, cascade = CascadeType.ALL)
@@ -22,10 +24,11 @@ public class Municipality {
 
     public Municipality() {}
 
-    public Municipality(UUID municipalityId, String cityName, User user, List<Bus> fleet, List<BusDriver> busDrivers) {
+    public Municipality(UUID municipalityId, String municipalityName, User user, City city, List<Bus> fleet, List<BusDriver> busDrivers) {
         this.municipalityId = municipalityId;
-        this.cityName = cityName;
+        this.municipalityName = municipalityName;
         this.user = user;
+        this.city = city;
         this.fleet = fleet;
         this.busDrivers = busDrivers;
     }
@@ -34,12 +37,12 @@ public class Municipality {
         return municipalityId;
     }
 
-    public String getCityName() {
-        return cityName;
+    public String getMunicipalityName() {
+        return municipalityName;
     }
 
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
+    public void setMunicipalityName(String municipalityName) {
+        this.municipalityName = municipalityName;
     }
 
     public User getUser() {
@@ -48,6 +51,14 @@ public class Municipality {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public City getCity() {
+        return city;
+    }
+
+    public void setCity(City city) {
+        this.city = city;
     }
 
     public List<Bus> getFleet() {

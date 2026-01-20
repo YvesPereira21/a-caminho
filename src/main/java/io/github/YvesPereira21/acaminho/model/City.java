@@ -13,15 +13,18 @@ public class City {
     private UUID cityId;
     @Column
     private String cityName;
-    @Column
-    private String state;
+    @OneToOne(mappedBy = "city")
+    private Municipality municipality;
+    @ManyToOne
+    private State state;
 
     public City() {
     }
 
-    public City(UUID cityId, String cityName, String state) {
+    public City(UUID cityId, String cityName, Municipality municipality, State state) {
         this.cityId = cityId;
         this.cityName = cityName;
+        this.municipality = municipality;
         this.state = state;
     }
 
@@ -37,11 +40,19 @@ public class City {
         this.cityName = cityName;
     }
 
-    public String getState() {
+    public Municipality getMunicipality() {
+        return municipality;
+    }
+
+    public void setMunicipality(Municipality municipality) {
+        this.municipality = municipality;
+    }
+
+    public State getState() {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(State state) {
         this.state = state;
     }
 }
