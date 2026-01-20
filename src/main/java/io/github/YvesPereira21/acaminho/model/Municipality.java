@@ -1,12 +1,11 @@
 package io.github.YvesPereira21.acaminho.model;
 
 import jakarta.persistence.*;
-
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tb_city_hall")
+@Table(name = "tb_municipality")
 public class Municipality {
 
     @Id
