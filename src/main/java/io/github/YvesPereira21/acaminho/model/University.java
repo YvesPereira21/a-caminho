@@ -14,6 +14,7 @@ public class University {
     @Column
     private String name;
     @ManyToOne
+    @JoinColumn(name = "cityId")
     private City city;
     @OneToMany(mappedBy = "university")
     private List<UniversityStudent> students;

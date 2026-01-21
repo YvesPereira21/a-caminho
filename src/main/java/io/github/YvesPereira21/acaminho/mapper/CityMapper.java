@@ -13,6 +13,6 @@ public interface CityMapper {
 
     @Mapping(target = "state", source = "stateName")
     @Mapping(target = "municipality", ignore = true)
-    @Mapping(target = "university", ignore = true)
+    @Mapping(target = "universities", ignore = true)
     City convertToDTO(CityDTO cityDTO);
 }

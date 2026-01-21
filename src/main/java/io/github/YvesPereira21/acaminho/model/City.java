@@ -16,19 +16,20 @@ public class City {
     @OneToOne(mappedBy = "city")
     private Municipality municipality;
     @ManyToOne
+    @JoinColumn(name = "stateId")
     private State state;
     @OneToMany(mappedBy = "city")
-    private List<University> university;
+    private List<University> universities;
 
     public City() {
     }
 
-    public City(UUID cityId, String cityName, Municipality municipality, State state, List<University> university) {
+    public City(UUID cityId, String cityName, Municipality municipality, State state, List<University> universities) {
         this.cityId = cityId;
         this.cityName = cityName;
         this.municipality = municipality;
         this.state = state;
-        this.university = university;
+        this.universities = universities;
     }
 
     public UUID getCityId() {
@@ -59,11 +60,11 @@ public class City {
         this.state = state;
     }
 
-    public List<University> getUniversity() {
-        return university;
+    public List<University> getUniversities() {
+        return universities;
     }
 
-    public void setUniversity(List<University> university) {
-        this.university = university;
+    public void setUniversity(List<University> universities) {
+        this.universities = universities;
     }
 }
