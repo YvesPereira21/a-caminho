@@ -4,6 +4,8 @@ import io.github.YvesPereira21.acaminho.model.City;
 import io.github.YvesPereira21.acaminho.repository.CityRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class CityService {
 
@@ -22,8 +24,8 @@ public class CityService {
                 .orElseThrow();
     }
 
-    public void deleteCity(String citName, String stateName) {
-        City city = this.getCityByCityNameAndStateName(citName, stateName);
+    public void deleteCity(UUID cityId) {
+        City city = cityRepository.findById(cityId).orElseThrow();
         cityRepository.delete(city);
     }
 }

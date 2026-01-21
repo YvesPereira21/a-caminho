@@ -24,16 +24,16 @@ public class BusService {
         return busRepository.findByBusId(busId).orElseThrow();
     }
 
-    public void deleteBus(UUID busId) {
-        busRepository.deleteById(busId);
-    }
-
     public Bus updateBus(UUID busId, Bus newBus) {
         Bus bus = getBus(busId);
         return busRepository.save(newBus);
     }
 
-    public List<Bus> findAllByMunicipalityName(String cityName) {
-        return busRepository.findAllByMunicipality_MunicipalityName(cityName);
+    public void deleteBus(UUID busId) {
+        busRepository.deleteById(busId);
+    }
+
+    public List<Bus> findAllByMunicipalityName(String municipalityName) {
+        return busRepository.findAllByMunicipality_MunicipalityName(municipalityName);
     }
 }
