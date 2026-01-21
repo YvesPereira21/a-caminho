@@ -13,7 +13,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID userId;
     @Column
-    private String username;
+    private String email;
     @Column
     private String password;
     @Enumerated(EnumType.STRING)
@@ -28,8 +28,8 @@ public class User {
 
     }
 
-    public User(String username, String password, UserRole role) {
-        this.username = username;
+    public User(String email, String password, UserRole role) {
+        this.email = email;
         this.password = password;
         this.role = role;
     }
@@ -46,11 +46,11 @@ public class User {
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
