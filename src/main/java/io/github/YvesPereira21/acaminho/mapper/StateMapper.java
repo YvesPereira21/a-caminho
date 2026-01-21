@@ -8,8 +8,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface StateMapper {
 
-    StateDTO convertToEntity(State state);
+    StateDTO convertToDTO(State state);
 
     @Mapping(target = "cities", ignore = true)
-    State convertToDTO(StateDTO stateDTO);
+    State convertToEntity(StateDTO stateDTO);
 }

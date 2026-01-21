@@ -9,10 +9,10 @@ import org.mapstruct.Mapping;
 public interface CityMapper {
 
     @Mapping(source = "state.stateName", target = "stateName")
-    CityDTO convertToEntity(City city);
+    CityDTO convertToDTO(City city);
 
     @Mapping(target = "state", source = "stateName")
     @Mapping(target = "municipality", ignore = true)
     @Mapping(target = "universities", ignore = true)
-    City convertToDTO(CityDTO cityDTO);
+    City convertToEntity(CityDTO cityDTO);
 }

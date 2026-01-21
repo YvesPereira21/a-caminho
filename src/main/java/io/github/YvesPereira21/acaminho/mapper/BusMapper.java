@@ -9,9 +9,9 @@ import org.mapstruct.Mapping;
 public interface BusMapper {
 
     @Mapping(source = "municipality.municipalityId", target = "municipalityId")
-    BusDTO convertToEntity(Bus bus);
+    BusDTO convertToDTO(Bus bus);
 
     @Mapping(target = "municipality", source = "municipalityId")
     @Mapping(target = "busDriver", ignore = true)
-    Bus convertToDto(BusDTO busDTO);
+    Bus convertToEntity(BusDTO busDTO);
 }

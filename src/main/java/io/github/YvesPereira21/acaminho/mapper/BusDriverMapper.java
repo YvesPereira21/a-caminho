@@ -10,9 +10,9 @@ public interface BusDriverMapper {
 
     @Mapping(source = "bus.busId", target = "busId")
     @Mapping(source = "municipality.municipalityId", target = "municipalityId")
-    BusDriverDTO convertToEntity(BusDriver busDriver);
+    BusDriverDTO convertToDTO(BusDriver busDriver);
 
     @Mapping(target = "bus", source = "busId")
     @Mapping(target = "municipality", source = "municipalityId")
-    BusDriver convertToDTO(BusDriverDTO busDriverDTO);
+    BusDriver convertToEntity(BusDriverDTO busDriverDTO);
 }

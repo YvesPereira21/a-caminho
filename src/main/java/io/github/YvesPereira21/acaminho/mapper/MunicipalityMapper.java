@@ -9,11 +9,11 @@ import org.mapstruct.Mapping;
 public interface MunicipalityMapper {
 
     @Mapping(source = "city.cityId", target = "cityId")
-    MunicipalityDTO convertToEntity(Municipality municipality);
+    MunicipalityDTO convertToDTO(Municipality municipality);
 
     @Mapping(target = "city", source = "cityId")
     @Mapping(target = "fleet", ignore = true)
     @Mapping(target = "busDrivers", ignore = true)
     @Mapping(target = "universityStudents", ignore = true)
-    Municipality convertToDTO(MunicipalityDTO municipalityDTO);
+    Municipality convertToEntity(MunicipalityDTO municipalityDTO);
 }
