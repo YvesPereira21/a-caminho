@@ -1,4 +1,4 @@
-package io.github.YvesPereira21.acaminho.dto;
+package io.github.YvesPereira21.acaminho.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
