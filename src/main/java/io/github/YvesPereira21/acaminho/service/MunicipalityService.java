@@ -16,18 +16,18 @@ public class MunicipalityService {
         return municipalityRepository.save(municipality);
     }
 
-    public Municipality getMunicipalityByMunicipalityName(String municipalityName) {
-        return municipalityRepository.findByMunicipalityName(municipalityName);
+    public Municipality getMunicipalityByCityName(String cityName) {
+        return municipalityRepository.findByMunicipalityName(cityName);
     }
 
-    public Municipality updateMunicipality(String municipalityName, Municipality newMunicipality) {
-        Municipality municipality = getMunicipalityByMunicipalityName(municipalityName);
+    public Municipality updateMunicipality(String cityName, Municipality newMunicipality) {
+        Municipality municipality = getMunicipalityByCityName(cityName);
         municipality = newMunicipality;
         return municipalityRepository.save(municipality);
     }
 
     public void deleteMunicipality(String cityName) {
-        Municipality municipality = getMunicipalityByMunicipalityName(cityName);
+        Municipality municipality = getMunicipalityByCityName(cityName);
         municipalityRepository.delete(municipality);
     }
 }
