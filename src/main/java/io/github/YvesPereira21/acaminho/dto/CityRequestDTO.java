@@ -2,7 +2,7 @@ package io.github.YvesPereira21.acaminho.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record UserDTO(
-        @NotBlank String email,
-        @NotBlank String password
+public record CityRequestDTO(
+        @NotBlank String cityName,
+        @NotBlank String stateName
 ) {}
