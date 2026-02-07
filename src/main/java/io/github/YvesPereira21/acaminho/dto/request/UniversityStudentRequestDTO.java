@@ -9,6 +9,6 @@ import java.util.UUID;
 public record UniversityStudentRequestDTO(
         @NotBlank String studentName,
         @NotNull @Valid UserDTO user,
-        @NotNull UUID municipalityId,
+        @NotNull String municipalityName,
         @NotNull UUID universityId
 ) {}

@@ -3,7 +3,8 @@ package io.github.YvesPereira21.acaminho.enums;
 public enum UserRole {
     ADMIN("admin"),
     UNIVERSITYSTUDENT("university student"),
-    CITYHALL("city hall");
+    BUSDRIVER("bus driver"),
+    MUNICIPALITY("municipality");
 
     private final String role;
 
