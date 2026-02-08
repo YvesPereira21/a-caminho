@@ -5,7 +5,7 @@ import io.github.YvesPereira21.acaminho.model.City;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {MunicipalityMapper.class})
 public interface CityMapper {
 
     @Mapping(target = "stateName", source = "state.stateName")

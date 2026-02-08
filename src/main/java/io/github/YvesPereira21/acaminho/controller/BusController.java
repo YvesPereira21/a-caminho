@@ -31,7 +31,7 @@ public class BusController {
         return ResponseEntity.ok(busService.getBus(busId));
     }
 
-    @GetMapping("/{municipalityName}")
+    @GetMapping("municipality/{municipalityName}")
     public ResponseEntity<List<BusResponseDTO>> getAllBusByMunicipalityName(@PathVariable String municipalityName) {
         return ResponseEntity.ok(busService.findAllByMunicipalityName(municipalityName));
     }

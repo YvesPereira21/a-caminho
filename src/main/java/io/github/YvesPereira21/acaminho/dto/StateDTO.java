@@ -1,7 +1,7 @@
-package io.github.YvesPereira21.acaminho.dto.request;
+package io.github.YvesPereira21.acaminho.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record StateRequestDTO(
+public record StateDTO(
         @NotBlank String stateName
 ) {}

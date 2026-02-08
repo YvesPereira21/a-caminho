@@ -5,7 +5,7 @@ import io.github.YvesPereira21.acaminho.model.UniversityStudent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring", uses = {MunicipalityMapper.class, UniversityMapper.class})
 public interface UniversityStudentMapper {
 
     @Mapping(target = "email", source = "user.email")

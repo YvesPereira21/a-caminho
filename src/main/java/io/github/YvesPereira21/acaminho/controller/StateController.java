@@ -1,6 +1,6 @@
 package io.github.YvesPereira21.acaminho.controller;
 
-import io.github.YvesPereira21.acaminho.dto.request.StateRequestDTO;
+import io.github.YvesPereira21.acaminho.dto.StateDTO;
 import io.github.YvesPereira21.acaminho.service.StateService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,8 +18,8 @@ public class StateController {
     }
 
     @PostMapping("")
-    public ResponseEntity<StateRequestDTO> createState(@RequestBody @Valid StateRequestDTO stateRequestDTO) {
-        StateRequestDTO newState = stateService.createState(stateRequestDTO);
+    public ResponseEntity<StateDTO> createState(@RequestBody @Valid StateDTO stateDTO) {
+        StateDTO newState = stateService.createState(stateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(newState);
     }
 

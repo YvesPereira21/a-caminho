@@ -5,7 +5,7 @@ import io.github.YvesPereira21.acaminho.model.BusDriver;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring", uses = {MunicipalityMapper.class})
 public interface BusDriverMapper {
 
     @Mapping(target = "email", source = "user.email")
