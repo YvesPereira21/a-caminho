@@ -40,15 +40,9 @@ public class MunicipalityService {
         return municipalityMapper.toResponse(municipalityRepository.save(newMunicipality));
     }
 
-    public MunicipalityResponseDTO getMunicipalityByCityName(String municipalityName) {
+    public MunicipalityResponseDTO getMunicipalityByName(String municipalityName) {
         Municipality municipality = municipalityRepository.findByMunicipalityName(municipalityName);
         return municipalityMapper.toResponse(municipality);
-    }
-
-    public Municipality updateMunicipality(String municipalityName, Municipality newMunicipality) {
-        Municipality municipality = municipalityRepository.findByMunicipalityName(municipalityName);
-        municipality = newMunicipality;
-        return municipalityRepository.save(municipality);
     }
 
     public void deleteMunicipality(String municipalityName) {

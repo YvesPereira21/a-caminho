@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UniversityService {
@@ -26,7 +27,8 @@ public class UniversityService {
     }
 
     public UniversityResponseDTO createUniversity(UniversityRequestDTO university) {
-        City city = cityRepository.findByCityNameAndState_StateName(university.cityName(), university.stateName())
+        City city = cityRepository
+                .findByCityNameAndState_StateName(university.cityName(), university.stateName())
                 .orElseThrow();
         University newUniversity = new University();
         newUniversity.setName(university.name());
@@ -34,8 +36,12 @@ public class UniversityService {
         return universityMapper.toResponse(universityRepository.save(newUniversity));
     }
 
-    public List<University> allUniversityContainingName(String universityName) {
-        return universityRepository.findAllUniversityByNameContainingIgnoreCase(universityName);
+    public List<UniversityResponseDTO> allUniversityContainingName(String universityName) {
+        return universityRepository
+                .findAllUniversityByNameContainingIgnoreCase(universityName)
+                .stream()
+                .map(universityMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     public void deleteUniversity(UUID universityId) {

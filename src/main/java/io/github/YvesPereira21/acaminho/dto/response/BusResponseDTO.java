@@ -8,5 +8,5 @@ public record BusResponseDTO(
         String busName,
         MunicipalityResponseDTO municipality,
         BusDriverResponseDTO busDriver,
-        List<UniversityStudentResponseDTO> universities
+        List<UniversityResponseDTO> universities
 ) {}

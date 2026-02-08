@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BusService {
@@ -64,7 +65,11 @@ public class BusService {
         busRepository.deleteById(busId);
     }
 
-    public List<Bus> findAllByMunicipalityName(String municipalityName) {
-        return busRepository.findAllByMunicipality_MunicipalityName(municipalityName);
+    public List<BusResponseDTO> findAllByMunicipalityName(String municipalityName) {
+        return busRepository
+                .findAllByMunicipality_MunicipalityName(municipalityName)
+                .stream()
+                .map(busMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }
