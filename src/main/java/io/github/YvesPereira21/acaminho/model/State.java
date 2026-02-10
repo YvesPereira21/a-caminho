@@ -10,8 +10,9 @@ public class State {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "state_id")
     private UUID stateId;
-    @Column
+    @Column(name = "state_name")
     private String stateName;
     @OneToMany(mappedBy = "state")
     private List<City> cities;

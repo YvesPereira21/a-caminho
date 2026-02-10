@@ -9,17 +9,18 @@ public class UniversityStudent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "university_student_id")
     private UUID universityStudentId;
-    @Column
+    @Column(name = "student_name")
     private String studentName;
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne
-    @JoinColumn(name = "municipalityId")
+    @JoinColumn(name = "municipality_id")
     private Municipality municipality;
     @ManyToOne
-    @JoinColumn(name = "universityId")
+    @JoinColumn(name = "university_id")
     private University university;
 
     public UniversityStudent() {}

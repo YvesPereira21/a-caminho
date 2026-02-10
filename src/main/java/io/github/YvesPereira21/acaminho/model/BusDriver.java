@@ -9,16 +9,17 @@ public class BusDriver {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bus_driver_id")
     private UUID busDriverId;
-    @Column
+    @Column(name = "bus_driver_name")
     private String busDriverName;
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
     @OneToOne(mappedBy = "busDriver")
     private Bus bus;
     @ManyToOne
-    @JoinColumn(name = "municipalityId")
+    @JoinColumn(name = "municipality_id")
     private Municipality municipality;
 
     public BusDriver() {

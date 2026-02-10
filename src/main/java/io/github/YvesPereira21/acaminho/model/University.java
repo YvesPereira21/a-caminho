@@ -10,8 +10,9 @@ public class University {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "university_id")
     private UUID universityId;
-    @Column
+    @Column(name = "name")
     private String name;
     @ManyToOne
     @JoinColumn(name = "cityId")

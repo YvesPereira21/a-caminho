@@ -10,20 +10,21 @@ public class Bus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bus_id")
     private UUID busId;
-    @Column
+    @Column(name = "bus_name")
     private String busName;
     @ManyToOne
-    @JoinColumn(name = "municipalityId")
+    @JoinColumn(name = "municipality_id")
     private Municipality municipality;
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "busDriverId")
+    @JoinColumn(name = "busDriver_id")
     private BusDriver busDriver;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="route_bus",
-            joinColumns = @JoinColumn(name = "busId"),
-            inverseJoinColumns = @JoinColumn(name = "universityId")
+            joinColumns = @JoinColumn(name = "bus_id"),
+            inverseJoinColumns = @JoinColumn(name = "university_id")
     )
     private List<University> universities;
 

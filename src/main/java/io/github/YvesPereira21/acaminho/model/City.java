@@ -10,13 +10,14 @@ public class City {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "city_id")
     private UUID cityId;
-    @Column
+    @Column(name = "city_name")
     private String cityName;
     @OneToOne(mappedBy = "city")
     private Municipality municipality;
     @ManyToOne
-    @JoinColumn(name = "stateId")
+    @JoinColumn(name = "state_id")
     private State state;
     @OneToMany(mappedBy = "city")
     private List<University> universities;

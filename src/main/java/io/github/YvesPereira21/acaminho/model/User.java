@@ -2,7 +2,6 @@ package io.github.YvesPereira21.acaminho.model;
 
 import io.github.YvesPereira21.acaminho.enums.UserRole;
 import jakarta.persistence.*;
-import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,10 +16,11 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private UUID userId;
-    @Column
+    @Column(name = "email")
     private String email;
-    @Column
+    @Column(name = "password")
     private String password;
     @Enumerated(EnumType.STRING)
     private UserRole role;

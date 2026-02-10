@@ -10,8 +10,9 @@ public class Municipality {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "municipality_id")
     private UUID municipalityId;
-    @Column(unique = true)
+    @Column(name = "municipality_name")
     private String municipalityName;
     @OneToOne
     private User user;
