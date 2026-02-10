@@ -9,7 +9,7 @@ import java.util.UUID;
 public class University {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "university_id")
     private UUID universityId;
     @Column(name = "name")

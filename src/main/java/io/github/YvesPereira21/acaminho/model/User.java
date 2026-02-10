@@ -15,7 +15,7 @@ import java.util.UUID;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id")
     private UUID userId;
     @Column(name = "email")
@@ -25,9 +25,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole role;
     @OneToOne(mappedBy = "user")
-    private UniversityStudent universityStudent;
+    private Municipality municipality;
     @OneToOne(mappedBy = "user")
     private BusDriver busDriver;
+    @OneToOne(mappedBy = "user")
+    private UniversityStudent universityStudent;
 
     public User() {
 

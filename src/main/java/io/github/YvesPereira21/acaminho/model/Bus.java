@@ -9,7 +9,7 @@ import java.util.List;
 public class Bus {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "bus_id")
     private UUID busId;
     @Column(name = "bus_name")
@@ -18,7 +18,7 @@ public class Bus {
     @JoinColumn(name = "municipality_id")
     private Municipality municipality;
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "busDriver_id")
+    @JoinColumn(name = "bus_driver_id")
     private BusDriver busDriver;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

@@ -9,14 +9,16 @@ import java.util.UUID;
 public class Municipality {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "municipality_id")
     private UUID municipalityId;
     @Column(name = "municipality_name")
     private String municipalityName;
     @OneToOne
+    @JoinColumn(name = "user_id")
     private User user;
     @OneToOne
+    @JoinColumn(name = "city_id")
     private City city;
     @OneToMany(mappedBy = "municipality", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Bus> fleet;
