@@ -7,6 +7,7 @@ import io.github.YvesPereira21.acaminho.mapper.BusDriverMapper;
 import io.github.YvesPereira21.acaminho.model.BusDriver;
 import io.github.YvesPereira21.acaminho.model.User;
 import io.github.YvesPereira21.acaminho.repository.BusDriverRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
 
@@ -15,16 +16,18 @@ public class BusDriverService {
 
     private final BusDriverRepository busDriverRepository;
     private final BusDriverMapper busDriverMapper;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public BusDriverService(BusDriverRepository busDriverRepository, BusDriverMapper busDriverMapper) {
+    public BusDriverService(BusDriverRepository busDriverRepository, BusDriverMapper busDriverMapper, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.busDriverRepository = busDriverRepository;
         this.busDriverMapper = busDriverMapper;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public BusDriverResponseDTO createBusDriverAccount(BusDriverRequestDTO busDriverRequestDTO) {
         User newUser = new User();
         newUser.setEmail(busDriverRequestDTO.user().email());
-        newUser.setPassword(busDriverRequestDTO.user().password());
+        newUser.setPassword(bCryptPasswordEncoder.encode(busDriverRequestDTO.user().password()));
         newUser.setRole(UserRole.BUSDRIVER);
 
         BusDriver busDriver = new BusDriver();

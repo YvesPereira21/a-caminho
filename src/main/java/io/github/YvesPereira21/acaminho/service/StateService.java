@@ -18,8 +18,6 @@ public class StateService {
     }
 
     public StateDTO createState(StateDTO state){
-        State stateExists = stateRepository.findByStateName(state.stateName())
-                .orElseThrow();
         State newState = new State();
         newState.setStateName(state.stateName());
         return stateMapper.toResponse(stateRepository.save(newState));

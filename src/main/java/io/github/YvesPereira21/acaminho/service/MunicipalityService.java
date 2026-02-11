@@ -9,6 +9,7 @@ import io.github.YvesPereira21.acaminho.model.Municipality;
 import io.github.YvesPereira21.acaminho.model.User;
 import io.github.YvesPereira21.acaminho.repository.CityRepository;
 import io.github.YvesPereira21.acaminho.repository.MunicipalityRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,11 +18,13 @@ public class MunicipalityService {
     private final MunicipalityRepository municipalityRepository;
     private final CityRepository cityRepository;
     private final MunicipalityMapper municipalityMapper;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public MunicipalityService(MunicipalityRepository municipalityRepository, CityRepository cityRepository, MunicipalityMapper municipalityMapper) {
+    public MunicipalityService(MunicipalityRepository municipalityRepository, CityRepository cityRepository, MunicipalityMapper municipalityMapper, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.municipalityRepository = municipalityRepository;
         this.cityRepository = cityRepository;
         this.municipalityMapper = municipalityMapper;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public MunicipalityResponseDTO createMunicipality(MunicipalityRequestDTO municipality) {
@@ -29,7 +32,7 @@ public class MunicipalityService {
                 .orElseThrow();
         User newUser = new User();
         newUser.setEmail(municipality.user().email());
-        newUser.setPassword(municipality.user().password());
+        newUser.setPassword(bCryptPasswordEncoder.encode(municipality.user().password()));
         newUser.setRole(UserRole.MUNICIPALITY);
 
         Municipality newMunicipality = new Municipality();

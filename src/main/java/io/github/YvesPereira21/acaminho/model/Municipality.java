@@ -14,7 +14,7 @@ public class Municipality {
     private UUID municipalityId;
     @Column(name = "municipality_name")
     private String municipalityName;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
     @OneToOne

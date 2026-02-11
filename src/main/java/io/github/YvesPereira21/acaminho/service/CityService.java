@@ -26,6 +26,7 @@ public class CityService {
         State state = stateRepository.findByStateName(city.stateName())
                 .orElseThrow();
         City newCity = new City();
+        newCity.setCityName(city.cityName());
         newCity.setState(state);
         return cityMapper.toResponse(cityRepository.save(newCity));
     }

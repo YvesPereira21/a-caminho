@@ -13,7 +13,7 @@ public class BusDriver {
     private UUID busDriverId;
     @Column(name = "bus_driver_name")
     private String busDriverName;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
     @OneToOne(mappedBy = "busDriver")
