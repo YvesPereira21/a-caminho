@@ -2,13 +2,16 @@ package io.github.YvesPereira21.acaminho.controller;
 
 import io.github.YvesPereira21.acaminho.dto.request.CityRequestDTO;
 import io.github.YvesPereira21.acaminho.dto.response.CityResponseDTO;
+import io.github.YvesPereira21.acaminho.security.SecurityConfigurations;
 import io.github.YvesPereira21.acaminho.service.CityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "cities")
 @Validated
 @Tag(name = "City", description = "Controller para gerenciamento da entidade City")
-//@SecurityRequirement(name = SecurityConfigurations.SECURITY)
+@SecurityRequirement(name = SecurityConfigurations.SECURITY)
 public class CityController {
 
     private final CityService cityService;
@@ -25,6 +28,7 @@ public class CityController {
         this.cityService = cityService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
     @Operation(summary = "Cria cidade", description = "Cria objeto cidade")
     @ApiResponses(value = {
@@ -46,6 +50,7 @@ public class CityController {
         return ResponseEntity.ok(cityService.getCityByCityNameAndStateName(cityName, stateName));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("")
     @Operation(summary = "Deleta objeto cidade", description = "Deleta objeto cidade baseado no seu id")
     @ApiResponses(value = {

@@ -2,13 +2,16 @@ package io.github.YvesPereira21.acaminho.controller;
 
 import io.github.YvesPereira21.acaminho.dto.request.UniversityStudentRequestDTO;
 import io.github.YvesPereira21.acaminho.dto.response.UniversityStudentResponseDTO;
+import io.github.YvesPereira21.acaminho.security.SecurityConfigurations;
 import io.github.YvesPereira21.acaminho.service.UniversityStudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +21,7 @@ import java.util.UUID;
 @RequestMapping(path = "/universityStudents")
 @Validated
 @Tag(name = "University Student", description = "Controller para gerenciamento da entidade University Student")
-//@SecurityRequirement(name = SecurityConfigurations.SECURITY)
+@SecurityRequirement(name = SecurityConfigurations.SECURITY)
 public class UniversityStudentController {
 
     private final UniversityStudentService universityStudentService;
@@ -38,6 +41,7 @@ public class UniversityStudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(university);
     }
 
+    @PreAuthorize("hasAnyRole('MUNICIPALITY', 'UNIVERSITYSTUDENT')")
     @GetMapping("/{universityStudentId}")
     @Operation(summary = "Retorna objeto estudante universitário", description = "Retorna objeto estudante universitário baseado no seu id")
     @ApiResponses(value = {
@@ -48,6 +52,7 @@ public class UniversityStudentController {
         return ResponseEntity.ok(universityStudentService.getUniversityStudentById(universityStudentId));
     }
 
+    @PreAuthorize("hasAnyRole('UNIVERSITYSTUDENT', 'MUNICIPALITY')")
     @DeleteMapping("/{universityStudentId}")
     @Operation(summary = "Deleta conta do estudante universitário", description = "Deleta conta do estudante universitário baseado no seu id")
     @ApiResponses(value = {

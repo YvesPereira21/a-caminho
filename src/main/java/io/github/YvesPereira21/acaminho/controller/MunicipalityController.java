@@ -2,13 +2,16 @@ package io.github.YvesPereira21.acaminho.controller;
 
 import io.github.YvesPereira21.acaminho.dto.request.MunicipalityRequestDTO;
 import io.github.YvesPereira21.acaminho.dto.response.MunicipalityResponseDTO;
+import io.github.YvesPereira21.acaminho.security.SecurityConfigurations;
 import io.github.YvesPereira21.acaminho.service.MunicipalityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/municipality")
 @Validated
 @Tag(name = "Municipality", description = "Controller para gerenciamento da entidade Municipality")
-//@SecurityRequirement(name = SecurityConfigurations.SECURITY)
+@SecurityRequirement(name = SecurityConfigurations.SECURITY)
 public class MunicipalityController {
 
     private final MunicipalityService municipalityService;
@@ -25,6 +28,7 @@ public class MunicipalityController {
         this.municipalityService = municipalityService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
     @Operation(summary = "Cria prefeitura", description = "Cria uma conta para a prefeitura")
     @ApiResponses(value = {
@@ -46,6 +50,7 @@ public class MunicipalityController {
         return ResponseEntity.ok(municipalityService.getMunicipalityByName(municipalityName));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{municipalityName}")
     @Operation(summary = "Deleta conta da prefeitura", description = "Deleta conta da prefeitura baseado no seu nome")
     @ApiResponses(value = {

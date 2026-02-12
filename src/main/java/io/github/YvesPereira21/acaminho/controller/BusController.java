@@ -2,6 +2,7 @@ package io.github.YvesPereira21.acaminho.controller;
 
 import io.github.YvesPereira21.acaminho.dto.request.BusRequestDTO;
 import io.github.YvesPereira21.acaminho.dto.response.BusResponseDTO;
+import io.github.YvesPereira21.acaminho.model.User;
 import io.github.YvesPereira21.acaminho.security.SecurityConfigurations;
 import io.github.YvesPereira21.acaminho.service.BusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +24,7 @@ import java.util.UUID;
 @RequestMapping(path = "/fleet")
 @Validated
 @Tag(name = "Bus", description = "Controller para gerenciamento da entidade Bus")
-//@SecurityRequirement(name = SecurityConfigurations.SECURITY)
+@SecurityRequirement(name = SecurityConfigurations.SECURITY)
 public class BusController {
 
     private final BusService busService;
@@ -30,14 +33,15 @@ public class BusController {
         this.busService = busService;
     }
 
+    @PreAuthorize("hasRole('MUNICIPALITY')")
     @PostMapping("")
     @Operation(summary = "Cria ônibus", description = "Cria um objeto ônibus")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Ônibus criado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Erro ao criar ônibus.")
     })
-    public ResponseEntity<BusResponseDTO> createBus(@RequestBody BusRequestDTO busRequestDTO) {
-        BusResponseDTO busResponseDTO = busService.createBus(busRequestDTO);
+    public ResponseEntity<BusResponseDTO> createBus(@RequestBody BusRequestDTO busRequestDTO, @AuthenticationPrincipal User user) {
+        BusResponseDTO busResponseDTO = busService.createBus(busRequestDTO, user.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(busResponseDTO);
     }
 
@@ -61,6 +65,7 @@ public class BusController {
         return ResponseEntity.ok(busService.findAllByMunicipalityName(municipalityName));
     }
 
+    @PreAuthorize("hasRole('MUNICIPALITY')")
     @DeleteMapping("/{busId}")
     @Operation(summary = "Deleta objeto ônibus", description = "Deleta objeto ônibus baseado no seu id")
     @ApiResponses(value = {

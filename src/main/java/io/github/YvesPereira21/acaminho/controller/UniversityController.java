@@ -2,13 +2,16 @@ package io.github.YvesPereira21.acaminho.controller;
 
 import io.github.YvesPereira21.acaminho.dto.request.UniversityRequestDTO;
 import io.github.YvesPereira21.acaminho.dto.response.UniversityResponseDTO;
+import io.github.YvesPereira21.acaminho.security.SecurityConfigurations;
 import io.github.YvesPereira21.acaminho.service.UniversityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +22,7 @@ import java.util.UUID;
 @RequestMapping(path = "/universities")
 @Validated
 @Tag(name = "University", description = "Controller para gerenciamento da entidade University")
-//@SecurityRequirement(name = SecurityConfigurations.SECURITY)
+@SecurityRequirement(name = SecurityConfigurations.SECURITY)
 public class UniversityController {
 
     private final UniversityService universityService;
@@ -28,6 +31,7 @@ public class UniversityController {
         this.universityService = universityService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
     @Operation(summary = "Cria universidade", description = "Cria objeto universidade")
     @ApiResponses(value = {
@@ -49,6 +53,7 @@ public class UniversityController {
         return ResponseEntity.ok(universityService.allUniversityContainingName(universityName));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{universityId}")
     @Operation(summary = "Deleta objeto universidade", description = "Deleta objeto universidade baseado no seu id")
     @ApiResponses(value = {
