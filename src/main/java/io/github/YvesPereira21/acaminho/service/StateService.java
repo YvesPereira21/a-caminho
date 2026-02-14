@@ -1,6 +1,8 @@
 package io.github.YvesPereira21.acaminho.service;
 
 import io.github.YvesPereira21.acaminho.dto.StateDTO;
+import io.github.YvesPereira21.acaminho.exception.ObjectAlreadyExistsException;
+import io.github.YvesPereira21.acaminho.exception.ObjectNotFoundException;
 import io.github.YvesPereira21.acaminho.mapper.StateMapper;
 import io.github.YvesPereira21.acaminho.model.State;
 import io.github.YvesPereira21.acaminho.repository.StateRepository;
@@ -18,6 +20,10 @@ public class StateService {
     }
 
     public StateDTO createState(StateDTO state){
+        boolean stateAlreadyExists = stateRepository.existsByStateName(state.stateName());
+        if(stateAlreadyExists){
+            throw new ObjectAlreadyExistsException("O estado com esse nome já existe.");
+        }
         State newState = new State();
         newState.setStateName(state.stateName());
         return stateMapper.toResponse(stateRepository.save(newState));
@@ -25,7 +31,7 @@ public class StateService {
 
     public void deleteState(String stateName) {
         State state = stateRepository.findByStateName(stateName)
-                .orElseThrow();
+                .orElseThrow(() -> new ObjectNotFoundException("O estado não existe."));
         stateRepository.delete(state);
     }
 }

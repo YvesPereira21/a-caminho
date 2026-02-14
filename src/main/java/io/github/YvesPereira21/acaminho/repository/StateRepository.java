@@ -7,5 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface StateRepository extends JpaRepository<State, UUID> {
+    boolean existsByStateName(String stateName);
     Optional<State> findByStateName(String stateName);
 }

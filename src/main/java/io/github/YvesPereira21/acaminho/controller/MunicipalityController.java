@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/municipality")
@@ -48,6 +49,17 @@ public class MunicipalityController {
     })
     public ResponseEntity<MunicipalityResponseDTO> getMunicipalityByName(@PathVariable String municipalityName){
         return ResponseEntity.ok(municipalityService.getMunicipalityByName(municipalityName));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'UNIVERSITYSTUDENT')")
+    @GetMapping("/{stateName}/states")
+    @Operation(summary = "Retorna lista de prefeituras", description = "Retorna lista de prefeituras de um estado baseado no nome do estado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Dado inválido.")
+    })
+    public ResponseEntity<List<MunicipalityResponseDTO>> getAllMunicipalityFromState(@PathVariable String stateName){
+        return ResponseEntity.ok(municipalityService.getAllMunicipalityFromState(stateName));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

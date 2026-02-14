@@ -53,6 +53,16 @@ public class UniversityController {
         return ResponseEntity.ok(universityService.allUniversityContainingName(universityName));
     }
 
+    @GetMapping("/{stateName}/states")
+    @Operation(summary = "Retorna lista de universidades", description = "Retorna lista de universidades com determinado nome")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Universidades retornadas com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Dado inválido.")
+    })
+    public ResponseEntity<List<UniversityResponseDTO>> getAllUniversityFromState(@PathVariable String stateName){
+        return ResponseEntity.ok(universityService.getAllUniversityFromState(stateName));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{universityId}")
     @Operation(summary = "Deleta objeto universidade", description = "Deleta objeto universidade baseado no seu id")

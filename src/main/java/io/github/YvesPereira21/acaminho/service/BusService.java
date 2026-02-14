@@ -2,6 +2,8 @@ package io.github.YvesPereira21.acaminho.service;
 
 import io.github.YvesPereira21.acaminho.dto.request.BusRequestDTO;
 import io.github.YvesPereira21.acaminho.dto.response.BusResponseDTO;
+import io.github.YvesPereira21.acaminho.exception.CrossMunicipalityAccessException;
+import io.github.YvesPereira21.acaminho.exception.ObjectNotFoundException;
 import io.github.YvesPereira21.acaminho.mapper.BusMapper;
 import io.github.YvesPereira21.acaminho.model.Bus;
 import io.github.YvesPereira21.acaminho.model.BusDriver;
@@ -38,10 +40,10 @@ public class BusService {
     public BusResponseDTO createBus(BusRequestDTO bus, UUID municipalityUserId) {
         Municipality municipality = municipalityRepository
                 .findByUser_UserId(municipalityUserId)
-                .orElseThrow();
+                .orElseThrow(() -> new ObjectNotFoundException("Prefeitura não encontrada."));
         BusDriver getBusDriver = busDriverRepository
                 .findByBusDriverId(bus.busDriverId())
-                .orElseThrow();
+                .orElseThrow(() -> new ObjectNotFoundException("Motorista não encontrado."));
 
         List<University> universities = new ArrayList<>();
         Bus newBus = new Bus();
@@ -51,7 +53,7 @@ public class BusService {
 
         for (UUID universityId : bus.universityIds()) {
             University university = universityRepository.findById(universityId)
-                    .orElseThrow();
+                    .orElseThrow(() -> new ObjectNotFoundException("Universidade não encontrada."));
             universities.add(university);
         }
 
@@ -59,29 +61,24 @@ public class BusService {
         return busMapper.toResponse(busRepository.save(newBus));
     }
 
-    public BusResponseDTO getBus(UUID busId) {
-        Bus bus = busRepository.findByBusId(busId)
-                .orElseThrow();
+    public BusResponseDTO getBus(UUID busId, UUID municipalityUserId) {
+        Bus bus = busRepository.findByBusIdAndMunicipality_User_UserId(busId, municipalityUserId)
+                .orElseThrow(() -> new CrossMunicipalityAccessException("Esse ônibus não existe"));
         return busMapper.toResponse(bus);
     }
 
-    public BusResponseDTO updateBus(UUID busId, BusRequestDTO newBus) {
-        Bus bus = busRepository.findByBusId(busId)
-                .orElseThrow();
-        return busMapper.toResponse(busRepository.save(bus));
-    }
-
-    public void deleteBus(UUID busId) {
-        Bus bus = busRepository.findByBusId(busId)
-                .orElseThrow();
-        busRepository.deleteById(busId);
-    }
-
-    public List<BusResponseDTO> findAllByMunicipalityName(String municipalityName) {
+    public List<BusResponseDTO> getAllBusFromMunicipality(UUID municipalityUserId) {
         return busRepository
-                .findAllByMunicipality_MunicipalityName(municipalityName)
+                .findAllByMunicipality_User_UserId(municipalityUserId)
                 .stream()
                 .map(busMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public void deleteBus(UUID busId, UUID municipalityUserId) {
+        Bus bus = busRepository.findByBusIdAndMunicipality_User_UserId(busId, municipalityUserId)
+                .orElseThrow(() -> new CrossMunicipalityAccessException("Esse ônibus não existe"));
+
+        busRepository.delete(bus);
     }
 }

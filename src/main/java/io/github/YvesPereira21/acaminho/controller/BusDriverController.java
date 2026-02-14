@@ -52,8 +52,8 @@ public class BusDriverController {
             @ApiResponse(responseCode = "200", description = "Motorista retornado com sucesso."),
             @ApiResponse(responseCode = "404", description = "Motorista não encontrado.")
     })
-    public ResponseEntity<BusDriverResponseDTO> getBusDriverById(@PathVariable UUID busDriverId){
-        return ResponseEntity.ok(busDriverService.getBusDriverById(busDriverId));
+    public ResponseEntity<BusDriverResponseDTO> getBusDriverById(@PathVariable UUID busDriverId, @AuthenticationPrincipal User user){
+        return ResponseEntity.ok(busDriverService.getBusDriverById(busDriverId, user.getUserId()));
     }
 
     @PreAuthorize("hasRole('MUNICIPALITY')")
@@ -63,8 +63,8 @@ public class BusDriverController {
             @ApiResponse(responseCode = "200", description = "Conta do motorista deletada com sucesso."),
             @ApiResponse(responseCode = "404", description = "Motorista não encontrado.")
     })
-    public ResponseEntity<Void> deleteBusDriverById(@PathVariable UUID busDriverId){
-        busDriverService.deleteBusDriverAccount(busDriverId);
+    public ResponseEntity<Void> deleteBusDriverById(@PathVariable UUID busDriverId, @AuthenticationPrincipal User user){
+        busDriverService.deleteBusDriverAccount(busDriverId, user.getUserId());
         return ResponseEntity.noContent().build();
     }
 }

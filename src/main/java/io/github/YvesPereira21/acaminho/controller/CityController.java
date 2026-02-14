@@ -15,6 +15,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
 @RestController
 @RequestMapping(path = "cities")
 @Validated
@@ -40,25 +43,35 @@ public class CityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(cityResponse);
     }
 
-    @GetMapping("")
-    @Operation(summary = "Retorna objeto cidade", description = "Retorna objeto cidade baseado no seu nome e nome do estado")
+    @GetMapping("/{cityId}")
+    @Operation(summary = "Retorna objeto cidade", description = "Retorna objeto cidade baseado no seu id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cidade retornada com sucesso."),
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso."),
             @ApiResponse(responseCode = "404", description = "Cidade não encontrada.")
     })
-    public ResponseEntity<CityResponseDTO> getCityByCityNameAndStateName(@RequestParam String cityName, @RequestParam String stateName){
-        return ResponseEntity.ok(cityService.getCityByCityNameAndStateName(cityName, stateName));
+    public ResponseEntity<CityResponseDTO> getCityByCityId(@PathVariable UUID cityId){
+        return ResponseEntity.ok(cityService.getCityById(cityId));
+    }
+
+    @GetMapping("/{stateName}/states")
+    @Operation(summary = "Retorna lista de cidades", description = "Retorna uma lista de cidade baseado no nome do estado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cidades retornadas com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Dado inválido.")
+    })
+    public ResponseEntity<List<CityResponseDTO>> getAllCityFromState(@PathVariable String stateName){
+        return ResponseEntity.ok(cityService.getAllCityFromStateByStateName(stateName));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("")
+    @DeleteMapping("/{cityId}")
     @Operation(summary = "Deleta objeto cidade", description = "Deleta objeto cidade baseado no seu id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Cidade deletada com sucesso."),
             @ApiResponse(responseCode = "404", description = "Cidade não encontrada.")
     })
-    public ResponseEntity<Void> deleteCity(@RequestParam String cityName, @RequestParam String stateName){
-        cityService.deleteCity(cityName, stateName);
+    public ResponseEntity<Void> deleteCity(@PathVariable UUID cityId){
+        cityService.deleteCity(cityId);
         return ResponseEntity.noContent().build();
     }
 }

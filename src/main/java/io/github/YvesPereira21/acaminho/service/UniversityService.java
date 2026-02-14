@@ -2,6 +2,7 @@ package io.github.YvesPereira21.acaminho.service;
 
 import io.github.YvesPereira21.acaminho.dto.request.UniversityRequestDTO;
 import io.github.YvesPereira21.acaminho.dto.response.UniversityResponseDTO;
+import io.github.YvesPereira21.acaminho.exception.ObjectNotFoundException;
 import io.github.YvesPereira21.acaminho.mapper.UniversityMapper;
 import io.github.YvesPereira21.acaminho.model.City;
 import io.github.YvesPereira21.acaminho.model.University;
@@ -29,10 +30,12 @@ public class UniversityService {
     public UniversityResponseDTO createUniversity(UniversityRequestDTO university) {
         City city = cityRepository
                 .findByCityNameAndState_StateName(university.cityName(), university.stateName())
-                .orElseThrow();
+                .orElseThrow(() -> new ObjectNotFoundException("Cidade não encontrada."));
+
         University newUniversity = new University();
         newUniversity.setName(university.name());
         newUniversity.setCity(city);
+
         return universityMapper.toResponse(universityRepository.save(newUniversity));
     }
 
@@ -44,10 +47,17 @@ public class UniversityService {
                 .collect(Collectors.toList());
     }
 
+    public List<UniversityResponseDTO> getAllUniversityFromState(String stateName) {
+        return universityRepository.findAllUniversityFromStateByStateName(stateName)
+                .stream()
+                .map(universityMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public void deleteUniversity(UUID universityId) {
         University university = universityRepository
                 .findById(universityId)
-                .orElseThrow();
-        universityRepository.deleteById(universityId);
+                .orElseThrow(() -> new ObjectNotFoundException("Universidade não encontrada."));
+        universityRepository.delete(university);
     }
 }

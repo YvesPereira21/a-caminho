@@ -51,18 +51,18 @@ public class BusController {
             @ApiResponse(responseCode = "200", description = "Ônibus retornado com sucesso."),
             @ApiResponse(responseCode = "404", description = "Ônibus não encontrado.")
     })
-    public ResponseEntity<BusResponseDTO> getBusById(@PathVariable UUID busId){
-        return ResponseEntity.ok(busService.getBus(busId));
+    public ResponseEntity<BusResponseDTO> getBusById(@PathVariable UUID busId, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(busService.getBus(busId, user.getUserId()));
     }
 
-    @GetMapping("municipality/{municipalityName}")
+    @GetMapping("")
     @Operation(summary = "Lista de ônibus de uma prefeitura", description = "Retorna os ônibus de acordo com o nome da prefeitura")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de ônibus retornado com sucesso."),
             @ApiResponse(responseCode = "404", description = "Não existe uma prefeitura com esse nome.")
     })
-    public ResponseEntity<List<BusResponseDTO>> getAllBusByMunicipalityName(@PathVariable String municipalityName) {
-        return ResponseEntity.ok(busService.findAllByMunicipalityName(municipalityName));
+    public ResponseEntity<List<BusResponseDTO>> getAllBusFromMunicipalityById(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(busService.getAllBusFromMunicipality(user.getUserId()));
     }
 
     @PreAuthorize("hasRole('MUNICIPALITY')")
@@ -72,8 +72,8 @@ public class BusController {
             @ApiResponse(responseCode = "204", description = "Ônibus deletado com sucesso."),
             @ApiResponse(responseCode = "404", description = "Ônibus não encontrado.")
     })
-    public ResponseEntity<Void> deleteBusById(@PathVariable UUID busId){
-        busService.deleteBus(busId);
+    public ResponseEntity<Void> deleteBusById(@PathVariable UUID busId, @AuthenticationPrincipal User user) {
+        busService.deleteBus(busId, user.getUserId());
         return ResponseEntity.noContent().build();
     }
 }
