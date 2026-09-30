@@ -1,0 +1,84 @@
+# a-caminho
+
+Projeto backend Spring Boot gerado automaticamente pelo ex-code.
+
+## Stack Tecnológica
+- **Framework:** Spring Boot 3.x/4.x
+- **Linguagem:** Java 21
+- **Gerenciador de Build:** Maven
+- **Arquitetura:** Em Camadas
+- **Persistência:** Spring Data JPA (Hibernate)
+- **Mapeamento:** MapStruct
+- **Modelos:** Lombok
+- **DTOs:** Java Records
+- **Banco de Dados:** POSTGRESQL
+
+## Configuração e Exemplo Prático do MapStruct
+
+O **MapStruct** é utilizado no projeto para realizar conversões e mapeamentos de dados de alto desempenho entre Entidades JPA e DTOs (Java Records).
+
+### 1. Ordem dos Processadores de Anotação no `pom.xml`
+Para garantir que o MapStruct funcione perfeitamente com o Lombok sem erros de métodos não encontrados, o `maven-compiler-plugin` executa os processadores nesta sequência exata:
+1. `lombok`: Gera os getters/setters e construtores dos modelos.
+2. `lombok-mapstruct-binding`: Permite que o MapStruct acesse os métodos gerados pelo Lombok durante a compilação.
+3. `mapstruct-processor`: Gera as implementações das interfaces `@Mapper`.
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <annotationProcessorPaths>
+            <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+            </path>
+            <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-mapstruct-binding</artifactId>
+                <version>${lombok-mapstruct-binding.version}</version>
+            </path>
+            <path>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${org.mapstruct.version}</version>
+            </path>
+        </annotationProcessorPaths>
+    </configuration>
+</plugin>
+```
+
+### 2. Exemplo Prático de Mapper
+
+```java
+package io.a_caminho.backend.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+@Mapper(componentModel = "spring")
+public interface ExemploMapper {
+    // Conversão de Entidade para DTO
+    ExemploDTO toDTO(Exemplo entity);
+
+    // Conversão de DTO para Entidade
+    Exemplo toEntity(ExemploDTO dto);
+}
+```
+
+Durante a compilação Maven (`./mvnw compile`), o MapStruct gera as classes de implementação em `target/generated-sources/annotations`, gerenciadas como Spring Beans graças ao atributo `componentModel = "spring"`.
+
+## Como Executar
+
+### 1. Compilar e Executar
+
+Com o Maven Wrapper:
+```bash
+./mvnw clean spring-boot:run
+```
+
+Ou empacotar:
+```bash
+./mvnw clean package
+java -jar target/a-caminho-0.0.1-SNAPSHOT.jar
+```
