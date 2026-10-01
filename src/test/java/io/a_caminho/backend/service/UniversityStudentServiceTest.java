@@ -5,7 +5,7 @@ import io.a_caminho.backend.dto.student.StudentDTO;
 import io.a_caminho.backend.dto.student.StudentUpdateDTO;
 import io.a_caminho.backend.exception.ObjectAlreadyExistsException;
 import io.a_caminho.backend.exception.ObjectNotFoundException;
-import io.a_caminho.backend.exception.UserDoesNotHavePermissionException;
+import io.a_caminho.backend.exception.UserIsNotOwnerAndAdminException;
 import io.a_caminho.backend.exception.UserIsNotOwnerException;
 import io.a_caminho.backend.mapper.UniversityStudentMapper;
 import io.a_caminho.backend.model.Municipality;
@@ -421,7 +421,7 @@ class UniversityStudentServiceTest {
             when(userRepository.findById(unauthorizedUserId)).thenReturn(Optional.of(unauthorizedUser));
             when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
 
-            assertThrows(UserDoesNotHavePermissionException.class,
+            assertThrows(UserIsNotOwnerAndAdminException.class,
                     () -> studentService.deleteStudentAccount(unauthorizedUserId, studentId));
 
             verify(studentRepository, never()).deleteById(any());

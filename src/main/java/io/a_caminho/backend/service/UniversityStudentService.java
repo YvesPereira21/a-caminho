@@ -5,7 +5,7 @@ import io.a_caminho.backend.dto.student.StudentDTO;
 import io.a_caminho.backend.dto.student.StudentUpdateDTO;
 import io.a_caminho.backend.exception.ObjectAlreadyExistsException;
 import io.a_caminho.backend.exception.ObjectNotFoundException;
-import io.a_caminho.backend.exception.UserDoesNotHavePermissionException;
+import io.a_caminho.backend.exception.UserIsNotOwnerAndAdminException;
 import io.a_caminho.backend.exception.UserIsNotOwnerException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -101,7 +101,7 @@ public class UniversityStudentService {
                 .orElseThrow(() -> new ObjectNotFoundException("Essa conta não existe"));
 
         if (!universityStudent.getUser().getId().equals(authenticatedUserId) && !user.getRole().equals(UserRole.ADMIN)) {
-            throw new UserDoesNotHavePermissionException("Você não possui permissão para isso.");
+            throw new UserIsNotOwnerAndAdminException("Você não possui permissão para isso.");
         }
 
         studentRepository.deleteById(studentId);

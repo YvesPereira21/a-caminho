@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a_caminho.backend.dto.student.StudentCreateDTO;
 import io.a_caminho.backend.dto.student.StudentDTO;
 import io.a_caminho.backend.dto.student.StudentUpdateDTO;
+import io.a_caminho.backend.exception.UserIsNotOwnerAndAdminException;
 import io.a_caminho.backend.model.User;
 import io.a_caminho.backend.model.enums.UserRole;
 import io.a_caminho.backend.security.UserPrincipal;
@@ -436,7 +437,7 @@ class UniversityStudentControllerTest {
             UUID studentId = UUID.randomUUID();
             UUID authUserId = UUID.randomUUID();
 
-            doThrow(new io.a_caminho.backend.exception.UserDoesNotHavePermissionException("Você não possui permissão para isso."))
+            doThrow(new UserIsNotOwnerAndAdminException("Você não possui permissão para isso."))
                     .when(studentService).deleteStudentAccount(authUserId, studentId);
 
             UserPrincipal principal = UserPrincipal.create(User.builder().userId(authUserId).email("outro@ufpb.br").role(UserRole.STUDENT).build());

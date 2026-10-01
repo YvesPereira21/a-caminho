@@ -18,14 +18,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,7 +48,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(RoleAuthorizationTest.TestProtectedController.class)
 class RoleAuthorizationTest {
+
+    @RestController
+    @RequestMapping("/api/test")
+    static class TestProtectedController {
+
+        @GetMapping("/student")
+        @PreAuthorize("hasRole('STUDENT')")
+        public ResponseEntity<Map<String, String>> studentOnly(@AuthenticationPrincipal UserDetails userDetails) {
+            return ResponseEntity.ok(Map.of(
+                    "message", "Área restrita de estudante acessada com sucesso",
+                    "user", userDetails != null ? userDetails.getUsername() : "anonymous"
+            ));
+        }
+
+        @GetMapping("/admin")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<Map<String, String>> adminOnly(@AuthenticationPrincipal UserDetails userDetails) {
+            return ResponseEntity.ok(Map.of(
+                    "message", "Área restrita de administrador acessada com sucesso",
+                    "user", userDetails != null ? userDetails.getUsername() : "anonymous"
+            ));
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
