@@ -1,5 +1,7 @@
 package io.a_caminho.backend.model;
 
+import java.util.UUID;
+
 import io.a_caminho.backend.model.enums.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,8 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.UUID;
-
 @Entity
 @Table(name = "users")
 @Getter
@@ -32,16 +32,20 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id")
+    @EqualsAndHashCode.Include
     private UUID userId;
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     private String password;
 
     @Column(name = "role", nullable = false)
     private UserRole role;
+
+    @Column(name = "google_id")
+    private String googleId;
 
     @OneToOne(mappedBy = "user")
     @ToString.Exclude
@@ -57,4 +61,21 @@ public class User {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private UniversityStudent universityStudent;
+
+    public UUID getId() {
+        return userId;
+    }
+
+    public String getName() {
+        if (universityStudent != null && universityStudent.getStudentName() != null) {
+            return universityStudent.getStudentName();
+        }
+        if (municipality != null && municipality.getMunicipalityName() != null) {
+            return municipality.getMunicipalityName();
+        }
+        if (busDriver != null && busDriver.getBusDriverName() != null) {
+            return busDriver.getBusDriverName();
+        }
+        return email;
+    }
 }
