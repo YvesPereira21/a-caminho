@@ -80,6 +80,42 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(ObjectNotFoundException.class)
+    public ResponseEntity<ApiError> objectNotFoundException(ObjectNotFoundException e) {
+        log.warn("Object not found: {}", e.getMessage());
+        ApiError apiError = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .code(HttpStatus.NOT_FOUND.value())
+                .status(HttpStatus.NOT_FOUND.name())
+                .errors(List.of(e.getMessage()))
+                .build();
+        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ObjectAlreadyExistsException.class)
+    public ResponseEntity<ApiError> objectAlreadyExistsException(ObjectAlreadyExistsException e) {
+        log.warn("Object already exists: {}", e.getMessage());
+        ApiError apiError = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .code(HttpStatus.CONFLICT.value())
+                .status(HttpStatus.CONFLICT.name())
+                .errors(List.of(e.getMessage()))
+                .build();
+        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler({UserIsNotOwnerException.class, UserDoesNotHavePermissionException.class})
+    public ResponseEntity<ApiError> forbiddenException(RuntimeException e) {
+        log.warn("Forbidden operation: {}", e.getMessage());
+        ApiError apiError = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .code(HttpStatus.FORBIDDEN.value())
+                .status(HttpStatus.FORBIDDEN.name())
+                .errors(List.of(e.getMessage()))
+                .build();
+        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> accessDeniedException(AccessDeniedException e) {
         log.warn("Access denied: {}", e.getMessage());

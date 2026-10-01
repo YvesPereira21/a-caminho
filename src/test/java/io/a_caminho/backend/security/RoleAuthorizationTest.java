@@ -13,6 +13,7 @@ import io.a_caminho.backend.security.util.CookieUtils;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -86,102 +87,107 @@ class RoleAuthorizationTest {
         adminToken = jwtTokenProvider.generateToken(adminUser);
     }
 
-    @Test
-    @DisplayName("Acesso Negado (401) para rota protegida sem token")
-    void shouldDenyAccessWhenUnauthenticated() throws Exception {
-        mockMvc.perform(get("/api/test/student"))
-                .andExpect(status().isUnauthorized());
+    @Nested
+    @DisplayName("Happy Path")
+    class HappyPath {
+
+        @Test
+        @DisplayName("Acesso Autorizado (200) para role STUDENT em rota de estudante via Cookie")
+        void shouldAllowStudentAccess() throws Exception {
+            mockMvc.perform(get("/api/test/student")
+                            .cookie(new Cookie(CookieUtils.ACCESS_TOKEN_COOKIE_NAME, studentToken)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("Acesso Autorizado (200) para role STUDENT via cabeçalho Authorization: Bearer")
+        void shouldAllowStudentAccessWithBearerHeader() throws Exception {
+            mockMvc.perform(get("/api/test/student")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + studentToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("Área restrita de estudante acessada com sucesso"))
+                    .andExpect(jsonPath("$.user").value("student@ufpb.br"));
+        }
+
+        @Test
+        @DisplayName("Fluxo Completo: Estudante realiza Login, obtém Access Token e acessa rota protegida")
+        void shouldCompleteFullLoginAndAccessFlowForStudent() throws Exception {
+            User studentUser = User.builder()
+                    .userId(UUID.randomUUID())
+                    .email("aluno.completo@ufpb.br")
+                    .password(passwordEncoder.encode("senhaForte123"))
+                    .role(UserRole.STUDENT)
+                    .build();
+
+            when(userRepository.findByEmail("aluno.completo@ufpb.br")).thenReturn(Optional.of(studentUser));
+
+            RefreshToken mockRefreshToken = RefreshToken.builder()
+                    .tokenId(UUID.randomUUID())
+                    .user(studentUser)
+                    .token("mock-refresh-token")
+                    .expiryDate(Instant.now().plusSeconds(604800))
+                    .build();
+            when(refreshTokenService.createRefreshToken(any())).thenReturn(mockRefreshToken);
+            when(refreshTokenService.getRefreshTokenDurationSeconds()).thenReturn(604800L);
+
+            // 1. Estudante realiza login
+            UserLoginDTO loginDTO = new UserLoginDTO("aluno.completo@ufpb.br", "senhaForte123");
+            String responseContent = mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(loginDTO)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.accessToken").isNotEmpty())
+                    .andExpect(jsonPath("$.user.email").value("aluno.completo@ufpb.br"))
+                    .andExpect(jsonPath("$.user.role").value("Estudante"))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            // 2. Extrai o accessToken retornado
+            String extractedToken = JsonPath.read(responseContent, "$.accessToken");
+
+            // 3. Estudante acessa rota restrita de estudante com o token recebido
+            mockMvc.perform(get("/api/test/student")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + extractedToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.message").value("Área restrita de estudante acessada com sucesso"))
+                    .andExpect(jsonPath("$.user").value("aluno.completo@ufpb.br"));
+        }
+
+        @Test
+        @DisplayName("Acesso Autorizado (200) para role ADMIN em rota de admin")
+        void shouldAllowAdminAccess() throws Exception {
+            mockMvc.perform(get("/api/test/admin")
+                            .cookie(new Cookie(CookieUtils.ACCESS_TOKEN_COOKIE_NAME, adminToken)))
+                    .andExpect(status().isOk());
+        }
     }
 
-    @Test
-    @DisplayName("Acesso Autorizado (200) para role STUDENT em rota de estudante via Cookie")
-    void shouldAllowStudentAccess() throws Exception {
-        mockMvc.perform(get("/api/test/student")
-                        .cookie(new Cookie(CookieUtils.ACCESS_TOKEN_COOKIE_NAME, studentToken)))
-                .andExpect(status().isOk());
-    }
+    @Nested
+    @DisplayName("Unhappy Path")
+    class UnhappyPath {
 
-    @Test
-    @DisplayName("Acesso Autorizado (200) para role STUDENT via cabeçalho Authorization: Bearer")
-    void shouldAllowStudentAccessWithBearerHeader() throws Exception {
-        mockMvc.perform(get("/api/test/student")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + studentToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Área restrita de estudante acessada com sucesso"))
-                .andExpect(jsonPath("$.user").value("student@ufpb.br"));
-    }
+        @Test
+        @DisplayName("Acesso Negado (401) para rota protegida sem token")
+        void shouldDenyAccessWhenUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/test/student"))
+                    .andExpect(status().isUnauthorized());
+        }
 
-    @Test
-    @DisplayName("Acesso Negado (403) para role STUDENT tentando acessar rota de ADMIN via Bearer")
-    void shouldDenyStudentAccessToAdminEndpointWithBearerHeader() throws Exception {
-        mockMvc.perform(get("/api/test/admin")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + studentToken))
-                .andExpect(status().isForbidden());
-    }
+        @Test
+        @DisplayName("Acesso Negado (403) para role STUDENT tentando acessar rota de ADMIN via Bearer")
+        void shouldDenyStudentAccessToAdminEndpointWithBearerHeader() throws Exception {
+            mockMvc.perform(get("/api/test/admin")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + studentToken))
+                    .andExpect(status().isForbidden());
+        }
 
-    @Test
-    @DisplayName("Fluxo Completo: Estudante realiza Login, obtém Access Token e acessa rota protegida")
-    void shouldCompleteFullLoginAndAccessFlowForStudent() throws Exception {
-        User studentUser = User.builder()
-                .userId(UUID.randomUUID())
-                .email("aluno.completo@ufpb.br")
-                .password(passwordEncoder.encode("senhaForte123"))
-                .role(UserRole.STUDENT)
-                .build();
-
-        when(userRepository.findByEmail("aluno.completo@ufpb.br")).thenReturn(Optional.of(studentUser));
-
-        RefreshToken mockRefreshToken = RefreshToken.builder()
-                .tokenId(UUID.randomUUID())
-                .user(studentUser)
-                .token("mock-refresh-token")
-                .expiryDate(Instant.now().plusSeconds(604800))
-                .build();
-        when(refreshTokenService.createRefreshToken(any())).thenReturn(mockRefreshToken);
-        when(refreshTokenService.getRefreshTokenDurationSeconds()).thenReturn(604800L);
-
-        // 1. Estudante realiza login
-        UserLoginDTO loginDTO = new UserLoginDTO("aluno.completo@ufpb.br", "senhaForte123");
-        String responseContent = mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").isNotEmpty())
-                .andExpect(jsonPath("$.user.email").value("aluno.completo@ufpb.br"))
-                .andExpect(jsonPath("$.user.role").value("Estudante"))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        // 2. Extrai o accessToken retornado
-        String extractedToken = JsonPath.read(responseContent, "$.accessToken");
-
-        // 3. Estudante acessa rota restrita de estudante com o token recebido
-        mockMvc.perform(get("/api/test/student")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + extractedToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Área restrita de estudante acessada com sucesso"))
-                .andExpect(jsonPath("$.user").value("aluno.completo@ufpb.br"));
-
-        // 4. Garante que com o mesmo token de estudante ele é barrado na área de ADMIN
-        mockMvc.perform(get("/api/test/admin")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + extractedToken))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("Acesso Negado (403) para role STUDENT tentando acessar rota de ADMIN")
-    void shouldDenyStudentAccessToAdminEndpoint() throws Exception {
-        mockMvc.perform(get("/api/test/admin")
-                        .cookie(new Cookie(CookieUtils.ACCESS_TOKEN_COOKIE_NAME, studentToken)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("Acesso Autorizado (200) para role ADMIN em rota de admin")
-    void shouldAllowAdminAccess() throws Exception {
-        mockMvc.perform(get("/api/test/admin")
-                        .cookie(new Cookie(CookieUtils.ACCESS_TOKEN_COOKIE_NAME, adminToken)))
-                .andExpect(status().isOk());
+        @Test
+        @DisplayName("Acesso Negado (403) para role STUDENT tentando acessar rota de ADMIN via Cookie")
+        void shouldDenyStudentAccessToAdminEndpoint() throws Exception {
+            mockMvc.perform(get("/api/test/admin")
+                            .cookie(new Cookie(CookieUtils.ACCESS_TOKEN_COOKIE_NAME, studentToken)))
+                    .andExpect(status().isForbidden());
+        }
     }
 }

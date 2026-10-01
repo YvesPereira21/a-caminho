@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Schema(description = "Dados do estudante universitário cadastrado retornados pela API")
-public record StudentResponseDTO(
+public record StudentDTO(
         @Schema(description = "Identificador único do estudante universitário", example = "123e4567-e89b-12d3-a456-426614174000")
         UUID studentId,
 

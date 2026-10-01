@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Schema(description = "Requisição para cadastro de novo estudante universitário")
-public record StudentRegistrationRequestDTO(
+public record StudentCreateDTO(
         @Schema(description = "Nome completo do estudante", example = "Carlos Alberto Silva", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "O nome é obrigatório")
         String studentName,

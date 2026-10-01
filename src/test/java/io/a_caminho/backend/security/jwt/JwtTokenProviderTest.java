@@ -4,6 +4,7 @@ import io.a_caminho.backend.model.User;
 import io.a_caminho.backend.model.enums.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -21,42 +22,52 @@ class JwtTokenProviderTest {
         jwtTokenProvider = new JwtTokenProvider(secret, expirationMs);
     }
 
-    @Test
-    @DisplayName("Deve gerar e validar Access Token JWT com sucesso retornando subject")
-    void shouldGenerateAndValidateToken() {
-        User user = User.builder()
-                .userId(UUID.randomUUID())
-                .email("estudante@ufpb.br")
-                .role(UserRole.STUDENT)
-                .build();
+    @Nested
+    @DisplayName("Happy Path")
+    class HappyPath {
 
-        String token = jwtTokenProvider.generateToken(user);
+        @Test
+        @DisplayName("Deve gerar e validar Access Token JWT com sucesso retornando subject")
+        void shouldGenerateAndValidateToken() {
+            User user = User.builder()
+                    .userId(UUID.randomUUID())
+                    .email("estudante@ufpb.br")
+                    .role(UserRole.STUDENT)
+                    .build();
 
-        assertNotNull(token);
-        String subject = jwtTokenProvider.validateToken(token);
-        assertEquals("estudante@ufpb.br", subject);
+            String token = jwtTokenProvider.generateToken(user);
+
+            assertNotNull(token);
+            String subject = jwtTokenProvider.validateToken(token);
+            assertEquals("estudante@ufpb.br", subject);
+        }
     }
 
-    @Test
-    @DisplayName("Deve retornar null para token malformado ou adulterado")
-    void shouldReturnNullForMalformedToken() {
-        assertNull(jwtTokenProvider.validateToken("token.invalido.aqui"));
-    }
+    @Nested
+    @DisplayName("Unhappy Path")
+    class UnhappyPath {
 
-    @Test
-    @DisplayName("Deve retornar null para token expirado")
-    void shouldReturnNullForExpiredToken() throws InterruptedException {
-        JwtTokenProvider shortLivedProvider = new JwtTokenProvider(secret, 1);
-        User user = User.builder()
-                .userId(UUID.randomUUID())
-                .email("test@test.com")
-                .role(UserRole.STUDENT)
-                .build();
+        @Test
+        @DisplayName("Deve retornar null para token malformado ou adulterado")
+        void shouldReturnNullForMalformedToken() {
+            assertNull(jwtTokenProvider.validateToken("token.invalido.aqui"));
+        }
 
-        String token = shortLivedProvider.generateToken(user);
+        @Test
+        @DisplayName("Deve retornar null para token expirado")
+        void shouldReturnNullForExpiredToken() throws InterruptedException {
+            JwtTokenProvider shortLivedProvider = new JwtTokenProvider(secret, 1);
+            User user = User.builder()
+                    .userId(UUID.randomUUID())
+                    .email("test@test.com")
+                    .role(UserRole.STUDENT)
+                    .build();
 
-        Thread.sleep(10);
+            String token = shortLivedProvider.generateToken(user);
 
-        assertNull(shortLivedProvider.validateToken(token));
+            Thread.sleep(10);
+
+            assertNull(shortLivedProvider.validateToken(token));
+        }
     }
 }
