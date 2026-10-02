@@ -104,7 +104,7 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({UserIsNotOwnerException.class, UserIsNotOwnerAndAdminException.class, CrossMunicipalityAccessException.class})
+    @ExceptionHandler({UserIsNotOwnerException.class, UserIsNotOwnerAndAdminException.class, CrossMunicipalityAccessException.class, UserIsNotAdminException.class})
     public ResponseEntity<ApiError> forbiddenException(RuntimeException e) {
         log.warn("Forbidden operation: {}", e.getMessage());
         ApiError apiError = ApiError.builder()
