@@ -75,7 +75,7 @@ class UniversityServiceTest {
                 .build();
 
         requestDTO = new UniversityRequestDTO("Universidade Federal da Paraíba", "Campus I", "João Pessoa", "Paraíba");
-        responseDTO = new UniversityResponseDTO(universityId, "Campus I", "João Pessoa", "Paraíba");
+        responseDTO = new UniversityResponseDTO(universityId, "Universidade Federal da Paraíba", "Campus I", "João Pessoa", "Paraíba");
     }
 
     @Nested

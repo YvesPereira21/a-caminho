@@ -68,7 +68,7 @@ class UniversityControllerTest {
         void shouldCreateUniversitySuccessfullyWhenAdmin() throws Exception {
             UUID universityId = UUID.randomUUID();
             UniversityRequestDTO requestDTO = new UniversityRequestDTO("Universidade Federal da Paraíba", "Campus I", "João Pessoa", "Paraíba");
-            UniversityResponseDTO responseDTO = new UniversityResponseDTO(universityId, "Campus I", "João Pessoa", "Paraíba");
+            UniversityResponseDTO responseDTO = new UniversityResponseDTO(universityId, "Universidade Federal da Paraíba", "Campus I", "João Pessoa", "Paraíba");
 
             when(universityService.createUniversity(any(UniversityRequestDTO.class))).thenReturn(responseDTO);
 
@@ -78,6 +78,7 @@ class UniversityControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").value(universityId.toString()))
+                    .andExpect(jsonPath("$.name").value("Universidade Federal da Paraíba"))
                     .andExpect(jsonPath("$.campus").value("Campus I"))
                     .andExpect(jsonPath("$.cityName").value("João Pessoa"))
                     .andExpect(jsonPath("$.stateName").value("Paraíba"));
@@ -89,7 +90,7 @@ class UniversityControllerTest {
         @DisplayName("GET /api/universities - Lista universidades por nome e estado com sucesso (200 OK)")
         void shouldGetAllUniversityByNameFromStateSuccessfullyWhenAuthenticated() throws Exception {
             UUID universityId = UUID.randomUUID();
-            UniversityResponseDTO responseDTO = new UniversityResponseDTO(universityId, "Campus I", "João Pessoa", "Paraíba");
+            UniversityResponseDTO responseDTO = new UniversityResponseDTO(universityId, "Universidade Federal da Paraíba", "Campus I", "João Pessoa", "Paraíba");
 
             when(universityService.getAllUniversityByNameFromState("Campus I", "Paraíba"))
                     .thenReturn(List.of(responseDTO));

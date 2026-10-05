@@ -48,16 +48,7 @@ CREATE TABLE buses (
     CONSTRAINT fk_buses_municipality FOREIGN KEY (municipality_id) REFERENCES municipalities(municipality_id)
 );
 
--- 7. Route Bus (Tabela associativa entre Bus e University)
-CREATE TABLE route_bus (
-    bus_id UUID NOT NULL,
-    university_id UUID NOT NULL,
-    PRIMARY KEY (bus_id, university_id),
-    CONSTRAINT fk_route_bus_bus FOREIGN KEY (bus_id) REFERENCES buses(bus_id),
-    CONSTRAINT fk_route_bus_university FOREIGN KEY (university_id) REFERENCES universities(university_id)
-);
-
--- 8. Bus Drivers
+-- 7. Bus Drivers
 CREATE TABLE bus_drivers (
     bus_driver_id UUID PRIMARY KEY,
     bus_driver_name VARCHAR(255) NOT NULL,
@@ -114,14 +105,6 @@ CREATE TABLE template_universities (
     CONSTRAINT fk_template_universities_university FOREIGN KEY (university_id) REFERENCES universities(university_id)
 );
 
-CREATE TABLE template_buses (
-    template_id UUID NOT NULL,
-    bus_id UUID NOT NULL,
-    PRIMARY KEY (template_id, bus_id),
-    CONSTRAINT fk_template_buses_template FOREIGN KEY (template_id) REFERENCES poll_templates(template_id),
-    CONSTRAINT fk_template_buses_bus FOREIGN KEY (bus_id) REFERENCES buses(bus_id)
-);
-
 CREATE TABLE template_options (
     template_id UUID NOT NULL,
     option_id UUID NOT NULL,
@@ -133,17 +116,13 @@ CREATE TABLE template_options (
 -- 13. Polls
 CREATE TABLE polls (
     poll_id UUID PRIMARY KEY,
+    route_name VARCHAR(255) NOT NULL,
     poll_date DATE,
     shift VARCHAR(50) NOT NULL,
-    direction VARCHAR(50) NOT NULL DEFAULT 'OUTBOUND',
-    template_id UUID,
-    parent_poll_id UUID,
     start_time TIME WITHOUT TIME ZONE,
     end_time TIME WITHOUT TIME ZONE,
     created_at TIMESTAMP WITHOUT TIME ZONE,
     municipality_id UUID NOT NULL,
-    CONSTRAINT fk_polls_template FOREIGN KEY (template_id) REFERENCES poll_templates(template_id),
-    CONSTRAINT fk_polls_parent_poll FOREIGN KEY (parent_poll_id) REFERENCES polls(poll_id),
     CONSTRAINT fk_polls_municipality FOREIGN KEY (municipality_id) REFERENCES municipalities(municipality_id)
 );
 
@@ -154,14 +133,6 @@ CREATE TABLE poll_universities (
     PRIMARY KEY (poll_id, university_id),
     CONSTRAINT fk_poll_universities_poll FOREIGN KEY (poll_id) REFERENCES polls(poll_id),
     CONSTRAINT fk_poll_universities_university FOREIGN KEY (university_id) REFERENCES universities(university_id)
-);
-
-CREATE TABLE poll_buses (
-    poll_id UUID NOT NULL,
-    bus_id UUID NOT NULL,
-    PRIMARY KEY (poll_id, bus_id),
-    CONSTRAINT fk_poll_buses_poll FOREIGN KEY (poll_id) REFERENCES polls(poll_id),
-    CONSTRAINT fk_poll_buses_bus FOREIGN KEY (bus_id) REFERENCES buses(bus_id)
 );
 
 CREATE TABLE poll_options_rel (

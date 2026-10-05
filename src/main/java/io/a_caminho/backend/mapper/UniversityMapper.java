@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface UniversityMapper {
 
     @Mapping(source = "universityId", target = "id")
+    @Mapping(source = "name", target = "name")
     @Mapping(source = "city.cityName", target = "cityName")
     @Mapping(source = "city.state.stateName", target = "stateName")
     UniversityResponseDTO toResponse(University university);
@@ -17,7 +18,6 @@ public interface UniversityMapper {
     @Mapping(target = "universityId", ignore = true)
     @Mapping(target = "city", ignore = true)
     @Mapping(target = "students", ignore = true)
-    @Mapping(target = "defaultBuses", ignore = true)
     @Mapping(target = "polls", ignore = true)
     @Mapping(target = "travels", ignore = true)
     University toEntity(UniversityRequestDTO university);

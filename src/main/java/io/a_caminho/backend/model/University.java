@@ -56,12 +56,6 @@ public class University {
     @EqualsAndHashCode.Exclude
     private Set<UniversityStudent> students = new HashSet<>();
 
-    @ManyToMany(mappedBy = "defaultUniversities")
-    @Builder.Default
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Set<Bus> defaultBuses = new HashSet<>();
-
     @ManyToMany(mappedBy = "targetUniversities")
     @Builder.Default
     @ToString.Exclude

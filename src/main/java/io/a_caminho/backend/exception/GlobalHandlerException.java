@@ -67,6 +67,19 @@ public class GlobalHandlerException {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({CanNotVoteException.class, InvalidTimeException.class})
+    public ResponseEntity<ApiError> badRequestBusinessException(RuntimeException e) {
+        log.warn("Business rule error: {}", e.getMessage());
+        ApiError apiError = ApiError
+                .builder()
+                .timestamp(LocalDateTime.now())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .status(HttpStatus.BAD_REQUEST.name())
+                .errors(List.of(e.getMessage()))
+                .build();
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> badCredentialsException(BadCredentialsException e) {
         log.warn("Authentication failed: {}", e.getMessage());

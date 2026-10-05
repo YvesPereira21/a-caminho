@@ -1,8 +1,6 @@
 package io.a_caminho.backend.model;
 
-import io.a_caminho.backend.model.enums.PollDirection;
 import io.a_caminho.backend.model.enums.Shift;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,7 +12,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +24,6 @@ import org.hibernate.annotations.Formula;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -48,35 +44,22 @@ public class Poll {
     @Column(name = "poll_id")
     private UUID pollId;
 
+    @Column(name = "route_name", nullable = false)
+    private String routeName;
+
     @Column(name = "poll_date")
     private LocalDate pollDate;
 
     @Column(name = "shift", nullable = false)
     private Shift shift;
 
-    @Column(name = "direction", nullable = false)
-    @Builder.Default
-    private PollDirection direction = PollDirection.OUTBOUND;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private PollTemplate template;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_poll_id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Poll parentPoll;
-
     @Column(name = "start_time")
-    private LocalTime startTime;
+    private LocalDateTime startTime;
 
     @Column(name = "end_time")
-    private LocalTime endTime;
+    private LocalDateTime endTime;
 
-    @Formula("(SELECT COALESCE(SUM(b.seats_quantity), 0) FROM poll_buses pb JOIN buses b ON pb.bus_id = b.bus_id WHERE pb.poll_id = poll_id)")
+    @Formula("(SELECT COALESCE(SUM(b.seats_quantity), 0) FROM travels t JOIN buses b ON t.bus_id = b.bus_id WHERE t.poll_id = poll_id)")
     private Integer totalCapacity;
 
     @Formula("(SELECT COUNT(*) FROM poll_votes pv WHERE pv.poll_id = poll_id)")
@@ -101,17 +84,6 @@ public class Poll {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<University> targetUniversities = new HashSet<>();
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "poll_buses",
-        joinColumns = @JoinColumn(name = "poll_id"),
-        inverseJoinColumns = @JoinColumn(name = "bus_id")
-    )
-    @Builder.Default
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Set<Bus> assignedBuses = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

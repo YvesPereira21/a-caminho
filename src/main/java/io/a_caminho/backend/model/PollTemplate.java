@@ -77,17 +77,6 @@ public class PollTemplate {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "template_buses",
-        joinColumns = @JoinColumn(name = "template_id"),
-        inverseJoinColumns = @JoinColumn(name = "bus_id")
-    )
-    @Builder.Default
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Set<Bus> defaultBuses = new HashSet<>();
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
         name = "template_options",
         joinColumns = @JoinColumn(name = "template_id"),
         inverseJoinColumns = @JoinColumn(name = "option_id")
@@ -96,10 +85,4 @@ public class PollTemplate {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<PollOption> defaultOptions = new HashSet<>();
-
-    @OneToMany(mappedBy = "template")
-    @Builder.Default
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Set<Poll> polls = new HashSet<>();
 }

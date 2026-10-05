@@ -10,6 +10,7 @@ import java.util.UUID;
 @Repository
 public interface UniversityStudentRepository extends JpaRepository<UniversityStudent, UUID> {
     Optional<UniversityStudent> findByCpf(String cpf);
+    Optional<UniversityStudent> findByUser_UserId(UUID userId);
     boolean existsByCpf(String cpf);
     boolean existsByRegistrationNumber(String registrationNumber);
 }
