@@ -49,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(RoleAuthorizationTest.TestProtectedController.class)
+@DisplayName("Testes de Integração - RoleAuthorization")
 class RoleAuthorizationTest {
 
     @RestController
@@ -121,8 +122,8 @@ class RoleAuthorizationTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("Acesso Autorizado (200) para role STUDENT em rota de estudante via Cookie")
@@ -197,8 +198,8 @@ class RoleAuthorizationTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
+    @DisplayName("Cenários de Autenticação e Autorização (Sad Path)")
+    class SecuritySadPathTests {
 
         @Test
         @DisplayName("Acesso Negado (401) para rota protegida sem token")

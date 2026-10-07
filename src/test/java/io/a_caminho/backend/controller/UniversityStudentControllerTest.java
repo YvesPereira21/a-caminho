@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a_caminho.backend.dto.student.StudentCreateDTO;
 import io.a_caminho.backend.dto.student.StudentDTO;
 import io.a_caminho.backend.dto.student.StudentUpdateDTO;
+import io.a_caminho.backend.exception.ObjectAlreadyExistsException;
+import io.a_caminho.backend.exception.ObjectNotFoundException;
 import io.a_caminho.backend.exception.UserIsNotOwnerAndAdminException;
+import io.a_caminho.backend.exception.UserIsNotOwnerException;
 import io.a_caminho.backend.model.User;
 import io.a_caminho.backend.model.enums.UserRole;
 import io.a_caminho.backend.security.UserPrincipal;
@@ -38,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@DisplayName("Testes Unitários - UniversityStudentController")
+@DisplayName("Testes de Integração/Controller - UniversityStudentController")
 class UniversityStudentControllerTest {
 
     @Autowired
@@ -50,8 +53,8 @@ class UniversityStudentControllerTest {
     private UniversityStudentService studentService;
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("POST /api/university-students - Cadastra estudante com sucesso (201 Created)")
@@ -228,59 +231,8 @@ class UniversityStudentControllerTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
-
-        @Test
-        @DisplayName("POST /api/university-students - Falha com 400 Bad Request quando dados obrigatórios são inválidos")
-        void shouldReturnBadRequestWhenStudentCreateDTOIsInvalid() throws Exception {
-            StudentCreateDTO invalidRequest = new StudentCreateDTO(
-                    "",
-                    "invalid-email-format",
-                    "123",
-                    "",
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
-
-            mockMvc.perform(post("/api/university-students")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(invalidRequest)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value(400))
-                    .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
-                    .andExpect(jsonPath("$.errors").isArray());
-        }
-
-        @Test
-        @DisplayName("POST /api/university-students - Falha com 409 Conflict se e-mail/CPF/matrícula já cadastrados")
-        void shouldFailWhenEmailAlreadyRegistered() throws Exception {
-            StudentCreateDTO request = new StudentCreateDTO(
-                    "Carlos Alberto",
-                    "existente@ufpb.br",
-                    "senhaSegura123",
-                    "11122233344",
-                    null,
-                    null,
-                    null,
-                    null,
-                    UUID.randomUUID(),
-                    UUID.randomUUID()
-            );
-
-            when(studentService.registerStudent(any(StudentCreateDTO.class)))
-                    .thenThrow(new io.a_caminho.backend.exception.ObjectAlreadyExistsException("Usuário com essas informações já foi cadastrado"));
-
-            mockMvc.perform(post("/api/university-students")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.message").value("Usuário com essas informações já foi cadastrado"));
-        }
+    @DisplayName("Cenários de Autenticação e Autorização (Sad Path)")
+    class SecuritySadPathTests {
 
         @Test
         @DisplayName("GET /api/university-students/{studentId} - Falha com 401 Unauthorized quando não autenticado")
@@ -289,21 +241,6 @@ class UniversityStudentControllerTest {
 
             mockMvc.perform(get("/api/university-students/{studentId}", studentId))
                     .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("GET /api/university-students/{studentId} - Falha com 404 Not Found quando estudante não existe")
-        void shouldReturnNotFoundWhenStudentDoesNotExist() throws Exception {
-            UUID studentId = UUID.randomUUID();
-            when(studentService.getStudent(studentId))
-                    .thenThrow(new io.a_caminho.backend.exception.ObjectNotFoundException("Essa conta não existe"));
-
-            UserPrincipal principal = UserPrincipal.create(User.builder().userId(UUID.randomUUID()).email("carlos@ufpb.br").role(UserRole.STUDENT).build());
-
-            mockMvc.perform(get("/api/university-students/{studentId}", studentId)
-                            .with(user(principal)))
-                    .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.message").value("Essa conta não existe"));
         }
 
         @Test
@@ -351,52 +288,6 @@ class UniversityStudentControllerTest {
         }
 
         @Test
-        @DisplayName("PUT /api/university-students/{studentId} - Falha com 403 Forbidden quando usuário STUDENT não for o proprietário")
-        void shouldReturnForbiddenWhenUserNotOwnerOnUpdate() throws Exception {
-            UUID studentId = UUID.randomUUID();
-            UUID authUserId = UUID.randomUUID();
-
-            StudentUpdateDTO updateDTO = new StudentUpdateDTO(
-                    "Novo Nome", null, null, null, null, null
-            );
-
-            doThrow(new io.a_caminho.backend.exception.UserIsNotOwnerException("Você não possui permissão para isso."))
-                    .when(studentService).updateStudent(authUserId, studentId, updateDTO);
-
-            UserPrincipal principal = UserPrincipal.create(User.builder().userId(authUserId).email("outro@ufpb.br").role(UserRole.STUDENT).build());
-
-            mockMvc.perform(put("/api/university-students/{studentId}", studentId)
-                            .with(user(principal))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(updateDTO)))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.message").value("Você não possui permissão para isso."));
-        }
-
-        @Test
-        @DisplayName("PUT /api/university-students/{studentId} - Falha com 404 Not Found quando estudante não for encontrado")
-        void shouldReturnNotFoundWhenStudentNotFoundOnUpdate() throws Exception {
-            UUID studentId = UUID.randomUUID();
-            UUID authUserId = UUID.randomUUID();
-
-            StudentUpdateDTO updateDTO = new StudentUpdateDTO(
-                    "Novo Nome", null, null, null, null, null
-            );
-
-            doThrow(new io.a_caminho.backend.exception.ObjectNotFoundException("Essa conta não existe."))
-                    .when(studentService).updateStudent(authUserId, studentId, updateDTO);
-
-            UserPrincipal principal = UserPrincipal.create(User.builder().userId(authUserId).email("carlos@ufpb.br").role(UserRole.STUDENT).build());
-
-            mockMvc.perform(put("/api/university-students/{studentId}", studentId)
-                            .with(user(principal))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(updateDTO)))
-                    .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.message").value("Essa conta não existe."));
-        }
-
-        @Test
         @DisplayName("DELETE /api/university-students/{studentId} - Falha com 401 Unauthorized quando não autenticado")
         void shouldReturnUnauthorizedWhenDeleteStudentUnauthenticated() throws Exception {
             UUID studentId = UUID.randomUUID();
@@ -430,6 +321,123 @@ class UniversityStudentControllerTest {
                             .with(user(principal)))
                     .andExpect(status().isForbidden());
         }
+    }
+
+    @Nested
+    @DisplayName("Cenários de Validação e Erros de Negócio (Sad Path)")
+    class BusinessValidationSadPathTests {
+
+        @Test
+        @DisplayName("POST /api/university-students - Falha com 400 Bad Request quando dados obrigatórios são inválidos")
+        void shouldReturnBadRequestWhenStudentCreateDTOIsInvalid() throws Exception {
+            StudentCreateDTO invalidRequest = new StudentCreateDTO(
+                    "",
+                    "invalid-email-format",
+                    "123",
+                    "",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            mockMvc.perform(post("/api/university-students")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidRequest)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(400))
+                    .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+                    .andExpect(jsonPath("$.errors").isArray());
+        }
+
+        @Test
+        @DisplayName("POST /api/university-students - Falha com 409 Conflict se e-mail/CPF/matrícula já cadastrados")
+        void shouldFailWhenEmailAlreadyRegistered() throws Exception {
+            StudentCreateDTO request = new StudentCreateDTO(
+                    "Carlos Alberto",
+                    "existente@ufpb.br",
+                    "senhaSegura123",
+                    "11122233344",
+                    null,
+                    null,
+                    null,
+                    null,
+                    UUID.randomUUID(),
+                    UUID.randomUUID()
+            );
+
+            when(studentService.registerStudent(any(StudentCreateDTO.class)))
+                    .thenThrow(new ObjectAlreadyExistsException("Usuário com essas informações já foi cadastrado"));
+
+            mockMvc.perform(post("/api/university-students")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.message").value("Usuário com essas informações já foi cadastrado"));
+        }
+
+        @Test
+        @DisplayName("GET /api/university-students/{studentId} - Falha com 404 Not Found quando estudante não existe")
+        void shouldReturnNotFoundWhenStudentDoesNotExist() throws Exception {
+            UUID studentId = UUID.randomUUID();
+            when(studentService.getStudent(studentId))
+                    .thenThrow(new ObjectNotFoundException("Essa conta não existe"));
+
+            UserPrincipal principal = UserPrincipal.create(User.builder().userId(UUID.randomUUID()).email("carlos@ufpb.br").role(UserRole.STUDENT).build());
+
+            mockMvc.perform(get("/api/university-students/{studentId}", studentId)
+                            .with(user(principal)))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Essa conta não existe"));
+        }
+
+        @Test
+        @DisplayName("PUT /api/university-students/{studentId} - Falha com 403 Forbidden quando usuário STUDENT não for o proprietário")
+        void shouldReturnForbiddenWhenUserNotOwnerOnUpdate() throws Exception {
+            UUID studentId = UUID.randomUUID();
+            UUID authUserId = UUID.randomUUID();
+
+            StudentUpdateDTO updateDTO = new StudentUpdateDTO(
+                    "Novo Nome", null, null, null, null, null
+            );
+
+            doThrow(new UserIsNotOwnerException("Você não possui permissão para isso."))
+                    .when(studentService).updateStudent(authUserId, studentId, updateDTO);
+
+            UserPrincipal principal = UserPrincipal.create(User.builder().userId(authUserId).email("outro@ufpb.br").role(UserRole.STUDENT).build());
+
+            mockMvc.perform(put("/api/university-students/{studentId}", studentId)
+                            .with(user(principal))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateDTO)))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.message").value("Você não possui permissão para isso."));
+        }
+
+        @Test
+        @DisplayName("PUT /api/university-students/{studentId} - Falha com 404 Not Found quando estudante não for encontrado")
+        void shouldReturnNotFoundWhenStudentNotFoundOnUpdate() throws Exception {
+            UUID studentId = UUID.randomUUID();
+            UUID authUserId = UUID.randomUUID();
+
+            StudentUpdateDTO updateDTO = new StudentUpdateDTO(
+                    "Novo Nome", null, null, null, null, null
+            );
+
+            doThrow(new ObjectNotFoundException("Essa conta não existe."))
+                    .when(studentService).updateStudent(authUserId, studentId, updateDTO);
+
+            UserPrincipal principal = UserPrincipal.create(User.builder().userId(authUserId).email("carlos@ufpb.br").role(UserRole.STUDENT).build());
+
+            mockMvc.perform(put("/api/university-students/{studentId}", studentId)
+                            .with(user(principal))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateDTO)))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Essa conta não existe."));
+        }
 
         @Test
         @DisplayName("DELETE /api/university-students/{studentId} - Falha com 403 Forbidden quando usuário STUDENT não tiver permissão de dono")
@@ -454,7 +462,7 @@ class UniversityStudentControllerTest {
             UUID studentId = UUID.randomUUID();
             UUID authUserId = UUID.randomUUID();
 
-            doThrow(new io.a_caminho.backend.exception.ObjectNotFoundException("Essa conta não existe"))
+            doThrow(new ObjectNotFoundException("Essa conta não existe"))
                     .when(studentService).deleteStudentAccount(authUserId, studentId);
 
             UserPrincipal principal = UserPrincipal.create(User.builder().userId(authUserId).email("carlos@ufpb.br").role(UserRole.STUDENT).build());

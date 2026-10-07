@@ -23,9 +23,14 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,8 +65,8 @@ class UniversityControllerTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("POST /api/universities - Cadastra universidade com sucesso como ADMIN (201 Created)")
@@ -123,8 +128,8 @@ class UniversityControllerTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
+    @DisplayName("Cenários de Autenticação e Autorização (Sad Path)")
+    class SecuritySadPathTests {
 
         @Test
         @DisplayName("POST /api/universities - Falha com 401 Unauthorized quando não autenticado")
@@ -148,6 +153,35 @@ class UniversityControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isForbidden());
         }
+
+        @Test
+        @DisplayName("GET /api/universities - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetAllUniversitiesUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/universities")
+                            .param("universityName", "UFPB")
+                            .param("stateName", "Paraíba"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/universities/{universityId} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenDeleteUniversityUnauthenticated() throws Exception {
+            mockMvc.perform(delete("/api/universities/{universityId}", UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/universities/{universityId} - Falha com 403 Forbidden quando usuário não for ADMIN")
+        void shouldReturnForbiddenWhenNonAdminAttemptsToDeleteUniversity() throws Exception {
+            mockMvc.perform(delete("/api/universities/{universityId}", UUID.randomUUID())
+                            .with(user(createStudentPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de Validação e Erros de Negócio (Sad Path)")
+    class BusinessValidationSadPathTests {
 
         @Test
         @DisplayName("POST /api/universities - Falha com 400 Bad Request quando campos obrigatórios forem inválidos")
@@ -175,30 +209,6 @@ class UniversityControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value("Cidade não encontrada."));
-        }
-
-        @Test
-        @DisplayName("GET /api/universities - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetAllUniversitiesUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/universities")
-                            .param("universityName", "UFPB")
-                            .param("stateName", "Paraíba"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/universities/{universityId} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenDeleteUniversityUnauthenticated() throws Exception {
-            mockMvc.perform(delete("/api/universities/{universityId}", UUID.randomUUID()))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/universities/{universityId} - Falha com 403 Forbidden quando usuário não for ADMIN")
-        void shouldReturnForbiddenWhenNonAdminAttemptsToDeleteUniversity() throws Exception {
-            mockMvc.perform(delete("/api/universities/{universityId}", UUID.randomUUID())
-                            .with(user(createStudentPrincipal())))
-                    .andExpect(status().isForbidden());
         }
 
         @Test

@@ -29,9 +29,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - MunicipalityService")
@@ -99,8 +104,8 @@ class MunicipalityServiceTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de createMunicipality (Criação de Prefeitura)")
+    class CreateMunicipalityTests {
 
         @Test
         @DisplayName("Deve cadastrar uma prefeitura com sucesso")
@@ -123,75 +128,6 @@ class MunicipalityServiceTest {
             verify(passwordEncoder).encode("senha1234");
             verify(municipalityRepository).save(municipality);
         }
-
-        @Test
-        @DisplayName("Deve buscar prefeitura pelo nome com sucesso")
-        void shouldGetMunicipalityByNameSuccessfully() {
-            when(municipalityRepository.findByMunicipalityName("Prefeitura de João Pessoa"))
-                    .thenReturn(Optional.of(municipality));
-            when(municipalityMapper.toResponse(municipality)).thenReturn(responseDTO);
-
-            MunicipalityResponseDTO result = municipalityService.getMunicipalityByName("Prefeitura de João Pessoa");
-
-            assertNotNull(result);
-            assertEquals("Prefeitura de João Pessoa", result.municipalityName());
-            verify(municipalityRepository).findByMunicipalityName("Prefeitura de João Pessoa");
-        }
-
-        @Test
-        @DisplayName("Deve listar todas as prefeituras de um estado com sucesso")
-        void shouldGetAllMunicipalityFromStateSuccessfully() {
-            when(municipalityRepository.findAllMunicipalityFromStateByStateName("Paraíba"))
-                    .thenReturn(List.of(municipality));
-            when(municipalityMapper.toResponse(municipality)).thenReturn(responseDTO);
-
-            List<MunicipalityResponseDTO> result = municipalityService.getAllMunicipalityFromState("Paraíba");
-
-            assertNotNull(result);
-            assertEquals(1, result.size());
-            assertEquals("Prefeitura de João Pessoa", result.get(0).municipalityName());
-            verify(municipalityRepository).findAllMunicipalityFromStateByStateName("Paraíba");
-        }
-
-        @Test
-        @DisplayName("Deve excluir prefeitura com sucesso quando usuário for o proprietário")
-        void shouldDeleteMunicipalitySuccessfullyWhenUserIsOwner() {
-            when(userRepository.findById(municipalityUserId)).thenReturn(Optional.of(municipalityUser));
-            when(municipalityRepository.findByMunicipalityName("Prefeitura de João Pessoa"))
-                    .thenReturn(Optional.of(municipality));
-
-            assertDoesNotThrow(() -> municipalityService.deleteMunicipality(municipalityUserId, "Prefeitura de João Pessoa"));
-
-            verify(userRepository).findById(municipalityUserId);
-            verify(municipalityRepository).findByMunicipalityName("Prefeitura de João Pessoa");
-            verify(municipalityRepository).delete(municipality);
-        }
-
-        @Test
-        @DisplayName("Deve excluir prefeitura com sucesso quando usuário for ADMIN")
-        void shouldDeleteMunicipalitySuccessfullyWhenUserIsAdmin() {
-            UUID adminId = UUID.randomUUID();
-            User adminUser = User.builder()
-                    .userId(adminId)
-                    .email("admin@acaminho.io")
-                    .role(UserRole.ADMIN)
-                    .build();
-
-            when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
-            when(municipalityRepository.findByMunicipalityName("Prefeitura de João Pessoa"))
-                    .thenReturn(Optional.of(municipality));
-
-            assertDoesNotThrow(() -> municipalityService.deleteMunicipality(adminId, "Prefeitura de João Pessoa"));
-
-            verify(userRepository).findById(adminId);
-            verify(municipalityRepository).findByMunicipalityName("Prefeitura de João Pessoa");
-            verify(municipalityRepository).delete(municipality);
-        }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
 
         @Test
         @DisplayName("Deve lançar ObjectNotFoundException ao cadastrar prefeitura com cidade inexistente")
@@ -234,6 +170,25 @@ class MunicipalityServiceTest {
             verify(passwordEncoder, never()).encode(any());
             verify(municipalityRepository, never()).save(any());
         }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getMunicipalityByName (Busca de Prefeitura por Nome)")
+    class GetMunicipalityByNameTests {
+
+        @Test
+        @DisplayName("Deve buscar prefeitura pelo nome com sucesso")
+        void shouldGetMunicipalityByNameSuccessfully() {
+            when(municipalityRepository.findByMunicipalityName("Prefeitura de João Pessoa"))
+                    .thenReturn(Optional.of(municipality));
+            when(municipalityMapper.toResponse(municipality)).thenReturn(responseDTO);
+
+            MunicipalityResponseDTO result = municipalityService.getMunicipalityByName("Prefeitura de João Pessoa");
+
+            assertNotNull(result);
+            assertEquals("Prefeitura de João Pessoa", result.municipalityName());
+            verify(municipalityRepository).findByMunicipalityName("Prefeitura de João Pessoa");
+        }
 
         @Test
         @DisplayName("Deve lançar ObjectNotFoundException ao buscar prefeitura por nome inexistente")
@@ -245,6 +200,66 @@ class MunicipalityServiceTest {
                     () -> municipalityService.getMunicipalityByName("Inexistente"));
 
             assertEquals("Prefeitura não encontrada.", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getAllMunicipalityFromState (Listagem de Prefeituras por Estado)")
+    class GetAllMunicipalityFromStateTests {
+
+        @Test
+        @DisplayName("Deve listar todas as prefeituras de um estado com sucesso")
+        void shouldGetAllMunicipalityFromStateSuccessfully() {
+            when(municipalityRepository.findAllMunicipalityFromStateByStateName("Paraíba"))
+                    .thenReturn(List.of(municipality));
+            when(municipalityMapper.toResponse(municipality)).thenReturn(responseDTO);
+
+            List<MunicipalityResponseDTO> result = municipalityService.getAllMunicipalityFromState("Paraíba");
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("Prefeitura de João Pessoa", result.get(0).municipalityName());
+            verify(municipalityRepository).findAllMunicipalityFromStateByStateName("Paraíba");
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de deleteMunicipality (Exclusão de Prefeitura)")
+    class DeleteMunicipalityTests {
+
+        @Test
+        @DisplayName("Deve excluir prefeitura com sucesso quando usuário for o proprietário")
+        void shouldDeleteMunicipalitySuccessfullyWhenUserIsOwner() {
+            when(userRepository.findById(municipalityUserId)).thenReturn(Optional.of(municipalityUser));
+            when(municipalityRepository.findByMunicipalityName("Prefeitura de João Pessoa"))
+                    .thenReturn(Optional.of(municipality));
+
+            assertDoesNotThrow(() -> municipalityService.deleteMunicipality(municipalityUserId, "Prefeitura de João Pessoa"));
+
+            verify(userRepository).findById(municipalityUserId);
+            verify(municipalityRepository).findByMunicipalityName("Prefeitura de João Pessoa");
+            verify(municipalityRepository).delete(municipality);
+        }
+
+        @Test
+        @DisplayName("Deve excluir prefeitura com sucesso quando usuário for ADMIN")
+        void shouldDeleteMunicipalitySuccessfullyWhenUserIsAdmin() {
+            UUID adminId = UUID.randomUUID();
+            User adminUser = User.builder()
+                    .userId(adminId)
+                    .email("admin@acaminho.io")
+                    .role(UserRole.ADMIN)
+                    .build();
+
+            when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+            when(municipalityRepository.findByMunicipalityName("Prefeitura de João Pessoa"))
+                    .thenReturn(Optional.of(municipality));
+
+            assertDoesNotThrow(() -> municipalityService.deleteMunicipality(adminId, "Prefeitura de João Pessoa"));
+
+            verify(userRepository).findById(adminId);
+            verify(municipalityRepository).findByMunicipalityName("Prefeitura de João Pessoa");
+            verify(municipalityRepository).delete(municipality);
         }
 
         @Test

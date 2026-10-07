@@ -27,9 +27,14 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -72,8 +77,8 @@ class BusDriverControllerTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("POST /api/bus-drivers - Cadastra motorista com sucesso como MUNICIPALITY (201 Created)")
@@ -153,8 +158,8 @@ class BusDriverControllerTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
+    @DisplayName("Cenários de Autenticação e Autorização (Sad Path)")
+    class SecuritySadPathTests {
 
         @Test
         @DisplayName("POST /api/bus-drivers - Falha com 401 Unauthorized quando não autenticado")
@@ -190,6 +195,56 @@ class BusDriverControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isForbidden());
         }
+
+        @Test
+        @DisplayName("GET /api/bus-drivers/{busDriverId} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetBusDriverByIdUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/bus-drivers/{busDriverId}", UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("GET /api/bus-drivers/{busDriverId} - Falha com 403 Forbidden quando usuário for ADMIN")
+        void shouldReturnForbiddenWhenAdminAttemptsToGetBusDriver() throws Exception {
+            mockMvc.perform(get("/api/bus-drivers/{busDriverId}", UUID.randomUUID())
+                            .with(user(createAdminPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("GET /api/bus-drivers - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetAllBusDriversUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/bus-drivers"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("GET /api/bus-drivers - Falha com 403 Forbidden quando usuário for ADMIN")
+        void shouldReturnForbiddenWhenAdminAttemptsToGetAllBusDrivers() throws Exception {
+            mockMvc.perform(get("/api/bus-drivers")
+                            .with(user(createAdminPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/bus-drivers/{busDriverId} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenDeleteBusDriverUnauthenticated() throws Exception {
+            mockMvc.perform(delete("/api/bus-drivers/{busDriverId}", UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/bus-drivers/{busDriverId} - Falha com 403 Forbidden quando usuário for ADMIN")
+        void shouldReturnForbiddenWhenAdminAttemptsToDeleteBusDriver() throws Exception {
+            mockMvc.perform(delete("/api/bus-drivers/{busDriverId}", UUID.randomUUID())
+                            .with(user(createAdminPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de Validação e Erros de Negócio (Sad Path)")
+    class BusinessValidationSadPathTests {
 
         @Test
         @DisplayName("POST /api/bus-drivers - Falha com 400 Bad Request quando payload for inválido")
@@ -237,21 +292,6 @@ class BusDriverControllerTest {
         }
 
         @Test
-        @DisplayName("GET /api/bus-drivers/{busDriverId} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetBusDriverByIdUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/bus-drivers/{busDriverId}", UUID.randomUUID()))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("GET /api/bus-drivers/{busDriverId} - Falha com 403 Forbidden quando usuário for ADMIN")
-        void shouldReturnForbiddenWhenAdminAttemptsToGetBusDriver() throws Exception {
-            mockMvc.perform(get("/api/bus-drivers/{busDriverId}", UUID.randomUUID())
-                            .with(user(createAdminPrincipal())))
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
         @DisplayName("GET /api/bus-drivers/{busDriverId} - Falha com 403 Forbidden quando motorista pertencer a outra prefeitura")
         void shouldReturnForbiddenWhenCrossMunicipalityAccessOnGet() throws Exception {
             UUID municipalityUserId = UUID.randomUUID();
@@ -264,36 +304,6 @@ class BusDriverControllerTest {
                             .with(user(createMunicipalityPrincipal(municipalityUserId))))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.message").value("Motorista não encontrado."));
-        }
-
-        @Test
-        @DisplayName("GET /api/bus-drivers - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetAllBusDriversUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/bus-drivers"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("GET /api/bus-drivers - Falha com 403 Forbidden quando usuário for ADMIN")
-        void shouldReturnForbiddenWhenAdminAttemptsToGetAllBusDrivers() throws Exception {
-            mockMvc.perform(get("/api/bus-drivers")
-                            .with(user(createAdminPrincipal())))
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/bus-drivers/{busDriverId} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenDeleteBusDriverUnauthenticated() throws Exception {
-            mockMvc.perform(delete("/api/bus-drivers/{busDriverId}", UUID.randomUUID()))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/bus-drivers/{busDriverId} - Falha com 403 Forbidden quando usuário for ADMIN")
-        void shouldReturnForbiddenWhenAdminAttemptsToDeleteBusDriver() throws Exception {
-            mockMvc.perform(delete("/api/bus-drivers/{busDriverId}", UUID.randomUUID())
-                            .with(user(createAdminPrincipal())))
-                    .andExpect(status().isForbidden());
         }
 
         @Test

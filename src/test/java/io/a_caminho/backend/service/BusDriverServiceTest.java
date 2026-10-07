@@ -29,9 +29,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - BusDriverService")
@@ -99,8 +104,8 @@ class BusDriverServiceTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de createBusDriverAccount (Criação de Conta de Motorista)")
+    class CreateBusDriverAccountTests {
 
         @Test
         @DisplayName("Deve cadastrar motorista com sucesso associado à prefeitura autenticada")
@@ -122,53 +127,6 @@ class BusDriverServiceTest {
             verify(passwordEncoder).encode("senha1234");
             verify(busDriverRepository).save(busDriver);
         }
-
-        @Test
-        @DisplayName("Deve buscar motorista por ID com sucesso para a prefeitura autenticada")
-        void shouldGetBusDriverByIdSuccessfully() {
-            when(busDriverRepository.findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId))
-                    .thenReturn(Optional.of(busDriver));
-            when(busDriverMapper.toResponse(busDriver)).thenReturn(responseDTO);
-
-            BusDriverResponseDTO result = busDriverService.getBusDriverById(busDriverId, municipalityUserId);
-
-            assertNotNull(result);
-            assertEquals(busDriverId, result.busDriverId());
-            assertEquals("Sebastião da Silva", result.busDriverName());
-            verify(busDriverRepository).findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId);
-        }
-
-        @Test
-        @DisplayName("Deve listar todos os motoristas pertencentes à prefeitura autenticada com sucesso")
-        void shouldGetAllBusDriversFromMunicipalitySuccessfully() {
-            when(busDriverRepository.findAllByMunicipality_User_UserId(municipalityUserId))
-                    .thenReturn(List.of(busDriver));
-            when(busDriverMapper.toResponse(busDriver)).thenReturn(responseDTO);
-
-            List<BusDriverResponseDTO> result = busDriverService.getAllBusDriversFromMunicipality(municipalityUserId);
-
-            assertNotNull(result);
-            assertEquals(1, result.size());
-            assertEquals("Sebastião da Silva", result.get(0).busDriverName());
-            verify(busDriverRepository).findAllByMunicipality_User_UserId(municipalityUserId);
-        }
-
-        @Test
-        @DisplayName("Deve excluir motorista da prefeitura autenticada com sucesso")
-        void shouldDeleteBusDriverAccountSuccessfully() {
-            when(busDriverRepository.findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId))
-                    .thenReturn(Optional.of(busDriver));
-
-            assertDoesNotThrow(() -> busDriverService.deleteBusDriverAccount(busDriverId, municipalityUserId));
-
-            verify(busDriverRepository).findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId);
-            verify(busDriverRepository).delete(busDriver);
-        }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
 
         @Test
         @DisplayName("Deve lançar ObjectNotFoundException quando prefeitura não for encontrada pelo usuário")
@@ -196,6 +154,26 @@ class BusDriverServiceTest {
             verify(passwordEncoder, never()).encode(any());
             verify(busDriverRepository, never()).save(any());
         }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getBusDriverById (Busca de Motorista por ID)")
+    class GetBusDriverByIdTests {
+
+        @Test
+        @DisplayName("Deve buscar motorista por ID com sucesso para a prefeitura autenticada")
+        void shouldGetBusDriverByIdSuccessfully() {
+            when(busDriverRepository.findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId))
+                    .thenReturn(Optional.of(busDriver));
+            when(busDriverMapper.toResponse(busDriver)).thenReturn(responseDTO);
+
+            BusDriverResponseDTO result = busDriverService.getBusDriverById(busDriverId, municipalityUserId);
+
+            assertNotNull(result);
+            assertEquals(busDriverId, result.busDriverId());
+            assertEquals("Sebastião da Silva", result.busDriverName());
+            verify(busDriverRepository).findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId);
+        }
 
         @Test
         @DisplayName("Deve lançar CrossMunicipalityAccessException ao buscar motorista que não pertence à prefeitura")
@@ -207,6 +185,43 @@ class BusDriverServiceTest {
                     () -> busDriverService.getBusDriverById(busDriverId, municipalityUserId));
 
             assertEquals("Motorista não encontrado.", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getAllBusDriversFromMunicipality (Listagem de Motoristas da Prefeitura)")
+    class GetAllBusDriversFromMunicipalityTests {
+
+        @Test
+        @DisplayName("Deve listar todos os motoristas pertencentes à prefeitura autenticada com sucesso")
+        void shouldGetAllBusDriversFromMunicipalitySuccessfully() {
+            when(busDriverRepository.findAllByMunicipality_User_UserId(municipalityUserId))
+                    .thenReturn(List.of(busDriver));
+            when(busDriverMapper.toResponse(busDriver)).thenReturn(responseDTO);
+
+            List<BusDriverResponseDTO> result = busDriverService.getAllBusDriversFromMunicipality(municipalityUserId);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("Sebastião da Silva", result.get(0).busDriverName());
+            verify(busDriverRepository).findAllByMunicipality_User_UserId(municipalityUserId);
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de deleteBusDriverAccount (Exclusão de Conta de Motorista)")
+    class DeleteBusDriverAccountTests {
+
+        @Test
+        @DisplayName("Deve excluir motorista da prefeitura autenticada com sucesso")
+        void shouldDeleteBusDriverAccountSuccessfully() {
+            when(busDriverRepository.findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId))
+                    .thenReturn(Optional.of(busDriver));
+
+            assertDoesNotThrow(() -> busDriverService.deleteBusDriverAccount(busDriverId, municipalityUserId));
+
+            verify(busDriverRepository).findByBusDriverIdAndMunicipality_User_UserId(busDriverId, municipalityUserId);
+            verify(busDriverRepository).delete(busDriver);
         }
 
         @Test

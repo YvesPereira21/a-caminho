@@ -19,11 +19,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Testes Unitários - CustomOAuth2UserService")
 class CustomOAuth2UserServiceTest {
 
     @Mock
@@ -36,8 +43,8 @@ class CustomOAuth2UserServiceTest {
     private CustomOAuth2UserService customOAuth2UserService;
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de processOAuth2User (Processamento de Usuário OAuth2)")
+    class ProcessOAuth2UserTests {
 
         @Test
         @DisplayName("Deve vincular google_id ao usuário existente que possuía o mesmo e-mail")
@@ -64,7 +71,7 @@ class CustomOAuth2UserServiceTest {
             OAuth2User result = customOAuth2UserService.processOAuth2User(mockOAuth2User);
 
             assertNotNull(result);
-            assertTrue(result instanceof UserPrincipal);
+            assertInstanceOf(UserPrincipal.class, result);
             UserPrincipal principal = (UserPrincipal) result;
             assertEquals(email, principal.getUsername());
             verify(userRepository).save(argThat(u -> googleId.equals(u.getGoogleId())));
@@ -102,11 +109,6 @@ class CustomOAuth2UserServiceTest {
                     && u.getRole() == UserRole.STUDENT
                     && "hashed-random-password".equals(u.getPassword())));
         }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
 
         @Test
         @DisplayName("Deve lançar OAuth2AuthenticationException se o e-mail não for retornado pelo Google")

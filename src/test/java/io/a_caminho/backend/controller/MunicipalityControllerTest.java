@@ -26,10 +26,14 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -72,8 +76,8 @@ class MunicipalityControllerTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("POST /api/municipalities - Cadastra prefeitura com sucesso como ADMIN (201 Created)")
@@ -151,8 +155,8 @@ class MunicipalityControllerTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
+    @DisplayName("Cenários de Autenticação e Autorização (Sad Path)")
+    class SecuritySadPathTests {
 
         @Test
         @DisplayName("POST /api/municipalities - Falha com 401 Unauthorized quando não autenticado")
@@ -176,6 +180,56 @@ class MunicipalityControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isForbidden());
         }
+
+        @Test
+        @DisplayName("GET /api/municipalities/{municipalityName} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetMunicipalityByNameUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/municipalities/{municipalityName}", "Prefeitura"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("GET /api/municipalities/{municipalityName} - Falha com 403 Forbidden quando usuário for ADMIN")
+        void shouldReturnForbiddenWhenAdminAttemptsToGetMunicipalityByName() throws Exception {
+            mockMvc.perform(get("/api/municipalities/{municipalityName}", "Prefeitura")
+                            .with(user(createAdminPrincipal(UUID.randomUUID()))))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("GET /api/municipalities/{municipalityName} - Falha com 403 Forbidden quando usuário for STUDENT")
+        void shouldReturnForbiddenWhenStudentAttemptsToGetMunicipalityByName() throws Exception {
+            mockMvc.perform(get("/api/municipalities/{municipalityName}", "Prefeitura")
+                            .with(user(createStudentPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("GET /api/municipalities/state/{stateName} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetAllMunicipalitiesFromStateUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/municipalities/state/{stateName}", "Paraíba"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/municipalities/{municipalityName} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenDeleteMunicipalityUnauthenticated() throws Exception {
+            mockMvc.perform(delete("/api/municipalities/{municipalityName}", "Prefeitura"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/municipalities/{municipalityName} - Falha com 403 Forbidden quando usuário for STUDENT")
+        void shouldReturnForbiddenWhenStudentAttemptsToDeleteMunicipality() throws Exception {
+            mockMvc.perform(delete("/api/municipalities/{municipalityName}", "Prefeitura")
+                            .with(user(createStudentPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de Validação e Erros de Negócio (Sad Path)")
+    class BusinessValidationSadPathTests {
 
         @Test
         @DisplayName("POST /api/municipalities - Falha com 400 Bad Request quando dados obrigatórios forem inválidos")
@@ -221,29 +275,6 @@ class MunicipalityControllerTest {
         }
 
         @Test
-        @DisplayName("GET /api/municipalities/{municipalityName} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetMunicipalityByNameUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/municipalities/{municipalityName}", "Prefeitura"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("GET /api/municipalities/{municipalityName} - Falha com 403 Forbidden quando usuário for ADMIN")
-        void shouldReturnForbiddenWhenAdminAttemptsToGetMunicipalityByName() throws Exception {
-            mockMvc.perform(get("/api/municipalities/{municipalityName}", "Prefeitura")
-                            .with(user(createAdminPrincipal(UUID.randomUUID()))))
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
-        @DisplayName("GET /api/municipalities/{municipalityName} - Falha com 403 Forbidden quando usuário for STUDENT")
-        void shouldReturnForbiddenWhenStudentAttemptsToGetMunicipalityByName() throws Exception {
-            mockMvc.perform(get("/api/municipalities/{municipalityName}", "Prefeitura")
-                            .with(user(createStudentPrincipal())))
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
         @DisplayName("GET /api/municipalities/{municipalityName} - Falha com 404 Not Found quando prefeitura não for encontrada")
         void shouldReturnNotFoundWhenMunicipalityNotFoundByName() throws Exception {
             when(municipalityService.getMunicipalityByName("Inexistente"))
@@ -253,28 +284,6 @@ class MunicipalityControllerTest {
                             .with(user(createMunicipalityPrincipal(UUID.randomUUID()))))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value("Prefeitura não encontrada."));
-        }
-
-        @Test
-        @DisplayName("GET /api/municipalities/state/{stateName} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetAllMunicipalitiesFromStateUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/municipalities/state/{stateName}", "Paraíba"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/municipalities/{municipalityName} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenDeleteMunicipalityUnauthenticated() throws Exception {
-            mockMvc.perform(delete("/api/municipalities/{municipalityName}", "Prefeitura"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/municipalities/{municipalityName} - Falha com 403 Forbidden quando usuário for STUDENT")
-        void shouldReturnForbiddenWhenStudentAttemptsToDeleteMunicipality() throws Exception {
-            mockMvc.perform(delete("/api/municipalities/{municipalityName}", "Prefeitura")
-                            .with(user(createStudentPrincipal())))
-                    .andExpect(status().isForbidden());
         }
 
         @Test

@@ -40,8 +40,8 @@ class StateServiceTest {
     private StateService stateService;
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de createState (Cadastro de Estado)")
+    class CreateStateTests {
 
         @Test
         @DisplayName("Deve cadastrar um estado com sucesso quando o nome não estiver em uso")
@@ -66,6 +66,22 @@ class StateServiceTest {
         }
 
         @Test
+        @DisplayName("Deve lançar ObjectAlreadyExistsException quando estado com mesmo nome já existir")
+        void shouldThrowObjectAlreadyExistsExceptionWhenStateAlreadyExists() {
+            StateDTO requestDTO = new StateDTO("Paraíba");
+
+            when(stateRepository.existsByStateName("Paraíba")).thenReturn(true);
+
+            assertThrows(ObjectAlreadyExistsException.class, () -> stateService.createState(requestDTO));
+            verify(stateRepository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getAllState (Listagem de Estados)")
+    class GetAllStateTests {
+
+        @Test
         @DisplayName("Deve retornar todos os estados cadastrados com sucesso")
         void shouldGetAllStatesSuccessfully() {
             State state1 = State.builder().stateId(UUID.randomUUID()).stateName("Paraíba").build();
@@ -85,6 +101,11 @@ class StateServiceTest {
             assertEquals("Pernambuco", result.get(1).stateName());
             verify(stateRepository).findAll();
         }
+    }
+
+    @Nested
+    @DisplayName("Cenários de deleteState (Exclusão de Estado)")
+    class DeleteStateTests {
 
         @Test
         @DisplayName("Deve excluir um estado com sucesso quando ele for encontrado")
@@ -98,22 +119,6 @@ class StateServiceTest {
 
             verify(stateRepository).findByStateName(stateName);
             verify(stateRepository).delete(state);
-        }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
-
-        @Test
-        @DisplayName("Deve lançar ObjectAlreadyExistsException quando estado com mesmo nome já existir")
-        void shouldThrowObjectAlreadyExistsExceptionWhenStateAlreadyExists() {
-            StateDTO requestDTO = new StateDTO("Paraíba");
-
-            when(stateRepository.existsByStateName("Paraíba")).thenReturn(true);
-
-            assertThrows(ObjectAlreadyExistsException.class, () -> stateService.createState(requestDTO));
-            verify(stateRepository, never()).save(any());
         }
 
         @Test

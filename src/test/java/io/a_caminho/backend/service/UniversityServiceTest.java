@@ -23,9 +23,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes Unitários - UniversityService")
@@ -79,8 +84,8 @@ class UniversityServiceTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de createUniversity (Cadastro de Universidade)")
+    class CreateUniversityTests {
 
         @Test
         @DisplayName("Deve cadastrar uma universidade com sucesso")
@@ -106,6 +111,24 @@ class UniversityServiceTest {
         }
 
         @Test
+        @DisplayName("Deve lançar ObjectNotFoundException ao cadastrar universidade quando cidade não for encontrada")
+        void shouldThrowObjectNotFoundExceptionWhenCityNotFoundOnCreate() {
+            when(cityRepository.findByCityNameAndState_StateName("João Pessoa", "Paraíba"))
+                    .thenReturn(Optional.empty());
+
+            ObjectNotFoundException ex = assertThrows(ObjectNotFoundException.class,
+                    () -> universityService.createUniversity(requestDTO));
+
+            assertEquals("Cidade não encontrada.", ex.getMessage());
+            verify(universityRepository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getAllUniversityByNameFromState (Listagem de Universidades por Estado)")
+    class GetAllUniversityByNameFromStateTests {
+
+        @Test
         @DisplayName("Deve listar universidades por nome e estado com sucesso")
         void shouldGetAllUniversityByNameFromStateSuccessfully() {
             when(universityRepository.findAllByCampusContainingIgnoreCaseAndCity_State_StateName("Campus I", "Paraíba"))
@@ -121,6 +144,11 @@ class UniversityServiceTest {
 
             verify(universityRepository).findAllByCampusContainingIgnoreCaseAndCity_State_StateName("Campus I", "Paraíba");
         }
+    }
+
+    @Nested
+    @DisplayName("Cenários de deleteUniversity (Exclusão de Universidade)")
+    class DeleteUniversityTests {
 
         @Test
         @DisplayName("Deve excluir universidade por ID com sucesso")
@@ -131,24 +159,6 @@ class UniversityServiceTest {
 
             verify(universityRepository).findById(universityId);
             verify(universityRepository).delete(university);
-        }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
-
-        @Test
-        @DisplayName("Deve lançar ObjectNotFoundException ao cadastrar universidade quando cidade não for encontrada")
-        void shouldThrowObjectNotFoundExceptionWhenCityNotFoundOnCreate() {
-            when(cityRepository.findByCityNameAndState_StateName("João Pessoa", "Paraíba"))
-                    .thenReturn(Optional.empty());
-
-            ObjectNotFoundException ex = assertThrows(ObjectNotFoundException.class,
-                    () -> universityService.createUniversity(requestDTO));
-
-            assertEquals("Cidade não encontrada.", ex.getMessage());
-            verify(universityRepository, never()).save(any());
         }
 
         @Test

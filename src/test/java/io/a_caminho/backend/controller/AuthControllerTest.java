@@ -1,16 +1,20 @@
 package io.a_caminho.backend.controller;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.containsString;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.a_caminho.backend.dto.auth.UserDTO;
+import io.a_caminho.backend.dto.auth.UserLoginDTO;
+import io.a_caminho.backend.mapper.UserMapper;
+import io.a_caminho.backend.model.RefreshToken;
+import io.a_caminho.backend.model.User;
+import io.a_caminho.backend.model.enums.UserRole;
+import io.a_caminho.backend.repository.RefreshTokenRepository;
+import io.a_caminho.backend.repository.UserRepository;
+import io.a_caminho.backend.security.jwt.JwtTokenProvider;
+import io.a_caminho.backend.security.service.RefreshTokenService;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -20,26 +24,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.a_caminho.backend.dto.auth.UserLoginDTO;
-import io.a_caminho.backend.model.RefreshToken;
-import io.a_caminho.backend.model.User;
-import io.a_caminho.backend.model.enums.UserRole;
-import io.a_caminho.backend.repository.RefreshTokenRepository;
-import io.a_caminho.backend.repository.UserRepository;
-import io.a_caminho.backend.security.jwt.JwtTokenProvider;
-import io.a_caminho.backend.security.service.RefreshTokenService;
-import jakarta.servlet.http.Cookie;
-
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@DisplayName("Testes de Integração/Controller - AuthController")
 class AuthControllerTest {
 
     @Autowired
@@ -63,11 +65,11 @@ class AuthControllerTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @MockitoBean
-    private io.a_caminho.backend.mapper.UserMapper userMapper;
+    private UserMapper userMapper;
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("POST /api/auth/login - Login realizado com sucesso retornando token e dados do usuário")
@@ -93,7 +95,7 @@ class AuthControllerTest {
             when(tokenService.generateToken(user)).thenReturn("sample-access-token");
             when(refreshTokenService.createRefreshToken(user)).thenReturn(refreshToken);
             when(refreshTokenService.getRefreshTokenDurationSeconds()).thenReturn(604800L);
-            when(userMapper.toDTO(user)).thenReturn(new io.a_caminho.backend.dto.auth.UserDTO(user.getUserId(), "Aluno Teste", "aluno@ufpb.br", UserRole.STUDENT));
+            when(userMapper.toDTO(user)).thenReturn(new UserDTO(user.getUserId(), "Aluno Teste", "aluno@ufpb.br", UserRole.STUDENT));
 
             mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -163,8 +165,8 @@ class AuthControllerTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
+    @DisplayName("Cenários de Validação e Erros de Negócio (Sad Path)")
+    class BusinessValidationSadPathTests {
 
         @Test
         @DisplayName("POST /api/auth/login - Credenciais Inválidas retorna 401 Unauthorized")

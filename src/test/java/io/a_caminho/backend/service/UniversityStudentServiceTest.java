@@ -92,8 +92,8 @@ class UniversityStudentServiceTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de registerStudent (Cadastro de Estudante)")
+    class RegisterStudentTests {
 
         @Test
         @DisplayName("Deve registrar estudante universitário com sucesso gerando hash de senha e associando perfil")
@@ -163,6 +163,36 @@ class UniversityStudentServiceTest {
         }
 
         @Test
+        @DisplayName("Deve lançar ObjectAlreadyExistsException se o e-mail já estiver cadastrado")
+        void shouldThrowExceptionWhenEmailAlreadyExists() {
+            when(userRepository.existsByEmail(request.email())).thenReturn(true);
+
+            ObjectAlreadyExistsException ex = assertThrows(
+                    ObjectAlreadyExistsException.class,
+                    () -> studentService.registerStudent(request));
+            assertEquals("Usuário com essas informações já foi cadastrado", ex.getMessage());
+            verify(studentRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar ObjectAlreadyExistsException se o CPF já estiver cadastrado")
+        void shouldThrowExceptionWhenCpfAlreadyExists() {
+            when(userRepository.existsByEmail(request.email())).thenReturn(false);
+            when(studentRepository.existsByCpf(request.cpf())).thenReturn(true);
+
+            ObjectAlreadyExistsException ex = assertThrows(
+                    ObjectAlreadyExistsException.class,
+                    () -> studentService.registerStudent(request));
+            assertEquals("Usuário com essas informações já foi cadastrado", ex.getMessage());
+            verify(studentRepository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getStudent (Busca de Estudante por ID)")
+    class GetStudentTests {
+
+        @Test
         @DisplayName("Deve buscar estudante por ID com sucesso")
         void shouldGetStudentByIdSuccessfully() {
             UUID studentId = UUID.randomUUID();
@@ -194,6 +224,21 @@ class UniversityStudentServiceTest {
             assertEquals("Carlos Alberto", result.studentName());
             verify(studentRepository).findById(studentId);
         }
+
+        @Test
+        @DisplayName("Deve lançar ObjectNotFoundException ao buscar estudante inexistente")
+        void shouldThrowExceptionWhenStudentNotFoundOnGet() {
+            UUID studentId = UUID.randomUUID();
+            when(studentRepository.findById(studentId)).thenReturn(Optional.empty());
+
+            assertThrows(ObjectNotFoundException.class,
+                    () -> studentService.getStudent(studentId));
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de updateStudent (Atualização de Estudante)")
+    class UpdateStudentTests {
 
         @Test
         @DisplayName("Deve atualizar dados do estudante quando o usuário autenticado for o proprietário")
@@ -253,6 +298,51 @@ class UniversityStudentServiceTest {
         }
 
         @Test
+        @DisplayName("Deve lançar ObjectNotFoundException ao tentar atualizar estudante inexistente")
+        void shouldThrowExceptionWhenStudentNotFoundOnUpdate() {
+            UUID studentId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+            StudentUpdateDTO updateDTO = new StudentUpdateDTO("Nome", null, null, null, null, null);
+
+            when(studentRepository.findById(studentId)).thenReturn(Optional.empty());
+
+            assertThrows(ObjectNotFoundException.class,
+                    () -> studentService.updateStudent(userId, studentId, updateDTO));
+
+            verify(studentRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar UserIsNotOwnerException ao tentar atualizar conta de outro estudante")
+        void shouldThrowUserIsNotOwnerExceptionWhenUserNotOwnerOnUpdate() {
+            UUID studentId = UUID.randomUUID();
+            UUID ownerUserId = UUID.randomUUID();
+            UUID differentUserId = UUID.randomUUID();
+
+            User owner = User.builder().userId(ownerUserId).role(UserRole.STUDENT).build();
+            UniversityStudent student = UniversityStudent.builder()
+                    .universityStudentId(studentId)
+                    .user(owner)
+                    .build();
+
+            StudentUpdateDTO updateDTO = new StudentUpdateDTO(
+                    "Novo Nome", null, null, null, null, null
+            );
+
+            when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
+
+            assertThrows(UserIsNotOwnerException.class,
+                    () -> studentService.updateStudent(differentUserId, studentId, updateDTO));
+
+            verify(studentRepository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de deleteStudentAccount (Exclusão de Conta de Estudante)")
+    class DeleteStudentAccountTests {
+
+        @Test
         @DisplayName("Deve excluir conta de estudante com sucesso quando usuário for o proprietário")
         void shouldDeleteStudentAccountSuccessfullyWhenUserIsOwner() {
             UUID studentId = UUID.randomUUID();
@@ -292,86 +382,6 @@ class UniversityStudentServiceTest {
             studentService.deleteStudentAccount(adminId, studentId);
 
             verify(studentRepository).deleteById(studentId);
-        }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
-
-        @Test
-        @DisplayName("Deve lançar ObjectAlreadyExistsException se o e-mail já estiver cadastrado")
-        void shouldThrowExceptionWhenEmailAlreadyExists() {
-            when(userRepository.existsByEmail(request.email())).thenReturn(true);
-
-            ObjectAlreadyExistsException ex = assertThrows(
-                    ObjectAlreadyExistsException.class,
-                    () -> studentService.registerStudent(request));
-            assertEquals("Usuário com essas informações já foi cadastrado", ex.getMessage());
-            verify(studentRepository, never()).save(any());
-        }
-
-        @Test
-        @DisplayName("Deve lançar ObjectAlreadyExistsException se o CPF já estiver cadastrado")
-        void shouldThrowExceptionWhenCpfAlreadyExists() {
-            when(userRepository.existsByEmail(request.email())).thenReturn(false);
-            when(studentRepository.existsByCpf(request.cpf())).thenReturn(true);
-
-            ObjectAlreadyExistsException ex = assertThrows(
-                    ObjectAlreadyExistsException.class,
-                    () -> studentService.registerStudent(request));
-            assertEquals("Usuário com essas informações já foi cadastrado", ex.getMessage());
-            verify(studentRepository, never()).save(any());
-        }
-
-        @Test
-        @DisplayName("Deve lançar ObjectNotFoundException ao buscar estudante inexistente")
-        void shouldThrowExceptionWhenStudentNotFoundOnGet() {
-            UUID studentId = UUID.randomUUID();
-            when(studentRepository.findById(studentId)).thenReturn(Optional.empty());
-
-            assertThrows(ObjectNotFoundException.class,
-                    () -> studentService.getStudent(studentId));
-        }
-
-        @Test
-        @DisplayName("Deve lançar ObjectNotFoundException ao tentar atualizar estudante inexistente")
-        void shouldThrowExceptionWhenStudentNotFoundOnUpdate() {
-            UUID studentId = UUID.randomUUID();
-            UUID userId = UUID.randomUUID();
-            StudentUpdateDTO updateDTO = new StudentUpdateDTO("Nome", null, null, null, null, null);
-
-            when(studentRepository.findById(studentId)).thenReturn(Optional.empty());
-
-            assertThrows(ObjectNotFoundException.class,
-                    () -> studentService.updateStudent(userId, studentId, updateDTO));
-
-            verify(studentRepository, never()).save(any());
-        }
-
-        @Test
-        @DisplayName("Deve lançar UserIsNotOwnerException ao tentar atualizar conta de outro estudante")
-        void shouldThrowUserIsNotOwnerExceptionWhenUserNotOwnerOnUpdate() {
-            UUID studentId = UUID.randomUUID();
-            UUID ownerUserId = UUID.randomUUID();
-            UUID differentUserId = UUID.randomUUID();
-
-            User owner = User.builder().userId(ownerUserId).role(UserRole.STUDENT).build();
-            UniversityStudent student = UniversityStudent.builder()
-                    .universityStudentId(studentId)
-                    .user(owner)
-                    .build();
-
-            StudentUpdateDTO updateDTO = new StudentUpdateDTO(
-                    "Novo Nome", null, null, null, null, null
-            );
-
-            when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
-
-            assertThrows(UserIsNotOwnerException.class,
-                    () -> studentService.updateStudent(differentUserId, studentId, updateDTO));
-
-            verify(studentRepository, never()).save(any());
         }
 
         @Test

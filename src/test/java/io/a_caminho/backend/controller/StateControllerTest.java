@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@DisplayName("Testes Unitários - StateController")
+@DisplayName("Testes de Integração/Controller - StateController")
 class StateControllerTest {
 
     @Autowired
@@ -65,8 +65,8 @@ class StateControllerTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("POST /api/states - Cadastra estado com sucesso com role ADMIN (201 Created)")
@@ -115,8 +115,8 @@ class StateControllerTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
+    @DisplayName("Cenários de Autenticação e Autorização (Sad Path)")
+    class SecuritySadPathTests {
 
         @Test
         @DisplayName("POST /api/states - Falha com 401 Unauthorized quando não autenticado")
@@ -140,6 +140,33 @@ class StateControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isForbidden());
         }
+
+        @Test
+        @DisplayName("GET /api/states - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetAllStatesUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/states"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/states/{stateName} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenDeleteStateUnauthenticated() throws Exception {
+            mockMvc.perform(delete("/api/states/Paraíba"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/states/{stateName} - Falha com 403 Forbidden quando usuário não for ADMIN")
+        void shouldReturnForbiddenWhenNonAdminAttemptsToDeleteState() throws Exception {
+            mockMvc.perform(delete("/api/states/Paraíba")
+                            .with(user(createStudentPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de Validação e Erros de Negócio (Sad Path)")
+    class BusinessValidationSadPathTests {
 
         @Test
         @DisplayName("POST /api/states - Falha com 400 Bad Request quando nome do estado for em branco")
@@ -167,28 +194,6 @@ class StateControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.message").value("O estado com esse nome já existe."));
-        }
-
-        @Test
-        @DisplayName("GET /api/states - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetAllStatesUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/states"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/states/{stateName} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenDeleteStateUnauthenticated() throws Exception {
-            mockMvc.perform(delete("/api/states/Paraíba"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/states/{stateName} - Falha com 403 Forbidden quando usuário não for ADMIN")
-        void shouldReturnForbiddenWhenNonAdminAttemptsToDeleteState() throws Exception {
-            mockMvc.perform(delete("/api/states/Paraíba")
-                            .with(user(createStudentPrincipal())))
-                    .andExpect(status().isForbidden());
         }
 
         @Test

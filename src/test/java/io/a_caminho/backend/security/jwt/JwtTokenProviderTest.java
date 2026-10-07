@@ -9,8 +9,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+@DisplayName("Testes Unitários - JwtTokenProvider")
 class JwtTokenProviderTest {
 
     private JwtTokenProvider jwtTokenProvider;
@@ -23,8 +26,8 @@ class JwtTokenProviderTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de generateToken e validateToken (Geração e Validação de JWT)")
+    class TokenGenerationAndValidationTests {
 
         @Test
         @DisplayName("Deve gerar e validar Access Token JWT com sucesso retornando subject")
@@ -41,11 +44,6 @@ class JwtTokenProviderTest {
             String subject = jwtTokenProvider.validateToken(token);
             assertEquals("estudante@ufpb.br", subject);
         }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
 
         @Test
         @DisplayName("Deve retornar null para token malformado ou adulterado")

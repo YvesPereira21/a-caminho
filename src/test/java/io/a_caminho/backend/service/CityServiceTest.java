@@ -71,8 +71,8 @@ class CityServiceTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de createCity (Criação de Cidade)")
+    class CreateCityTests {
 
         @Test
         @DisplayName("Deve cadastrar uma cidade com sucesso quando estado existir e cidade não for duplicada")
@@ -90,52 +90,6 @@ class CityServiceTest {
             assertEquals("Paraíba", result.stateName());
             verify(cityRepository).save(city);
         }
-
-        @Test
-        @DisplayName("Deve buscar cidade por ID com sucesso")
-        void shouldGetCityByIdSuccessfully() {
-            when(cityRepository.findById(cityId)).thenReturn(Optional.of(city));
-            when(cityMapper.toResponse(city)).thenReturn(responseDTO);
-
-            CityResponseDTO result = cityService.getCityById(cityId);
-
-            assertNotNull(result);
-            assertEquals(cityId, result.cityId());
-            assertEquals("João Pessoa", result.cityName());
-            verify(cityRepository).findById(cityId);
-        }
-
-        @Test
-        @DisplayName("Deve listar todas as cidades de um estado com sucesso")
-        void shouldGetAllCitiesFromStateByStateNameSuccessfully() {
-            when(stateRepository.findByStateName("Paraíba")).thenReturn(Optional.of(state));
-            when(cityRepository.findAllByState_StateName("Paraíba")).thenReturn(List.of(city));
-            when(cityMapper.toResponse(city)).thenReturn(responseDTO);
-
-            List<CityResponseDTO> result = cityService.getAllCityFromStateByStateName("Paraíba");
-
-            assertNotNull(result);
-            assertEquals(1, result.size());
-            assertEquals("João Pessoa", result.get(0).cityName());
-            verify(stateRepository).findByStateName("Paraíba");
-            verify(cityRepository).findAllByState_StateName("Paraíba");
-        }
-
-        @Test
-        @DisplayName("Deve excluir cidade com sucesso quando cidade for encontrada")
-        void shouldDeleteCitySuccessfully() {
-            when(cityRepository.findById(cityId)).thenReturn(Optional.of(city));
-
-            cityService.deleteCity(cityId);
-
-            verify(cityRepository).findById(cityId);
-            verify(cityRepository).delete(city);
-        }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
 
         @Test
         @DisplayName("Deve lançar ObjectAlreadyExistsException quando cidade já existir no mesmo estado")
@@ -156,6 +110,25 @@ class CityServiceTest {
             assertThrows(ObjectNotFoundException.class, () -> cityService.createCity(requestDTO));
             verify(cityRepository, never()).save(any());
         }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getCityById (Busca de Cidade por ID)")
+    class GetCityByIdTests {
+
+        @Test
+        @DisplayName("Deve buscar cidade por ID com sucesso")
+        void shouldGetCityByIdSuccessfully() {
+            when(cityRepository.findById(cityId)).thenReturn(Optional.of(city));
+            when(cityMapper.toResponse(city)).thenReturn(responseDTO);
+
+            CityResponseDTO result = cityService.getCityById(cityId);
+
+            assertNotNull(result);
+            assertEquals(cityId, result.cityId());
+            assertEquals("João Pessoa", result.cityName());
+            verify(cityRepository).findById(cityId);
+        }
 
         @Test
         @DisplayName("Deve lançar ObjectNotFoundException quando cidade não for encontrada por ID")
@@ -163,6 +136,27 @@ class CityServiceTest {
             when(cityRepository.findById(cityId)).thenReturn(Optional.empty());
 
             assertThrows(ObjectNotFoundException.class, () -> cityService.getCityById(cityId));
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getAllCityFromStateByStateName (Listagem de Cidades por Estado)")
+    class GetAllCityFromStateByStateNameTests {
+
+        @Test
+        @DisplayName("Deve listar todas as cidades de um estado com sucesso")
+        void shouldGetAllCitiesFromStateByStateNameSuccessfully() {
+            when(stateRepository.findByStateName("Paraíba")).thenReturn(Optional.of(state));
+            when(cityRepository.findAllByState_StateName("Paraíba")).thenReturn(List.of(city));
+            when(cityMapper.toResponse(city)).thenReturn(responseDTO);
+
+            List<CityResponseDTO> result = cityService.getAllCityFromStateByStateName("Paraíba");
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("João Pessoa", result.get(0).cityName());
+            verify(stateRepository).findByStateName("Paraíba");
+            verify(cityRepository).findAllByState_StateName("Paraíba");
         }
 
         @Test
@@ -172,6 +166,22 @@ class CityServiceTest {
 
             assertThrows(ObjectNotFoundException.class, () -> cityService.getAllCityFromStateByStateName("Inexistente"));
             verify(cityRepository, never()).findAllByState_StateName(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de deleteCity (Exclusão de Cidade)")
+    class DeleteCityTests {
+
+        @Test
+        @DisplayName("Deve excluir cidade com sucesso quando cidade for encontrada")
+        void shouldDeleteCitySuccessfully() {
+            when(cityRepository.findById(cityId)).thenReturn(Optional.of(city));
+
+            cityService.deleteCity(cityId);
+
+            verify(cityRepository).findById(cityId);
+            verify(cityRepository).delete(city);
         }
 
         @Test

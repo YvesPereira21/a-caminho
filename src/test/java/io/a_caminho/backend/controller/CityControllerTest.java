@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@DisplayName("Testes Unitários - CityController")
+@DisplayName("Testes de Integração/Controller - CityController")
 class CityControllerTest {
 
     @Autowired
@@ -66,8 +66,8 @@ class CityControllerTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários Felizes (Happy Path)")
+    class HappyPathTests {
 
         @Test
         @DisplayName("POST /api/cities - Cadastra cidade com sucesso com role ADMIN (201 Created)")
@@ -141,8 +141,8 @@ class CityControllerTest {
     }
 
     @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
+    @DisplayName("Cenários de Autenticação e Autorização (Sad Path)")
+    class SecuritySadPathTests {
 
         @Test
         @DisplayName("POST /api/cities - Falha com 401 Unauthorized quando não autenticado")
@@ -166,6 +166,42 @@ class CityControllerTest {
                             .content(objectMapper.writeValueAsString(requestDTO)))
                     .andExpect(status().isForbidden());
         }
+
+        @Test
+        @DisplayName("GET /api/cities/{cityId} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetCityByIdUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/cities/{cityId}", UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("GET /api/cities/state/{stateName} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetAllCitiesUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/cities/state/Paraíba"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/cities/{cityId} - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenDeleteCityUnauthenticated() throws Exception {
+            mockMvc.perform(delete("/api/cities/{cityId}", UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("DELETE /api/cities/{cityId} - Falha com 403 Forbidden quando usuário não for ADMIN")
+        void shouldReturnForbiddenWhenNonAdminAttemptsToDeleteCity() throws Exception {
+            UUID cityId = UUID.randomUUID();
+
+            mockMvc.perform(delete("/api/cities/{cityId}", cityId)
+                            .with(user(createStudentPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de Validação e Erros de Negócio (Sad Path)")
+    class BusinessValidationSadPathTests {
 
         @Test
         @DisplayName("POST /api/cities - Falha com 400 Bad Request quando dados obrigatórios forem inválidos")
@@ -211,13 +247,6 @@ class CityControllerTest {
         }
 
         @Test
-        @DisplayName("GET /api/cities/{cityId} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetCityByIdUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/cities/{cityId}", UUID.randomUUID()))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
         @DisplayName("GET /api/cities/{cityId} - Falha com 404 Not Found quando cidade não existir")
         void shouldReturnNotFoundWhenCityNotFound() throws Exception {
             UUID cityId = UUID.randomUUID();
@@ -231,13 +260,6 @@ class CityControllerTest {
         }
 
         @Test
-        @DisplayName("GET /api/cities/state/{stateName} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenGetAllCitiesUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/cities/state/Paraíba"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
         @DisplayName("GET /api/cities/state/{stateName} - Falha com 404 Not Found quando estado não existir")
         void shouldReturnNotFoundWhenStateNotFound() throws Exception {
             when(cityService.getAllCityFromStateByStateName("Inexistente"))
@@ -247,23 +269,6 @@ class CityControllerTest {
                             .with(user(createStudentPrincipal())))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value("Estado não encontrado."));
-        }
-
-        @Test
-        @DisplayName("DELETE /api/cities/{cityId} - Falha com 401 Unauthorized quando não autenticado")
-        void shouldReturnUnauthorizedWhenDeleteCityUnauthenticated() throws Exception {
-            mockMvc.perform(delete("/api/cities/{cityId}", UUID.randomUUID()))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("DELETE /api/cities/{cityId} - Falha com 403 Forbidden quando usuário não for ADMIN")
-        void shouldReturnForbiddenWhenNonAdminAttemptsToDeleteCity() throws Exception {
-            UUID cityId = UUID.randomUUID();
-
-            mockMvc.perform(delete("/api/cities/{cityId}", cityId)
-                            .with(user(createStudentPrincipal())))
-                    .andExpect(status().isForbidden());
         }
 
         @Test

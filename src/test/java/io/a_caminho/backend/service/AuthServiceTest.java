@@ -27,12 +27,17 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Testes Unitários - AuthService")
 class AuthServiceTest {
 
     @Mock
@@ -82,8 +87,8 @@ class AuthServiceTest {
     }
 
     @Nested
-    @DisplayName("Happy Path")
-    class HappyPath {
+    @DisplayName("Cenários de login (Autenticação de Usuário)")
+    class LoginTests {
 
         @Test
         @DisplayName("Deve realizar login com sucesso e setar cookies HttpOnly")
@@ -106,6 +111,22 @@ class AuthServiceTest {
         }
 
         @Test
+        @DisplayName("Deve lançar BadCredentialsException se a senha for incorreta")
+        void shouldThrowExceptionWhenPasswordIsIncorrect() {
+            LoginRequestDTO requestDTO = new LoginRequestDTO("user@test.com", "wrongpassword");
+
+            when(userRepository.findByEmail(requestDTO.email())).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches(requestDTO.password(), user.getPassword())).thenReturn(false);
+
+            assertThrows(BadCredentialsException.class, () -> authService.login(requestDTO, response));
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de refreshAccessToken (Renovação de Token de Acesso)")
+    class RefreshAccessTokenTests {
+
+        @Test
         @DisplayName("Deve renovar Access Token com Refresh Token válido")
         void shouldRefreshAccessTokenSuccessfully() {
             when(cookieUtils.getCookieValue(request, CookieUtils.REFRESH_TOKEN_COOKIE_NAME))
@@ -124,6 +145,24 @@ class AuthServiceTest {
         }
 
         @Test
+        @DisplayName("Deve lançar exceção ao tentar renovar com Refresh Token revogado")
+        void shouldThrowExceptionWhenRefreshTokenIsRevoked() {
+            refreshToken.setRevoked(true);
+            when(cookieUtils.getCookieValue(request, CookieUtils.REFRESH_TOKEN_COOKIE_NAME))
+                    .thenReturn(Optional.of("revoked-token"));
+            when(refreshTokenService.findByToken("revoked-token")).thenReturn(Optional.of(refreshToken));
+            when(refreshTokenService.verifyExpirationAndRevocation(refreshToken))
+                    .thenThrow(new IllegalArgumentException("Refresh token revogado"));
+
+            assertThrows(IllegalArgumentException.class, () -> authService.refreshAccessToken(request, response));
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de logout (Encerramento de Sessão)")
+    class LogoutTests {
+
+        @Test
         @DisplayName("Deve realizar logout, revogar token e zerar cookies")
         void shouldLogoutSuccessfully() {
             when(cookieUtils.getCookieValue(request, CookieUtils.REFRESH_TOKEN_COOKIE_NAME))
@@ -135,35 +174,6 @@ class AuthServiceTest {
 
             verify(refreshTokenService).revokeToken("token-to-revoke");
             verify(response, times(2)).addHeader(eq("Set-Cookie"), any());
-        }
-    }
-
-    @Nested
-    @DisplayName("Unhappy Path")
-    class UnhappyPath {
-
-        @Test
-        @DisplayName("Deve lançar BadCredentialsException se a senha for incorreta")
-        void shouldThrowExceptionWhenPasswordIsIncorrect() {
-            LoginRequestDTO requestDTO = new LoginRequestDTO("user@test.com", "wrongpassword");
-
-            when(userRepository.findByEmail(requestDTO.email())).thenReturn(Optional.of(user));
-            when(passwordEncoder.matches(requestDTO.password(), user.getPassword())).thenReturn(false);
-
-            assertThrows(BadCredentialsException.class, () -> authService.login(requestDTO, response));
-        }
-
-        @Test
-        @DisplayName("Deve lançar exceção ao tentar renovar com Refresh Token revogado")
-        void shouldThrowExceptionWhenRefreshTokenIsRevoked() {
-            refreshToken.setRevoked(true);
-            when(cookieUtils.getCookieValue(request, CookieUtils.REFRESH_TOKEN_COOKIE_NAME))
-                    .thenReturn(Optional.of("revoked-token"));
-            when(refreshTokenService.findByToken("revoked-token")).thenReturn(Optional.of(refreshToken));
-            when(refreshTokenService.verifyExpirationAndRevocation(refreshToken))
-                    .thenThrow(new IllegalArgumentException("Refresh token revogado"));
-
-            assertThrows(IllegalArgumentException.class, () -> authService.refreshAccessToken(request, response));
         }
     }
 }
