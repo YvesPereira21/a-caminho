@@ -6,8 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Shift {
     MORNING("MANHA", "Manhã"),
     AFTERNOON("TARDE", "Tarde"),
-    NIGHT("NOITE", "Noite"),
-    FULL_TIME("INTEGRAL", "Integral");
+    NIGHT("NOITE", "Noite");
 
     private final String code;
     private final String description;

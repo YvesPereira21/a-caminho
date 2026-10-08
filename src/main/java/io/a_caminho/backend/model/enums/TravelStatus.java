@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TravelStatus {
-    SCHEDULED("AGENDADA", "Agendada"),
     IN_PROGRESS("EM_ANDAMENTO", "Em andamento"),
     COMPLETED("CONCLUIDA", "Concluída"),
     CANCELLED("CANCELADA", "Cancelada");

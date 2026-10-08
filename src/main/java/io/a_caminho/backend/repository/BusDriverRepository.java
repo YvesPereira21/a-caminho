@@ -13,6 +13,8 @@ public interface BusDriverRepository extends JpaRepository<BusDriver, UUID> {
 
     Optional<BusDriver> findByBusDriverId(UUID id);
 
+    Optional<BusDriver> findByUser_UserId(UUID userId);
+
     List<BusDriver> findAllByMunicipality_User_UserId(UUID userId);
 
     Optional<BusDriver> findByBusDriverIdAndMunicipality_User_UserId(
