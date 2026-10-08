@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { CanActivateFn } from '@angular/router';
+import { CanActivateFn, provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 
 import { roleGuard } from './role.guard';
 
@@ -8,7 +9,12 @@ describe('roleGuard', () => {
       TestBed.runInInjectionContext(() => roleGuard(...guardParameters));
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideRouter([])
+      ]
+    });
   });
 
   it('should be created', () => {

@@ -7,5 +7,6 @@ export interface MunicipalityRequest {
 }
 
 export interface MunicipalityResponse {
+  municipalityId: string;
   municipalityName: string;
 }

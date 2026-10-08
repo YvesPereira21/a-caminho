@@ -1,0 +1,224 @@
+<div class="login-container">
+  <!-- Painel Visual (Desktop) -->
+  <aside class="visual-panel bg-[#0F766E] text-white">
+    <!-- Header da área visual -->
+    <div class="z-10 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+      </div>
+      <span class="text-2xl font-bold tracking-tight">A caminho!</span>
+    </div>
+
+    <!-- Conteúdo Central Visual -->
+    <div class="visual-content">
+      <!-- Ilustração temática de mobilidade e rota universitária -->
+      <div class="relative w-full max-w-sm mx-auto p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-xl">
+        <div class="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs uppercase font-semibold tracking-wider text-emerald-200">Rotas Universitárias</span>
+          </div>
+          <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">Campus Ativo</span>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="mt-1 w-6 h-6 rounded-lg bg-emerald-500/30 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-white">Pontos de Embarque</p>
+              <p class="text-xs text-white/70">Localização exata e paradas no seu município</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="mt-1 w-6 h-6 rounded-lg bg-teal-500/30 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-teal-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-white">Horários e Confirmação</p>
+              <p class="text-xs text-white/70">Votações de demanda para ida e volta</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-left space-y-2">
+        <h2 class="text-3xl font-extrabold leading-tight tracking-tight">
+          Seu transporte universitário em um só lugar.
+        </h2>
+        <p class="text-sm text-white/80 leading-relaxed max-w-sm">
+          Acompanhe itinerários, confirme viagens diárias e viaje com segurança para a universidade.
+        </p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Painel do Formulário -->
+  <main class="form-panel">
+    <div class="form-wrapper">
+      <!-- Cabeçalho do formulário -->
+      <div class="form-header text-center lg:text-left">
+        <!-- Badge da marca em mobile -->
+        <div class="flex items-center justify-center lg:justify-start gap-2 mb-2">
+          <div class="w-9 h-9 rounded-xl bg-[#16A34A]/10 text-[#16A34A] flex items-center justify-center">
+            <svg class="w-5 h-5 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z" />
+              <path d="M4 11h16" />
+              <circle cx="8" cy="15" r="1" fill="currentColor" />
+              <circle cx="16" cy="15" r="1" fill="currentColor" />
+              <path d="M6 18v2" />
+              <path d="M18 18v2" />
+            </svg>
+          </div>
+          <span class="text-xl font-bold text-[#1F2937] tracking-tight">A caminho!</span>
+        </div>
+
+        <h1 class="text-2xl lg:text-3xl font-extrabold text-[#1F2937] tracking-tight">
+          Bem-vindo de volta!
+        </h1>
+        <p class="text-sm text-[#64748B]">
+          Insira suas credenciais para acessar sua conta.
+        </p>
+      </div>
+
+      <!-- Alerta de erro de autenticação -->
+      @if (errorMessage()) {
+        <div
+          role="alert"
+          class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5 transition-all shadow-sm animate-fadeIn"
+        >
+          <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span class="flex-1">{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Formulário de Login -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-body" novalidate>
+        <!-- Campo: E-mail -->
+        <div class="input-group">
+          <label for="login-email" class="text-sm font-semibold text-[#1F2937]">
+            E-mail
+          </label>
+          <div class="input-wrapper">
+            <span class="input-icon text-[#64748B]">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+              </svg>
+            </span>
+            <input
+              id="login-email"
+              type="email"
+              formControlName="email"
+              placeholder="seu.email@exemplo.com"
+              autocomplete="email"
+              class="w-full pl-10 pr-3.5 py-2.5 bg-white border rounded-xl text-sm text-[#1F2937] placeholder-[#64748B]/60 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#16A34A]/25 focus:border-[#16A34A]"
+              [class.border-red-400]="emailControl.invalid && emailControl.touched"
+              [class.border-[#E2E8F0]]="!emailControl.touched || emailControl.valid"
+              [attr.aria-invalid]="emailControl.invalid && emailControl.touched"
+            />
+          </div>
+          @if (emailControl.invalid && emailControl.touched) {
+            <span class="text-xs text-red-600 font-medium">
+              @if (emailControl.hasError('required')) {
+                O e-mail é obrigatório.
+              } @else if (emailControl.hasError('email')) {
+                Informe um formato de e-mail válido.
+              }
+            </span>
+          }
+        </div>
+
+        <!-- Campo: Senha -->
+        <div class="input-group">
+          <label for="login-password" class="text-sm font-semibold text-[#1F2937]">
+            Senha
+          </label>
+          <div class="input-wrapper">
+            <span class="input-icon text-[#64748B]">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </span>
+            <input
+              id="login-password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              class="w-full pl-10 pr-10 py-2.5 bg-white border rounded-xl text-sm text-[#1F2937] placeholder-[#64748B]/60 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#16A34A]/25 focus:border-[#16A34A]"
+              [class.border-red-400]="passwordControl.invalid && passwordControl.touched"
+              [class.border-[#E2E8F0]]="!passwordControl.touched || passwordControl.valid"
+              [attr.aria-invalid]="passwordControl.invalid && passwordControl.touched"
+            />
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="password-toggle-btn text-[#64748B] hover:text-[#1F2937] transition-colors"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Exibir senha'"
+            >
+              @if (showPassword()) {
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                </svg>
+              } @else {
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (passwordControl.invalid && passwordControl.touched) {
+            <span class="text-xs text-red-600 font-medium">
+              @if (passwordControl.hasError('required')) {
+                A senha é obrigatória.
+              } @else if (passwordControl.hasError('minlength')) {
+                A senha deve possuir no mínimo 6 caracteres.
+              }
+            </span>
+          }
+        </div>
+
+        <!-- Botão Entrar -->
+        <button
+          type="submit"
+          [disabled]="isLoading()"
+          class="w-full mt-2 py-3 px-4 rounded-xl bg-[#16A34A] hover:bg-[#15803d] active:bg-[#166534] text-white font-semibold text-sm shadow-md shadow-[#16A34A]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:ring-offset-2"
+        >
+          @if (isLoading()) {
+            <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Autenticando...</span>
+          } @else {
+            <span>ENTRAR</span>
+          }
+        </button>
+
+        <!-- Divisor e Link de Cadastro -->
+        <div class="text-center pt-2">
+          <p class="text-sm text-[#64748B]">
+            Não possui uma conta?
+            <a
+              routerLink="/register"
+              class="font-semibold text-[#16A34A] hover:text-[#0F766E] transition-colors ml-1 focus:outline-none focus:underline"
+            >
+              Criar conta
+            </a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
