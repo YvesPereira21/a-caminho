@@ -1,8 +1,9 @@
 package io.a_caminho.backend.controller;
 
+import io.a_caminho.backend.controller.openapi.AuthControllerOpenApi;
 import io.a_caminho.backend.dto.auth.UserDTO;
 import io.a_caminho.backend.dto.auth.UserLoginDTO;
-import io.a_caminho.backend.exception.ApiError;
+import io.a_caminho.backend.mapper.UserMapper;
 import io.a_caminho.backend.model.RefreshToken;
 import io.a_caminho.backend.model.User;
 import io.a_caminho.backend.repository.RefreshTokenRepository;
@@ -10,12 +11,6 @@ import io.a_caminho.backend.repository.UserRepository;
 import io.a_caminho.backend.security.jwt.JwtTokenProvider;
 import io.a_caminho.backend.security.service.RefreshTokenService;
 import io.a_caminho.backend.security.util.CookieUtils;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +31,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@Tag(name = "Autenticação", description = "Endpoints para login, renovação de tokens JWT e encerramento de sessão")
-public class AuthController {
+public class AuthController implements AuthControllerOpenApi {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -45,29 +39,9 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieUtils cookieUtils;
-    private final io.a_caminho.backend.mapper.UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Operation(
-            summary = "Realiza login com e-mail e senha",
-            description = "Valida as credenciais do usuário. Em caso de sucesso, retorna o Access Token JWT e dados do usuário no corpo JSON, e anexa o Refresh Token em um cookie HttpOnly seguro."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Login realizado com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"accessToken\": \"eyJhbGciOi...\", \"user\": {\"id\": \"123e4567-e89b-12d3-a456-426614174000\", \"name\": \"Carlos Alberto\", \"email\": \"aluno@ufpb.br\", \"role\": \"Estudante\"}}"))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Credenciais inválidas (e-mail ou senha incorretos)",
-                    content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"E-mail ou senha incorretos.\"}"))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Dados de requisição inválidos",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
-            )
-    })
+    @Override
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginDTO loginDTO) {
         log.info("Authentication attempt for email: {}", loginDTO.email());
@@ -96,22 +70,7 @@ public class AuthController {
                 ));
     }
 
-    @Operation(
-            summary = "Renova o Access Token JWT",
-            description = "Lê o Refresh Token armazenado no cookie HttpOnly 'refresh_token', valida sua vigência no banco de dados, executa a rotação (Refresh Token Rotation) e emite um novo Access Token."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Token de acesso renovado com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"accessToken\": \"eyJhbGciOi...\"}"))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Refresh Token ausente, inválido ou expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"Refresh Token ausente. Faça login novamente.\"}"))
-            )
-    })
+    @Override
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(
             @CookieValue(name = CookieUtils.REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshTokenStr) {
@@ -136,10 +95,8 @@ public class AuthController {
         User user = refreshToken.getUser();
         log.info("Token refreshed successfully for user: {}", user.getEmail());
 
-        // Rotação: Apaga o Refresh Token antigo
         refreshTokenService.deleteByToken(refreshTokenStr);
 
-        // Gera novo Refresh Token e novo Access Token
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
         String newAccessToken = tokenService.generateToken(user);
         ResponseCookie cookie = cookieUtils.createRefreshTokenCookie(newRefreshToken.getToken(), refreshTokenService.getRefreshTokenDurationSeconds());
@@ -149,17 +106,7 @@ public class AuthController {
                 .body(Map.of("accessToken", newAccessToken));
     }
 
-    @Operation(
-            summary = "Encerra a sessão do usuário (Logout)",
-            description = "Revoga e exclui o Refresh Token ativo do banco de dados e limpa os cookies HttpOnly de autenticação no cliente."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Logout efetuado com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"Logout realizado com sucesso.\"}"))
-            )
-    })
+    @Override
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
             @CookieValue(name = CookieUtils.REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshTokenStr) {
