@@ -1,84 +1,127 @@
-# a-caminho
+# A Caminho - Monorepo
 
-Projeto backend Spring Boot gerado automaticamente pelo ex-code.
+Sistema de gestão e acompanhamento de transporte universitário municipal.
 
-## Stack Tecnológica
-- **Framework:** Spring Boot 3.x/4.x
-- **Linguagem:** Java 21
-- **Gerenciador de Build:** Maven
-- **Arquitetura:** Em Camadas
-- **Persistência:** Spring Data JPA (Hibernate)
-- **Mapeamento:** MapStruct
-- **Modelos:** Lombok
-- **DTOs:** Java Records
-- **Banco de Dados:** POSTGRESQL
+Este repositório é organizado no formato **Monorepo**, contendo os módulos independentes de Backend (API REST) e Frontend (Web SPA), além dos arquivos de orquestração via Docker.
 
-## Configuração e Exemplo Prático do MapStruct
+---
 
-O **MapStruct** é utilizado no projeto para realizar conversões e mapeamentos de dados de alto desempenho entre Entidades JPA e DTOs (Java Records).
+## Estrutura do Repositório
 
-### 1. Ordem dos Processadores de Anotação no `pom.xml`
-Para garantir que o MapStruct funcione perfeitamente com o Lombok sem erros de métodos não encontrados, o `maven-compiler-plugin` executa os processadores nesta sequência exata:
-1. `lombok`: Gera os getters/setters e construtores dos modelos.
-2. `lombok-mapstruct-binding`: Permite que o MapStruct acesse os métodos gerados pelo Lombok durante a compilação.
-3. `mapstruct-processor`: Gera as implementações das interfaces `@Mapper`.
-
-```xml
-<plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-compiler-plugin</artifactId>
-    <configuration>
-        <annotationProcessorPaths>
-            <path>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-            </path>
-            <path>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-mapstruct-binding</artifactId>
-                <version>${lombok-mapstruct-binding.version}</version>
-            </path>
-            <path>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct-processor</artifactId>
-                <version>${org.mapstruct.version}</version>
-            </path>
-        </annotationProcessorPaths>
-    </configuration>
-</plugin>
+```text
+a-caminho/
+├── backend/                  # API REST com Spring Boot 3 + Java 21
+│   ├── src/
+│   ├── pom.xml
+│   ├── mvnw
+│   ├── Dockerfile
+│   └── README.md
+├── frontend/                 # Aplicação Web SPA com Angular 19 + TypeScript
+│   ├── src/
+│   ├── package.json
+│   ├── angular.json
+│   └── README.md
+├── docker-compose.yml        # Orquestração do PostgreSQL e aplicação
+├── .gitignore                # Regras de versionamento compartilhadas
+└── README.md                 # Documentação principal do Monorepo
 ```
 
-### 2. Exemplo Prático de Mapper
+---
 
-```java
-package io.a_caminho.backend.mapper;
+## Tecnologias
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+### Backend
+- **Java 21**
+- **Spring Boot 3.5** (Spring Web, Spring Data JPA, Spring Security, Validation)
+- **PostgreSQL 18** + **Flyway Migrations**
+- **Autenticação:** JWT (Stateless) e OAuth2 (Google)
+- **Mapeamento & Modelagem:** MapStruct e Lombok
+- **Documentação:** OpenAPI 3 / Swagger (SpringDoc OpenAPI)
+- **Testes:** JUnit 5, Mockito, Spring Security Test, AssertJ
 
-@Mapper(componentModel = "spring")
-public interface ExemploMapper {
-    // Conversão de Entidade para DTO
-    ExemploDTO toDTO(Exemplo entity);
+### Frontend
+- **Angular 19**
+- **TypeScript**
+- **RxJS**
 
-    // Conversão de DTO para Entidade
-    Exemplo toEntity(ExemploDTO dto);
-}
-```
-
-Durante a compilação Maven (`./mvnw compile`), o MapStruct gera as classes de implementação em `target/generated-sources/annotations`, gerenciadas como Spring Beans graças ao atributo `componentModel = "spring"`.
+---
 
 ## Como Executar
 
-### 1. Compilar e Executar
+### 1. Banco de Dados (Docker Compose)
 
-Com o Maven Wrapper:
+Para subir apenas a instância do PostgreSQL configurada para o projeto:
+
+```bash
+docker compose up -d postgres
+```
+
+O banco de dados estará acessível em `localhost:5439` (mapeado para `5432` no container).
+
+Para subir o ambiente completo (banco de dados + backend containerizado):
+
+```bash
+docker compose up --build
+```
+
+---
+
+### 2. Backend (Desenvolvimento Local)
+
+Certifique-se de que o banco de dados PostgreSQL esteja rodando (`docker compose up -d postgres`).
+
+Navegue até a pasta do backend:
+
+```bash
+cd backend
+```
+
+Execute a aplicação via Maven Wrapper:
+
 ```bash
 ./mvnw clean spring-boot:run
 ```
 
-Ou empacotar:
+A API estará disponível em: `http://localhost:8080`
+- **Swagger UI:** `http://localhost:8080/swagger-ui/index.html`
+- **OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
+
+#### Executando Testes do Backend
+
 ```bash
-./mvnw clean package
-java -jar target/a-caminho-0.0.1-SNAPSHOT.jar
+cd backend
+./mvnw clean test
 ```
+
+---
+
+### 3. Frontend (Desenvolvimento Local)
+
+Navegue até a pasta do frontend:
+
+```bash
+cd frontend
+```
+
+Instale as dependências (se ainda não tiver instalado):
+
+```bash
+npm install
+```
+
+Inicie o servidor de desenvolvimento:
+
+```bash
+npm start
+# ou: npx ng serve
+```
+
+A aplicação estará disponível em: `http://localhost:4200`
+
+#### Compilando o Frontend para Produção
+
+```bash
+cd frontend
+npm run build
+```
+
