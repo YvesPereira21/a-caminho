@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PollPassenger, Travel, TravelCancel, TravelCreate } from '../../../core/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TravelService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/travels';
+  private readonly apiUrl = `${environment.apiUrl}/travels`;
 
   createTravel(travelDTO: TravelCreate): Observable<Travel> {
     return this.http.post<Travel>(this.apiUrl, travelDTO);

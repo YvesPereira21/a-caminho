@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Poll, PollList } from '../../../core/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PollService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/polls';
+  private readonly apiUrl = `${environment.apiUrl}/polls`;
 
   getPoll(pollId: string): Observable<Poll> {
     return this.http.get<Poll>(`${this.apiUrl}/${pollId}`);

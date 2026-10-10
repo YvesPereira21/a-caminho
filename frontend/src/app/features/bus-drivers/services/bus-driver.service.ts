@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BusDriverRequest, BusDriverResponse } from '../../../core/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BusDriverService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/bus-drivers';
+  private readonly apiUrl = `${environment.apiUrl}/bus-drivers`;
 
   createBusDriver(requestDTO: BusDriverRequest): Observable<BusDriverResponse> {
     return this.http.post<BusDriverResponse>(this.apiUrl, requestDTO);

@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PollTemplate, PollTemplateCreate } from '../../../core/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PollTemplateService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/poll-templates';
+  private readonly apiUrl = `${environment.apiUrl}/poll-templates`;
 
   createPollTemplate(pollTemplateCreateDTO: PollTemplateCreate): Observable<PollTemplate> {
     return this.http.post<PollTemplate>(this.apiUrl, pollTemplateCreateDTO);

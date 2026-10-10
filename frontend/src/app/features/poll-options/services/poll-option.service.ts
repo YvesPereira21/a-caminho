@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PollOption, PollOptionResponse } from '../../../core/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PollOptionService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/poll-options';
+  private readonly apiUrl = `${environment.apiUrl}/poll-options`;
 
   createPollOption(pollOptionDTO: PollOption): Observable<PollOptionResponse> {
     return this.http.post<PollOptionResponse>(this.apiUrl, pollOptionDTO);

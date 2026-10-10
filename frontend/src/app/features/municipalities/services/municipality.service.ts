@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MunicipalityRequest, MunicipalityResponse } from '../../../core/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MunicipalityService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/municipalities';
+  private readonly apiUrl = `${environment.apiUrl}/municipalities`;
 
   createMunicipality(municipalityRequestDTO: MunicipalityRequest): Observable<MunicipalityResponse> {
     return this.http.post<MunicipalityResponse>(this.apiUrl, municipalityRequestDTO);

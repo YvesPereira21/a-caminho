@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Student, StudentCreate, StudentUpdate } from '../../../core/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UniversityStudentService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/university-students';
+  private readonly apiUrl = `${environment.apiUrl}/university-students`;
 
   registerStudent(request: StudentCreate): Observable<Student> {
     return this.http.post<Student>(this.apiUrl, request);

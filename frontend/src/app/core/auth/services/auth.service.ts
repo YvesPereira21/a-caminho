@@ -3,6 +3,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { AuthUser, LoginResponse, UserLogin, UserRole } from '../../models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { AuthUser, LoginResponse, UserLogin, UserRole } from '../../models';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly apiUrl = '/api/auth';
+  private readonly apiUrl = `${environment.apiUrl}/auth`;
 
   private readonly tokenSignal = signal<string | null>(null);
   private readonly userSignal = signal<AuthUser | null>(null);
