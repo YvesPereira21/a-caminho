@@ -74,6 +74,14 @@ public class UniversityStudentService {
         return studentMapper.toDTO(universityStudent);
     }
 
+    @Transactional(readOnly = true)
+    public StudentDTO getMyStudentProfile(UUID authenticatedUserId) {
+        UniversityStudent universityStudent = studentRepository.findByUser_UserId(authenticatedUserId)
+                .orElseThrow(() -> new ObjectNotFoundException("Perfil de estudante não encontrado para o usuário"));
+
+        return studentMapper.toDTO(universityStudent);
+    }
+
     @Transactional
     public void updateStudent(UUID authenticatedUserId, UUID studentId, StudentUpdateDTO updateDTO) {
         UniversityStudent universityStudent = studentRepository.findById(studentId)

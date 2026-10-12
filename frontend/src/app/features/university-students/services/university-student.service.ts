@@ -19,6 +19,10 @@ export class UniversityStudentService {
     return this.http.get<Student>(`${this.apiUrl}/${studentId}`);
   }
 
+  getMyProfile(): Observable<Student> {
+    return this.http.get<Student>(`${this.apiUrl}/me`);
+  }
+
   updateStudent(studentId: string, updateDTO: StudentUpdate): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${studentId}`, updateDTO);
   }

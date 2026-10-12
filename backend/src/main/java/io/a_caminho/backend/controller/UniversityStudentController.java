@@ -49,6 +49,15 @@ public class UniversityStudentController implements UniversityStudentControllerO
 
     @Override
     @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/me")
+    public ResponseEntity<StudentDTO> getMyProfile(@AuthenticationPrincipal(expression = "id") UUID userId) {
+        log.info("Fetching student profile for authenticated user ID: {}", userId);
+        StudentDTO studentDTO = universityStudentService.getMyStudentProfile(userId);
+        return ResponseEntity.ok(studentDTO);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/{studentId}")
     public ResponseEntity<Void> updateStudent(
             @AuthenticationPrincipal(expression = "id") UUID userId,

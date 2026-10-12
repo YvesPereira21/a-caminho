@@ -1,0 +1,564 @@
+<div class="student-profile-layout flex min-h-screen bg-[#F8FAFC]">
+  <!-- Sidebar Fixa Desktop Compartilhada (Item "Meu Perfil" ativo em verde #16A34A) -->
+  <app-sidebar [activeTab]="'perfil'" />
+
+  <!-- Conteúdo Principal -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Header Mobile (Verde-Escuro #003B35) -->
+    <header class="lg:hidden flex items-center justify-between h-14 px-4 bg-[#003B35] text-white shadow-xs sticky top-0 z-40">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-emerald-400">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 6v6" />
+            <path d="M15 6v6" />
+            <path d="M2 12h19.6" />
+            <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.6-.5-1-1-1H3c-.5 0-1 .4-1 1 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3" />
+            <circle cx="7" cy="18" r="2" />
+            <path d="M9 18h5" />
+            <circle cx="16" cy="18" r="2" />
+          </svg>
+        </div>
+        <span class="font-bold text-sm text-white">A caminho!</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="toggleMobileMenu()"
+          class="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors focus:outline-none cursor-pointer"
+          aria-label="Abrir menu de navegação"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Drawer Mobile Menu -->
+    @if (isMobileMenuOpen()) {
+      <div
+        class="fixed inset-0 bg-slate-950/70 z-[9999] lg:hidden backdrop-blur-xs transition-opacity flex justify-end"
+        (click)="closeMobileMenu()"
+      >
+        <div
+          class="animate-slide-drawer w-[285px] max-w-[85vw] h-full bg-[#003B35] text-white p-5 flex flex-col justify-between shadow-2xl relative z-[10000] border-l border-emerald-800/40"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="space-y-5">
+            <!-- Cabeçalho do Drawer -->
+            <div class="flex items-center justify-between pb-3.5 border-b border-white/10">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-emerald-400 border border-white/15">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 6v6" />
+                    <path d="M15 6v6" />
+                    <path d="M2 12h19.6" />
+                    <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.6-.5-1-1-1H3c-.5 0-1 .4-1 1 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3" />
+                    <circle cx="7" cy="18" r="2" />
+                    <path d="M9 18h5" />
+                    <circle cx="16" cy="18" r="2" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white leading-none">A caminho!</h3>
+                  <span class="text-[11px] text-emerald-300">Transporte Universitário</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="closeMobileMenu()"
+                class="p-1 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Fechar menu"
+              >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Navegação Drawer -->
+            <nav class="flex flex-col gap-1.5" aria-label="Menu Mobile">
+              <a
+                routerLink="/student"
+                (click)="closeMobileMenu()"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-emerald-100/90 hover:bg-white/10 transition-colors w-full text-left cursor-pointer"
+              >
+                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>Início</span>
+              </a>
+
+              <a
+                routerLink="/student"
+                (click)="closeMobileMenu()"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-emerald-100/90 hover:bg-white/10 transition-colors w-full text-left cursor-pointer"
+              >
+                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                <span>Rotas</span>
+              </a>
+
+              <a
+                routerLink="/student"
+                (click)="closeMobileMenu()"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-emerald-100/90 hover:bg-white/10 transition-colors w-full text-left cursor-pointer"
+              >
+                <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 6v6" />
+                  <path d="M15 6v6" />
+                  <path d="M2 12h19.6" />
+                  <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.6-.5-1-1-1H3c-.5 0-1 .4-1 1 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3" />
+                  <circle cx="7" cy="18" r="2" />
+                  <path d="M9 18h5" />
+                  <circle cx="16" cy="18" r="2" />
+                </svg>
+                <span>Ônibus</span>
+              </a>
+
+              <a
+                routerLink="/student/polls"
+                (click)="closeMobileMenu()"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-emerald-100/90 hover:bg-white/10 transition-colors w-full text-left cursor-pointer"
+              >
+                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span>Enquetes</span>
+              </a>
+
+              <a
+                routerLink="/student/profile"
+                (click)="closeMobileMenu()"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-[#16A34A] text-white transition-colors w-full text-left cursor-pointer shadow-xs"
+              >
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Meu Perfil</span>
+              </a>
+            </nav>
+          </div>
+
+          <!-- Rodapé do Drawer -->
+          <div class="pt-4 border-t border-white/15">
+            <button
+              type="button"
+              (click)="logout()"
+              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-emerald-200/90 hover:bg-white/10 hover:text-rose-200 transition-colors w-full text-left cursor-pointer"
+            >
+              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Sair da conta</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Main Content Area (Fundo #F8FAFC) -->
+    <main class="flex-1 px-4 py-6 md:px-8 md:py-8 max-w-5xl w-full mx-auto pb-24 lg:pb-12">
+      <!-- Feedback de Sucesso -->
+      @if (successMessage()) {
+        <div class="mb-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-start gap-3 shadow-xs animate-fade-in">
+          <svg class="w-5 h-5 text-[#16A34A] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="text-sm font-medium leading-relaxed">{{ successMessage() }}</div>
+        </div>
+      }
+
+      <!-- Feedback de Erro -->
+      @if (errorMessage()) {
+        <div class="mb-5 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 shadow-xs animate-fade-in">
+          <svg class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="text-sm font-medium leading-relaxed">{{ errorMessage() }}</div>
+        </div>
+      }
+
+      <!-- Loading State -->
+      @if (isLoading()) {
+        <div class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#E2E8F0] shadow-xs">
+          <div class="w-10 h-10 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-sm font-medium text-[#64748B] mt-4">Carregando informações do perfil...</p>
+        </div>
+      } @else if (student()) {
+        <!-- Modo de Visualização dos Cards de Perfil -->
+        @if (!isEditing()) {
+          <div class="flex flex-col gap-6 animate-fade-in">
+            <!-- 1. Card de Identificação com Avatar Circular e Botão Editar Perfil -->
+            <section class="bg-white rounded-xl md:rounded-2xl p-5 md:p-6 border border-[#E2E8F0] shadow-xs">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex flex-col sm:flex-row items-center sm:items-center gap-4 md:gap-5 text-center sm:text-left min-w-0">
+                  <!-- Avatar com Iniciais -->
+                  <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#0F766E]/10 border-2 border-[#0F766E]/30 text-[#0F766E] flex items-center justify-center font-bold text-xl md:text-2xl shrink-0 shadow-inner">
+                    {{ studentInitials() }}
+                  </div>
+
+                  <!-- Dados de Identificação -->
+                  <div class="min-w-0">
+                    <h2 class="text-lg md:text-xl font-bold text-[#1F2937] tracking-tight truncate">
+                      {{ student()?.studentName }}
+                    </h2>
+                    <div class="flex items-center justify-center sm:justify-start gap-2 text-xs md:text-sm text-[#64748B] mt-1">
+                      <svg class="w-4 h-4 text-[#64748B] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <span class="truncate">{{ student()?.email }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botão Editar Perfil -->
+                <div class="w-full sm:w-auto shrink-0">
+                  <button
+                    type="button"
+                    (click)="startEditing()"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 md:h-12 px-5 rounded-xl bg-[#16A34A] hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-sm transition-colors shadow-xs cursor-pointer"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Editar perfil</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 2. Card Dados acadêmicos -->
+            <section class="bg-white rounded-xl md:rounded-2xl p-5 md:p-6 border border-[#E2E8F0] shadow-xs">
+              <div class="flex items-center gap-2.5 pb-4 mb-5 border-b border-[#E2E8F0]">
+                <div class="w-8 h-8 rounded-lg bg-[#0F766E]/10 text-[#0F766E] flex items-center justify-center">
+                  <svg class="w-5 h-5 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                  </svg>
+                </div>
+                <h3 class="text-[17px] md:text-[19px] font-bold text-[#1F2937] tracking-tight">
+                  Dados acadêmicos
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+                <!-- Matrícula -->
+                <div class="flex flex-col gap-1 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <span class="text-xs font-semibold text-[#64748B]">Matrícula</span>
+                  <span class="text-sm md:text-base font-bold text-[#1F2937]">
+                    {{ student()?.registrationNumber || 'Não informada' }}
+                  </span>
+                </div>
+
+                <!-- Curso -->
+                <div class="flex flex-col gap-1 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <span class="text-xs font-semibold text-[#64748B]">Curso</span>
+                  <span class="text-sm md:text-base font-bold text-[#1F2937]">
+                    {{ student()?.courseName || 'Não informado' }}
+                  </span>
+                </div>
+
+                <!-- Período -->
+                <div class="flex flex-col gap-1 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <span class="text-xs font-semibold text-[#64748B]">Período atual</span>
+                  <span class="text-sm md:text-base font-bold text-[#1F2937]">
+                    {{ formattedPeriod() }}
+                  </span>
+                </div>
+
+                <!-- Universidade -->
+                <div class="sm:col-span-2 flex flex-col gap-1 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <span class="text-xs font-semibold text-[#64748B]">Universidade de destino</span>
+                  <span class="text-sm md:text-base font-bold text-[#1F2937]">
+                    {{ currentUniversityName() }}
+                  </span>
+                </div>
+
+                <!-- Data de Ingresso -->
+                <div class="flex flex-col gap-1 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <span class="text-xs font-semibold text-[#64748B]">Data de ingresso</span>
+                  <span class="text-sm md:text-base font-bold text-[#1F2937]">
+                    {{ formattedAdmissionDate() }}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. Card Dados da conta -->
+            <section class="bg-white rounded-xl md:rounded-2xl p-5 md:p-6 border border-[#E2E8F0] shadow-xs">
+              <div class="flex items-center gap-2.5 pb-4 mb-5 border-b border-[#E2E8F0]">
+                <div class="w-8 h-8 rounded-lg bg-[#0F766E]/10 text-[#0F766E] flex items-center justify-center">
+                  <svg class="w-5 h-5 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                  </svg>
+                </div>
+                <h3 class="text-[17px] md:text-[19px] font-bold text-[#1F2937] tracking-tight">
+                  Dados da conta
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+                <!-- CPF -->
+                <div class="flex flex-col gap-1 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <span class="text-xs font-semibold text-[#64748B]">CPF</span>
+                  <span class="text-sm md:text-base font-bold text-[#1F2937]">
+                    {{ student()?.cpf || 'Não informado' }}
+                  </span>
+                </div>
+
+                <!-- E-mail -->
+                <div class="flex flex-col gap-1 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <span class="text-xs font-semibold text-[#64748B]">E-mail de acesso</span>
+                  <span class="text-sm md:text-base font-bold text-[#1F2937] truncate">
+                    {{ student()?.email }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 text-xs text-[#64748B] flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0F766E] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>O e-mail e a data de ingresso são dados protegidos gerenciados institucionalmente.</span>
+              </div>
+            </section>
+          </div>
+        } @else {
+          <!-- Formulário de edição do perfil -->
+          <div class="bg-white rounded-xl md:rounded-2xl p-5 md:p-7 border border-[#E2E8F0] shadow-xs animate-fade-in">
+            <div class="pb-4 mb-6 border-b border-[#E2E8F0] flex items-center justify-between">
+              <div>
+                <h2 class="text-lg md:text-xl font-bold text-[#1F2937] tracking-tight">
+                  Editar informações do perfil
+                </h2>
+                <p class="text-xs md:text-sm text-[#64748B] mt-0.5">
+                  Atualize seus dados pessoais e dados do curso acadêmico
+                </p>
+              </div>
+
+              <button
+                type="button"
+                (click)="cancelEditing()"
+                class="p-2 rounded-xl text-[#64748B] hover:text-[#1F2937] hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Cancelar edição"
+              >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5" novalidate>
+              <!-- Nome completo -->
+              <div class="flex flex-col gap-1.5">
+                <label for="edit-student-name" class="text-xs md:text-sm font-semibold text-[#1F2937]">
+                  Nome completo <span class="text-rose-500">*</span>
+                </label>
+                <input
+                  id="edit-student-name"
+                  type="text"
+                  formControlName="studentName"
+                  placeholder="Seu nome completo"
+                  class="h-11 md:h-12 px-3.5 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#1F2937] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
+                  [ngClass]="{ 'border-rose-400 ring-1 ring-rose-300': profileForm.controls.studentName.touched && profileForm.controls.studentName.invalid }"
+                />
+                @if (profileForm.controls.studentName.touched && profileForm.controls.studentName.invalid) {
+                  <span class="text-xs text-rose-600 font-medium">Nome completo é obrigatório (mínimo 3 caracteres).</span>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- CPF -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="edit-cpf" class="text-xs md:text-sm font-semibold text-[#1F2937]">
+                    CPF <span class="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="edit-cpf"
+                    type="text"
+                    formControlName="cpf"
+                    placeholder="000.000.000-00"
+                    class="h-11 md:h-12 px-3.5 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#1F2937] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
+                    [ngClass]="{ 'border-rose-400 ring-1 ring-rose-300': profileForm.controls.cpf.touched && profileForm.controls.cpf.invalid }"
+                  />
+                  @if (profileForm.controls.cpf.touched && profileForm.controls.cpf.invalid) {
+                    <span class="text-xs text-rose-600 font-medium">Informe um CPF válido.</span>
+                  }
+                </div>
+
+                <!-- Matrícula -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="edit-registration" class="text-xs md:text-sm font-semibold text-[#1F2937]">
+                    Matrícula institucional
+                  </label>
+                  <input
+                    id="edit-registration"
+                    type="text"
+                    formControlName="registrationNumber"
+                    placeholder="Ex: 2023001452"
+                    class="h-11 md:h-12 px-3.5 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#1F2937] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Curso -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="edit-course" class="text-xs md:text-sm font-semibold text-[#1F2937]">
+                    Curso <span class="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="edit-course"
+                    type="text"
+                    formControlName="courseName"
+                    placeholder="Ex: Engenharia da Computação"
+                    class="h-11 md:h-12 px-3.5 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#1F2937] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
+                    [ngClass]="{ 'border-rose-400 ring-1 ring-rose-300': profileForm.controls.courseName.touched && profileForm.controls.courseName.invalid }"
+                  />
+                  @if (profileForm.controls.courseName.touched && profileForm.controls.courseName.invalid) {
+                    <span class="text-xs text-rose-600 font-medium">Nome do curso é obrigatório.</span>
+                  }
+                </div>
+
+                <!-- Período -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="edit-period" class="text-xs md:text-sm font-semibold text-[#1F2937]">
+                    Período atual (1 a 16)
+                  </label>
+                  <input
+                    id="edit-period"
+                    type="number"
+                    min="1"
+                    max="16"
+                    formControlName="currentPeriod"
+                    placeholder="Ex: 5"
+                    class="h-11 md:h-12 px-3.5 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#1F2937] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
+                    [ngClass]="{ 'border-rose-400 ring-1 ring-rose-300': profileForm.controls.currentPeriod.touched && profileForm.controls.currentPeriod.invalid }"
+                  />
+                  @if (profileForm.controls.currentPeriod.touched && profileForm.controls.currentPeriod.invalid) {
+                    <span class="text-xs text-rose-600 font-medium">Informe um período entre 1 e 16.</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Universidade -->
+              <div class="flex flex-col gap-1.5">
+                <label for="edit-university" class="text-xs md:text-sm font-semibold text-[#1F2937]">
+                  Universidade <span class="text-rose-500">*</span>
+                </label>
+                <select
+                  id="edit-university"
+                  formControlName="universityId"
+                  class="h-11 md:h-12 px-3.5 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all cursor-pointer"
+                  [ngClass]="{ 'border-rose-400 ring-1 ring-rose-300': profileForm.controls.universityId.touched && profileForm.controls.universityId.invalid }"
+                >
+                  <option value="" disabled>Selecione sua instituição</option>
+                  @for (univ of availableUniversities(); track univ.id) {
+                    <option [value]="univ.id">
+                      {{ univ.name }} {{ univ.campus ? '(' + univ.campus + ')' : '' }}
+                    </option>
+                  }
+                </select>
+                @if (profileForm.controls.universityId.touched && profileForm.controls.universityId.invalid) {
+                  <span class="text-xs text-rose-600 font-medium">Selecione uma universidade.</span>
+                }
+              </div>
+
+              <!-- Botões de Ação do Formulário (Altura 44-48px) -->
+              <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-[#E2E8F0] mt-2">
+                <button
+                  type="button"
+                  (click)="cancelEditing()"
+                  [disabled]="isSubmitting()"
+                  class="w-full sm:w-auto h-11 md:h-12 px-5 rounded-xl border border-[#E2E8F0] bg-white text-[#1F2937] hover:bg-slate-50 font-semibold text-sm transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  [disabled]="isSubmitting() || profileForm.invalid"
+                  class="w-full sm:w-auto h-11 md:h-12 px-6 rounded-xl bg-[#16A34A] hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  @if (isSubmitting()) {
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Salvando...</span>
+                  } @else {
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Salvar alterações</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+      }
+    </main>
+
+    <!-- Barra de Navegação Inferior Mobile Fixa (Bottom Navigation) -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E2E8F0] px-3 flex items-center justify-around z-30 shadow-lg">
+      <a
+        routerLink="/student"
+        class="flex flex-col items-center justify-center flex-1 py-1 text-[#64748B] hover:text-[#16A34A]"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Início</span>
+      </a>
+
+      <a
+        routerLink="/student"
+        class="flex flex-col items-center justify-center flex-1 py-1 text-[#64748B] hover:text-[#16A34A]"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Rotas</span>
+      </a>
+
+      <a
+        routerLink="/student"
+        class="flex flex-col items-center justify-center flex-1 py-1 text-[#64748B] hover:text-[#16A34A]"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 6v6" />
+          <path d="M15 6v6" />
+          <path d="M2 12h19.6" />
+          <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.6-.5-1-1-1H3c-.5 0-1 .4-1 1 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3" />
+          <circle cx="7" cy="18" r="2" />
+          <path d="M9 18h5" />
+          <circle cx="16" cy="18" r="2" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Ônibus</span>
+      </a>
+
+      <a
+        routerLink="/student/polls"
+        class="flex flex-col items-center justify-center flex-1 py-1 text-[#64748B] hover:text-[#16A34A]"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Enquetes</span>
+      </a>
+
+      <a
+        routerLink="/student/profile"
+        class="flex flex-col items-center justify-center flex-1 py-1 text-[#16A34A] font-bold"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Perfil</span>
+      </a>
+    </nav>
+  </div>
+</div>
+

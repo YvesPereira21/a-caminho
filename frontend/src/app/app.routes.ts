@@ -39,6 +39,15 @@ export const routes: Routes = [
       ).then((m) => m.StudentPollsComponent)
   },
   {
+    path: 'student/profile',
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.STUDENT, 'STUDENT', 'ESTUDANTE'] },
+    loadComponent: () =>
+      import(
+        './features/university-students/components/student-profile/student-profile.component'
+      ).then((m) => m.StudentProfileComponent)
+  },
+  {
     path: 'driver',
     canActivate: [roleGuard],
     data: { roles: [UserRole.BUS_DRIVER, 'BUS_DRIVER', 'MOTORISTA'] },

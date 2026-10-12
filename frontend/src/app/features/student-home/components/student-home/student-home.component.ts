@@ -196,6 +196,8 @@ export class StudentHomeComponent implements OnInit {
     this.closeMobileMenu();
     if (tab === 'enquetes') {
       this.router.navigate(['/student/polls']);
+    } else if (tab === 'perfil') {
+      this.router.navigate(['/student/profile']);
     }
   }
 

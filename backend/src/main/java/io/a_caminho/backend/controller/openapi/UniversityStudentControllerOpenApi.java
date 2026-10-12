@@ -75,6 +75,32 @@ public interface UniversityStudentControllerOpenApi {
     );
 
     @Operation(
+            summary = "Recupera o perfil do estudante autenticado",
+            description = "Retorna os dados cadastrais e acadêmicos completos do estudante universitário logado na sessão."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Perfil do estudante recuperado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = StudentDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Usuário não autenticado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Perfil de estudante não encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            )
+    })
+    @SecurityRequirement(name = OpenApiConfig.BEARER_SECURITY_SCHEME)
+    ResponseEntity<StudentDTO> getMyProfile(
+            @Parameter(hidden = true) UUID userId
+    );
+
+    @Operation(
             summary = "Atualiza os dados cadastrais do estudante universitário",
             description = "Permite a atualização dos campos informados no DTO. Apenas o próprio estudante titular da conta possui permissão para atualizá-la."
     )
