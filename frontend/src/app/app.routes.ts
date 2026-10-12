@@ -25,9 +25,9 @@ export const routes: Routes = [
     canActivate: [roleGuard],
     data: { roles: [UserRole.STUDENT, 'STUDENT', 'ESTUDANTE'] },
     loadComponent: () =>
-      import('./features/placeholder/area-placeholder.component').then(
-        (m) => m.AreaPlaceholderComponent
-      )
+      import(
+        './features/student-home/components/student-home/student-home.component'
+      ).then((m) => m.StudentHomeComponent)
   },
   {
     path: 'driver',
