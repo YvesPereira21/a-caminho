@@ -84,6 +84,7 @@ public class PollVoteService {
         pollVoteRepository.save(pollVote);
     }
 
+    @Transactional(readOnly = true)
     public VoteResponseDTO getMyVote(UUID studentUserId, UUID pollId) {
         PollVote pollVote = pollVoteRepository.findByPoll_PollIdAndStudent_User_UserId(pollId, studentUserId)
                 .orElseThrow(() -> new ObjectNotFoundException("Você ainda não votou nesta enquete."));

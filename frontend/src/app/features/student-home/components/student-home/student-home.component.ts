@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
 import { AuthService } from '../../../../core/auth/services/auth.service';
@@ -17,6 +18,7 @@ import { BusCardComponent, BusCardItem } from '../bus-card/bus-card.component';
 export class StudentHomeComponent implements OnInit {
   public readonly authService = inject(AuthService);
   private readonly pollService = inject(PollService);
+  private readonly router = inject(Router);
 
   public readonly isMobileMenuOpen = signal<boolean>(false);
   public readonly activeTab = signal<'inicio' | 'rotas' | 'onibus' | 'enquetes' | 'perfil'>('inicio');
@@ -191,6 +193,9 @@ export class StudentHomeComponent implements OnInit {
   public setActiveTab(tab: 'inicio' | 'rotas' | 'onibus' | 'enquetes' | 'perfil'): void {
     this.activeTab.set(tab);
     this.closeMobileMenu();
+    if (tab === 'enquetes') {
+      this.router.navigate(['/student/polls']);
+    }
   }
 
   public logout(): void {

@@ -1,0 +1,34 @@
+.student-polls-layout {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+}
+
+.sidebar-desktop {
+  min-width: 170px;
+  max-width: 180px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+button:not(:disabled),
+.nav-item,
+[role="button"] {
+  cursor: pointer;
+}
+
+@keyframes slideDrawerRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-drawer {
+  animation: slideDrawerRight 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
