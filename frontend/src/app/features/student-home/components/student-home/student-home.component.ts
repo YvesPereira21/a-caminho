@@ -7,10 +7,11 @@ import { AuthService } from '../../../../core/auth/services/auth.service';
 import { PollService } from '../../../polls/services/poll.service';
 import { PollList, Shift } from '../../../../core/models';
 import { BusCardComponent, BusCardItem } from '../bus-card/bus-card.component';
+import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-student-home',
-  imports: [CommonModule, LeafletModule, BusCardComponent],
+  imports: [CommonModule, LeafletModule, BusCardComponent, SidebarComponent],
   templateUrl: './student-home.component.html',
   styleUrl: './student-home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

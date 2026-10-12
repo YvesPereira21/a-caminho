@@ -6,10 +6,11 @@ import { AuthService } from '../../../../core/auth/services/auth.service';
 import { PollService } from '../../services/poll.service';
 import { PollVoteService } from '../../../poll-votes/services/poll-vote.service';
 import { Poll, PollList, Shift, VoteResponse } from '../../../../core/models';
+import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-student-polls',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, SidebarComponent],
   templateUrl: './student-polls.component.html',
   styleUrl: './student-polls.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
