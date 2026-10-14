@@ -3,6 +3,7 @@ package io.a_caminho.backend.controller;
 import io.a_caminho.backend.controller.openapi.PollTemplateControllerOpenApi;
 import io.a_caminho.backend.dto.polltemplate.PollTemplateCreateDTO;
 import io.a_caminho.backend.dto.polltemplate.PollTemplateDTO;
+import io.a_caminho.backend.dto.polltemplate.PollTemplateUpdateDTO;
 import io.a_caminho.backend.service.PollTemplateService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +43,19 @@ public class PollTemplateController implements PollTemplateControllerOpenApi {
         log.info("Request to create poll template '{}' by municipality user ID: {}", pollTemplateCreateDTO.routeName(), municipalityUserId);
         PollTemplateDTO created = pollTemplateService.createPollTemplate(municipalityUserId, pollTemplateCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('MUNICIPALITY')")
+    @PutMapping("/{templateId}")
+    public ResponseEntity<PollTemplateDTO> updatePollTemplate(
+            @AuthenticationPrincipal(expression = "id") UUID municipalityUserId,
+            @PathVariable UUID templateId,
+            @Valid @RequestBody PollTemplateUpdateDTO pollTemplateUpdateDTO
+    ) {
+        log.info("Request to update poll template ID: {} by municipality user ID: {}", templateId, municipalityUserId);
+        PollTemplateDTO updated = pollTemplateService.updatePollTemplate(municipalityUserId, templateId, pollTemplateUpdateDTO);
+        return ResponseEntity.ok(updated);
     }
 
     @Override

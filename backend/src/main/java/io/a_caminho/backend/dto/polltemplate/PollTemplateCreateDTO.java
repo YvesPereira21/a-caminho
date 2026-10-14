@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,6 +37,6 @@ public record PollTemplateCreateDTO(
 
         @NotEmpty(message = "Pelo menos um ponto padrão deve ser vinculado")
         @Size(min = 1, message = "Deve conter pelo menos um ponto padrão")
-        @Schema(description = "IDs dos pontos de ônibus padrão")
-        Set<UUID> defaultOptionIds
+        @Schema(description = "IDs dos pontos de ônibus padrão em ordem de passagem")
+        List<UUID> defaultOptionIds
 ) {}

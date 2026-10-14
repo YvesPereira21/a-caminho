@@ -95,7 +95,7 @@ class PollControllerTest {
                 45,
                 15,
                 Set.of(new UniversityResponseDTO(UUID.randomUUID(), "UFPB", "Campus I", "João Pessoa", "Paraíba")),
-                Set.of(new PollOptionResponseDTO(UUID.randomUUID(), "Praça Central", 5L))
+                List.of(new PollOptionResponseDTO(UUID.randomUUID(), "Praça Central", 5L))
         );
     }
 

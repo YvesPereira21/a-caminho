@@ -148,7 +148,7 @@ class PollVoteServiceTest {
                 .endTime(LocalDateTime.now().plusHours(4))
                 .municipality(municipality)
                 .targetUniversities(Set.of(university))
-                .options(Set.of(pollOption))
+                .options(List.of(pollOption))
                 .build();
 
         pollVote = PollVote.builder()

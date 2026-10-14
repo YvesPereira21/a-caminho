@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
 import { AuthService } from '../../../../core/auth/services/auth.service';
@@ -11,7 +11,7 @@ import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.
 
 @Component({
   selector: 'app-student-home',
-  imports: [CommonModule, LeafletModule, BusCardComponent, SidebarComponent],
+  imports: [CommonModule, RouterModule, LeafletModule, BusCardComponent, SidebarComponent],
   templateUrl: './student-home.component.html',
   styleUrl: './student-home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -73,9 +73,9 @@ export class StudentHomeComponent implements OnInit {
 
   public mapOptions: L.MapOptions = {
     layers: [
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        attribution: '&copy; OpenStreetMap contributors'
       })
     ],
     zoom: 13,
@@ -198,6 +198,17 @@ export class StudentHomeComponent implements OnInit {
       this.router.navigate(['/student/polls']);
     } else if (tab === 'perfil') {
       this.router.navigate(['/student/profile']);
+    } else if (tab === 'onibus') {
+      this.router.navigate(['/student/tracking']);
+    }
+  }
+
+  public goToTracking(): void {
+    const selected = this.selectedBus();
+    if (selected) {
+      this.router.navigate(['/student/tracking'], { queryParams: { pollId: selected.id } });
+    } else {
+      this.router.navigate(['/student/tracking']);
     }
   }
 

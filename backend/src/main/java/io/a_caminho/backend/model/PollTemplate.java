@@ -12,6 +12,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -81,8 +84,9 @@ public class PollTemplate {
         joinColumns = @JoinColumn(name = "template_id"),
         inverseJoinColumns = @JoinColumn(name = "option_id")
     )
+    @OrderColumn(name = "order_point")
     @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Set<PollOption> defaultOptions = new HashSet<>();
+    private List<PollOption> defaultOptions = new ArrayList<>();
 }

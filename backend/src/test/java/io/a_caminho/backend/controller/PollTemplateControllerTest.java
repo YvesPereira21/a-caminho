@@ -92,7 +92,7 @@ class PollTemplateControllerTest {
                 LocalTime.of(12, 0),
                 true,
                 Set.of(new UniversityResponseDTO(UUID.randomUUID(), "UFPB", "Campus I", "João Pessoa", "Paraíba")),
-                Set.of(new PollOptionResponseDTO(UUID.randomUUID(), "Praça Central", 0L))
+                List.of(new PollOptionResponseDTO(UUID.randomUUID(), "Praça Central", 0L))
         );
     }
 
@@ -111,7 +111,7 @@ class PollTemplateControllerTest {
                     LocalTime.of(6, 0),
                     LocalTime.of(12, 0),
                     Set.of(UUID.randomUUID()),
-                    Set.of(UUID.randomUUID())
+                    List.of(UUID.randomUUID())
             );
             PollTemplateDTO responseDTO = createSampleTemplateDTO(templateId);
 
@@ -209,7 +209,7 @@ class PollTemplateControllerTest {
         void shouldReturnUnauthorizedWhenCreateUnauthenticated() throws Exception {
             PollTemplateCreateDTO createDTO = new PollTemplateCreateDTO(
                     "Rota", Shift.MORNING, LocalTime.of(6, 0), LocalTime.of(12, 0),
-                    Set.of(UUID.randomUUID()), Set.of(UUID.randomUUID())
+                    Set.of(UUID.randomUUID()), List.of(UUID.randomUUID())
             );
 
             mockMvc.perform(post("/api/poll-templates")
@@ -223,7 +223,7 @@ class PollTemplateControllerTest {
         void shouldReturnForbiddenWhenCreateAsStudent() throws Exception {
             PollTemplateCreateDTO createDTO = new PollTemplateCreateDTO(
                     "Rota", Shift.MORNING, LocalTime.of(6, 0), LocalTime.of(12, 0),
-                    Set.of(UUID.randomUUID()), Set.of(UUID.randomUUID())
+                    Set.of(UUID.randomUUID()), List.of(UUID.randomUUID())
             );
 
             mockMvc.perform(post("/api/poll-templates")
@@ -238,7 +238,7 @@ class PollTemplateControllerTest {
         void shouldReturnForbiddenWhenCreateAsBusDriver() throws Exception {
             PollTemplateCreateDTO createDTO = new PollTemplateCreateDTO(
                     "Rota", Shift.MORNING, LocalTime.of(6, 0), LocalTime.of(12, 0),
-                    Set.of(UUID.randomUUID()), Set.of(UUID.randomUUID())
+                    Set.of(UUID.randomUUID()), List.of(UUID.randomUUID())
             );
 
             mockMvc.perform(post("/api/poll-templates")
@@ -301,7 +301,7 @@ class PollTemplateControllerTest {
                     null,
                     null,
                     Collections.emptySet(),
-                    Collections.emptySet()
+                    Collections.emptyList()
             );
 
             mockMvc.perform(post("/api/poll-templates")
@@ -318,7 +318,7 @@ class PollTemplateControllerTest {
             UUID userId = UUID.randomUUID();
             PollTemplateCreateDTO createDTO = new PollTemplateCreateDTO(
                     "Rota", Shift.MORNING, LocalTime.of(8, 0), LocalTime.of(8, 0),
-                    Set.of(UUID.randomUUID()), Set.of(UUID.randomUUID())
+                    Set.of(UUID.randomUUID()), List.of(UUID.randomUUID())
             );
 
             when(pollTemplateService.createPollTemplate(eq(userId), any(PollTemplateCreateDTO.class)))
@@ -338,7 +338,7 @@ class PollTemplateControllerTest {
             UUID userId = UUID.randomUUID();
             PollTemplateCreateDTO createDTO = new PollTemplateCreateDTO(
                     "Rota Repetida", Shift.MORNING, LocalTime.of(6, 0), LocalTime.of(12, 0),
-                    Set.of(UUID.randomUUID()), Set.of(UUID.randomUUID())
+                    Set.of(UUID.randomUUID()), List.of(UUID.randomUUID())
             );
 
             when(pollTemplateService.createPollTemplate(eq(userId), any(PollTemplateCreateDTO.class)))
@@ -358,7 +358,7 @@ class PollTemplateControllerTest {
             UUID userId = UUID.randomUUID();
             PollTemplateCreateDTO createDTO = new PollTemplateCreateDTO(
                     "Rota", Shift.MORNING, LocalTime.of(6, 0), LocalTime.of(12, 0),
-                    Set.of(UUID.randomUUID()), Set.of(UUID.randomUUID())
+                    Set.of(UUID.randomUUID()), List.of(UUID.randomUUID())
             );
 
             when(pollTemplateService.createPollTemplate(eq(userId), any(PollTemplateCreateDTO.class)))
@@ -378,7 +378,7 @@ class PollTemplateControllerTest {
             UUID userId = UUID.randomUUID();
             PollTemplateCreateDTO createDTO = new PollTemplateCreateDTO(
                     "Rota", Shift.MORNING, LocalTime.of(6, 0), LocalTime.of(12, 0),
-                    Set.of(UUID.randomUUID()), Set.of(UUID.randomUUID())
+                    Set.of(UUID.randomUUID()), List.of(UUID.randomUUID())
             );
 
             when(pollTemplateService.createPollTemplate(eq(userId), any(PollTemplateCreateDTO.class)))

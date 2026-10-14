@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Bus, BusCreate, BusUpdate } from '../../../core/models';
+import { Bus, BusCreate, BusLocation, BusUpdate } from '../../../core/models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -17,6 +17,10 @@ export class BusService {
 
   getBusById(busId: string): Observable<Bus> {
     return this.http.get<Bus>(`${this.apiUrl}/${busId}`);
+  }
+
+  getLatestLocation(busId: string): Observable<BusLocation> {
+    return this.http.get<BusLocation>(`${this.apiUrl}/${busId}/location`);
   }
 
   getAllBusesByMunicipality(): Observable<Bus[]> {

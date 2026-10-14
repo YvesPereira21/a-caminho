@@ -129,9 +129,9 @@
                 }
               </button>
 
-              <button
-                type="button"
-                (click)="setActiveTab('onibus')"
+              <a
+                routerLink="/student/tracking"
+                (click)="closeMobileMenu()"
                 class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between cursor-pointer transition-all duration-150"
                 [ngClass]="activeTab() === 'onibus' ? 'bg-[#16A34A] text-white shadow-xs' : 'text-emerald-100/80 hover:bg-white/10 hover:text-white'"
               >
@@ -150,7 +150,7 @@
                 @if (activeTab() === 'onibus') {
                   <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
                 }
-              </button>
+              </a>
 
               <button
                 type="button"
@@ -276,15 +276,28 @@
                   </div>
                 </div>
 
-                @if (selectedBus()) {
-                  <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap">
-                    Turno: {{ selectedBus()!.shift }}
-                  </span>
-                } @else {
-                  <span class="text-xs bg-slate-50 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap">
-                    Sem rota
-                  </span>
-                }
+                <div class="flex items-center gap-2 shrink-0">
+                  @if (selectedBus()) {
+                    <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap">
+                      Turno: {{ selectedBus()!.shift }}
+                    </span>
+                  } @else {
+                    <span class="text-xs bg-slate-50 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap">
+                      Sem rota
+                    </span>
+                  }
+                  <button
+                    type="button"
+                    (click)="goToTracking()"
+                    class="text-xs bg-[#003B35] text-white hover:bg-emerald-800 px-2.5 py-1 rounded-md font-semibold shrink-0 whitespace-nowrap flex items-center gap-1 transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <svg class="w-3.5 h-3.5 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <span>Rastrear ao vivo</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Container Leaflet -->
@@ -394,9 +407,8 @@
         <span>Rotas</span>
       </button>
 
-      <button
-        type="button"
-        (click)="setActiveTab('onibus')"
+      <a
+        routerLink="/student/tracking"
         class="flex flex-col items-center justify-center gap-1 py-1 px-3 text-[11px] font-medium transition-colors cursor-pointer"
         [ngClass]="activeTab() === 'onibus' ? 'text-emerald-600 font-bold' : 'text-slate-500'"
       >
@@ -408,7 +420,7 @@
           <circle cx="16" cy="18" r="2" />
         </svg>
         <span>Ônibus</span>
-      </button>
+      </a>
 
       <button
         type="button"

@@ -13,4 +13,7 @@ public interface PollTemplateRepository extends JpaRepository<PollTemplate, UUID
     boolean existsByMunicipality_MunicipalityIdAndRouteNameIgnoreCaseAndShift(
             UUID municipalityMunicipalityId, String routeName, Shift shift
     );
+    boolean existsByMunicipality_MunicipalityIdAndRouteNameIgnoreCaseAndShiftAndTemplateIdNot(
+            UUID municipalityMunicipalityId, String routeName, Shift shift, UUID templateId
+    );
 }

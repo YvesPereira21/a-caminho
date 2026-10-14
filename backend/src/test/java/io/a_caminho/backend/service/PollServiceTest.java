@@ -200,7 +200,7 @@ class PollServiceTest {
                 .confirmedVotesCount(10)
                 .municipality(municipality)
                 .targetUniversities(Set.of(university))
-                .options(Set.of(pollOption))
+                .options(List.of(pollOption))
                 .build();
 
         pollTemplate = PollTemplate.builder()
@@ -212,7 +212,7 @@ class PollServiceTest {
                 .active(true)
                 .municipality(municipality)
                 .targetUniversities(Set.of(university))
-                .defaultOptions(Set.of(pollOption))
+                .defaultOptions(List.of(pollOption))
                 .build();
 
         pollListDTO = new PollListDTO(

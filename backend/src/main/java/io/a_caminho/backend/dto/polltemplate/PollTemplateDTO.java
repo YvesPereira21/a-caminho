@@ -6,6 +6,7 @@ import io.a_caminho.backend.model.enums.Shift;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,6 +33,6 @@ public record PollTemplateDTO(
         @Schema(description = "Universidades atendidas por este modelo")
         Set<UniversityResponseDTO> targetUniversities,
 
-        @Schema(description = "Pontos de ônibus padrão do modelo")
-        Set<PollOptionResponseDTO> defaultOptions
+        @Schema(description = "Pontos de ônibus padrão do modelo em ordem de itinerário")
+        List<PollOptionResponseDTO> defaultOptions
 ) {}

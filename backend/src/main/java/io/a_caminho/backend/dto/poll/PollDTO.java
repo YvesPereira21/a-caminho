@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,6 +40,6 @@ public record PollDTO(
         @Schema(description = "Universidades atendidas por esta rota")
         Set<UniversityResponseDTO> targetUniversities,
 
-        @Schema(description = "Opções de paradas de ônibus e suas contagens de votos")
-        Set<PollOptionResponseDTO> options
+        @Schema(description = "Opções de paradas de ônibus em ordem de itinerário e suas contagens de votos")
+        List<PollOptionResponseDTO> options
 ) {}

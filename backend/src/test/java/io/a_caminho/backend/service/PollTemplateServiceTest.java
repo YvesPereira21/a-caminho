@@ -158,7 +158,7 @@ class PollTemplateServiceTest {
                 .active(true)
                 .municipality(municipality)
                 .targetUniversities(Set.of(university))
-                .defaultOptions(Set.of(pollOption))
+                .defaultOptions(List.of(pollOption))
                 .build();
 
         createDTO = new PollTemplateCreateDTO(
@@ -167,7 +167,7 @@ class PollTemplateServiceTest {
                 LocalTime.of(6, 0),
                 LocalTime.of(12, 0),
                 Set.of(universityId),
-                Set.of(optionId)
+                List.of(optionId)
         );
 
         responseDTO = new PollTemplateDTO(
@@ -178,7 +178,7 @@ class PollTemplateServiceTest {
                 LocalTime.of(12, 0),
                 true,
                 Set.of(new UniversityResponseDTO(universityId, "Universidade Federal da Paraíba", "Campus I", "João Pessoa", "Paraíba")),
-                Set.of(new PollOptionResponseDTO(optionId, "Praça Central", 0L))
+                List.of(new PollOptionResponseDTO(optionId, "Praça Central", 0L))
         );
     }
 
@@ -236,7 +236,7 @@ class PollTemplateServiceTest {
                     LocalTime.of(8, 0),
                     LocalTime.of(8, 0),
                     Set.of(universityId),
-                    Set.of(optionId)
+                    List.of(optionId)
             );
 
             when(municipalityRepository.findByUser_UserId(municipalityUserId))

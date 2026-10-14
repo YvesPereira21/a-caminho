@@ -5,5 +5,11 @@ import java.util.UUID;
 public record PollOptionResponseDTO(
         UUID optionId,
         String stopName,
-        Long voteCount
-) {}
+        Long voteCount,
+        Double latitude,
+        Double longitude
+) {
+    public PollOptionResponseDTO(UUID optionId, String stopName, Long voteCount) {
+        this(optionId, stopName, voteCount, null, null);
+    }
+}

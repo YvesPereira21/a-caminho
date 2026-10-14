@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +147,7 @@ public class PollService {
                 .startTime(startTime)
                 .endTime(endTime)
                 .createdAt(LocalDateTime.now())
-                .options(new HashSet<>(pollTemplate.getDefaultOptions()))
+                .options(new ArrayList<>(pollTemplate.getDefaultOptions()))
                 .targetUniversities(new HashSet<>(pollTemplate.getTargetUniversities()))
                 .build();
     }
@@ -156,14 +157,16 @@ public class PollService {
                 .stream()
                 .collect(Collectors.toMap(OptionVoteCount::getOptionId, OptionVoteCount::getTotal));
 
-        Set<PollOptionResponseDTO> options = poll.getOptions()
+        List<PollOptionResponseDTO> options = poll.getOptions()
                 .stream()
                 .map(option -> new PollOptionResponseDTO(
                         option.getOptionId(),
                         option.getStopName(),
-                        countTotalVotesByOption.getOrDefault(option.getOptionId(), 0L)
+                        countTotalVotesByOption.getOrDefault(option.getOptionId(), 0L),
+                        option.getLatitude(),
+                        option.getLongitude()
                 ))
-                .collect(Collectors.toSet());
+                .toList();
 
         Set<UniversityResponseDTO> targetUniversities = poll.getTargetUniversities()
                 .stream()

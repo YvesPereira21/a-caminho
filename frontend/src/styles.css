@@ -11,3 +11,24 @@ button:not(:disabled),
 [role="button"] {
   cursor: pointer;
 }
+
+@keyframes bus-radar-pulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.bus-pulse-marker,
+.stop-point-marker {
+  background: transparent !important;
+  border: none !important;
+}

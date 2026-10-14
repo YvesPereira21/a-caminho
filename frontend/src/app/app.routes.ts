@@ -22,12 +22,18 @@ export const routes: Routes = [
   },
   {
     path: 'student',
+    pathMatch: 'full',
     canActivate: [roleGuard],
     data: { roles: [UserRole.STUDENT, 'STUDENT', 'ESTUDANTE'] },
     loadComponent: () =>
       import(
-        './features/student-home/components/student-home/student-home.component'
-      ).then((m) => m.StudentHomeComponent)
+        './features/bus/components/bus-tracking/bus-tracking.component'
+      ).then((m) => m.BusTrackingComponent)
+  },
+  {
+    path: 'student/tracking',
+    redirectTo: 'student',
+    pathMatch: 'full'
   },
   {
     path: 'student/polls',

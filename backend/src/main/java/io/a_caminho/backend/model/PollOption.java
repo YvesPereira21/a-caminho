@@ -38,6 +38,12 @@ public class PollOption {
     @Column(name = "stop_name", nullable = false)
     private String stopName;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "municipality_id", nullable = false)
     @ToString.Exclude

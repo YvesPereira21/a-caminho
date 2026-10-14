@@ -3,6 +3,7 @@ package io.a_caminho.backend.controller.openapi;
 import io.a_caminho.backend.config.OpenApiConfig;
 import io.a_caminho.backend.dto.polltemplate.PollTemplateCreateDTO;
 import io.a_caminho.backend.dto.polltemplate.PollTemplateDTO;
+import io.a_caminho.backend.dto.polltemplate.PollTemplateUpdateDTO;
 import io.a_caminho.backend.exception.ApiError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -61,6 +62,49 @@ public interface PollTemplateControllerOpenApi {
     ResponseEntity<PollTemplateDTO> createPollTemplate(
             @Parameter(hidden = true) UUID municipalityUserId,
             PollTemplateCreateDTO pollTemplateCreateDTO
+    );
+
+    @Operation(
+            summary = "Atualiza um modelo de enquete",
+            description = "Atualiza as informações e a ordem dos pontos de uma rota recorrente. Operação restrita a prefeituras."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Modelo de enquete atualizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PollTemplateDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados inválidos fornecidos no corpo da requisição ou horários inconsistentes",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Usuário não autenticado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado: o modelo não pertence à prefeitura autenticada",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Modelo de enquete, universidade ou ponto não encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Já existe outro modelo de enquete com esta rota e turno no município",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            )
+    })
+    @SecurityRequirement(name = OpenApiConfig.BEARER_SECURITY_SCHEME)
+    ResponseEntity<PollTemplateDTO> updatePollTemplate(
+            @Parameter(hidden = true) UUID municipalityUserId,
+            @Parameter(description = "Identificador único do modelo de enquete", required = true) UUID templateId,
+            PollTemplateUpdateDTO pollTemplateUpdateDTO
     );
 
     @Operation(

@@ -2,6 +2,7 @@ package io.a_caminho.backend.service;
 
 import io.a_caminho.backend.dto.polltemplate.PollTemplateCreateDTO;
 import io.a_caminho.backend.dto.polltemplate.PollTemplateDTO;
+import io.a_caminho.backend.dto.polltemplate.PollTemplateUpdateDTO;
 import io.a_caminho.backend.exception.InvalidTimeException;
 import io.a_caminho.backend.exception.ObjectAlreadyExistsException;
 import io.a_caminho.backend.exception.ObjectNotFoundException;
@@ -16,11 +17,14 @@ import io.a_caminho.backend.repository.PollOptionRepository;
 import io.a_caminho.backend.repository.PollTemplateRepository;
 import io.a_caminho.backend.repository.UniversityRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class PollTemplateService {
@@ -77,6 +81,12 @@ public class PollTemplateService {
             throw new UserIsNotOwnerException("Um ou mais pontos não pertencem à sua prefeitura.");
         }
 
+        Map<UUID, PollOption> optionMap = options.stream()
+                .collect(Collectors.toMap(PollOption::getOptionId, o -> o));
+        List<PollOption> orderedOptions = pollTemplate.defaultOptionIds().stream()
+                .map(optionMap::get)
+                .toList();
+
         PollTemplate newPollTemplate = PollTemplate.builder()
                 .routeName(pollTemplate.routeName())
                 .shift(pollTemplate.shift())
@@ -85,10 +95,65 @@ public class PollTemplateService {
                 .active(true)
                 .municipality(municipality)
                 .targetUniversities(new HashSet<>(universities))
-                .defaultOptions(new HashSet<>(options))
+                .defaultOptions(orderedOptions)
                 .build();
 
         return pollTemplateMapper.toDTO(pollTemplateRepository.save(newPollTemplate));
+    }
+
+    @Transactional
+    public PollTemplateDTO updatePollTemplate(UUID municipalityUserId, UUID pollTemplateId, PollTemplateUpdateDTO dto) {
+        PollTemplate pollTemplate = pollTemplateRepository.findById(pollTemplateId)
+                .orElseThrow(() -> new ObjectNotFoundException("Modelo de enquete não cadastrado."));
+
+        if (!pollTemplate.getMunicipality().getUser().getId().equals(municipalityUserId)) {
+            throw new UserIsNotOwnerException("Você não tem permissão para isso.");
+        }
+
+        boolean timeIsValid = verifyTime(dto.defaultStartTime(), dto.defaultEndTime());
+        if (!timeIsValid) {
+            throw new InvalidTimeException("Horário de início e término não podem ser iguais.");
+        }
+
+        boolean pollExists = pollTemplateRepository.existsByMunicipality_MunicipalityIdAndRouteNameIgnoreCaseAndShiftAndTemplateIdNot(
+                pollTemplate.getMunicipality().getMunicipalityId(), dto.routeName(), dto.shift(), pollTemplateId
+        );
+        if (pollExists) {
+            throw new ObjectAlreadyExistsException("Esse modelo de enquete já existe.");
+        }
+
+        List<University> universities = universityRepository.findAllById(dto.targetUniversityIds());
+        if (universities.size() != dto.targetUniversityIds().size()) {
+            throw new ObjectNotFoundException("Uma ou mais universidades informadas não foram encontradas.");
+        }
+
+        List<PollOption> options = pollOptionRepository.findAllById(dto.defaultOptionIds());
+        if (options.size() != dto.defaultOptionIds().size()) {
+            throw new ObjectNotFoundException("Um ou mais pontos informados não foram encontrados.");
+        }
+
+        boolean allBelongToMunicipality = options.stream()
+                .allMatch(o -> o.getMunicipality().getMunicipalityId().equals(pollTemplate.getMunicipality().getMunicipalityId()));
+        if (!allBelongToMunicipality) {
+            throw new UserIsNotOwnerException("Um ou mais pontos não pertencem à sua prefeitura.");
+        }
+
+        Map<UUID, PollOption> optionMap = options.stream()
+                .collect(Collectors.toMap(PollOption::getOptionId, o -> o));
+        List<PollOption> orderedOptions = dto.defaultOptionIds().stream()
+                .map(optionMap::get)
+                .toList();
+
+        pollTemplate.setRouteName(dto.routeName());
+        pollTemplate.setShift(dto.shift());
+        pollTemplate.setDefaultStartTime(dto.defaultStartTime());
+        pollTemplate.setDefaultEndTime(dto.defaultEndTime());
+        pollTemplate.setTargetUniversities(new HashSet<>(universities));
+
+        pollTemplate.getDefaultOptions().clear();
+        pollTemplate.getDefaultOptions().addAll(orderedOptions);
+
+        return pollTemplateMapper.toDTO(pollTemplateRepository.save(pollTemplate));
     }
 
     public PollTemplateDTO getPollTemplate(UUID municipalityUserId, UUID pollTemplateId){
