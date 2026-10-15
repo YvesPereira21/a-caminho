@@ -9,12 +9,14 @@ import io.a_caminho.backend.exception.CrossMunicipalityAccessException;
 import io.a_caminho.backend.exception.ObjectNotFoundException;
 import io.a_caminho.backend.exception.UserIsNotOwnerException;
 import io.a_caminho.backend.mapper.PollMapper;
+import io.a_caminho.backend.model.BusDriver;
 import io.a_caminho.backend.model.Municipality;
 import io.a_caminho.backend.model.Poll;
 import io.a_caminho.backend.model.PollTemplate;
 import io.a_caminho.backend.model.UniversityStudent;
 import io.a_caminho.backend.model.User;
 import io.a_caminho.backend.model.enums.UserRole;
+import io.a_caminho.backend.repository.BusDriverRepository;
 import io.a_caminho.backend.repository.MunicipalityRepository;
 import io.a_caminho.backend.repository.PollRepository;
 import io.a_caminho.backend.repository.PollTemplateRepository;
@@ -46,6 +48,7 @@ public class PollService {
     private final UniversityStudentRepository universityStudentRepository;
     private final PollVoteRepository pollVoteRepository;
     private final UserRepository userRepository;
+    private final BusDriverRepository busDriverRepository;
     private final PollMapper pollMapper;
 
     public PollService(
@@ -55,6 +58,7 @@ public class PollService {
             UniversityStudentRepository universityStudentRepository,
             PollVoteRepository pollVoteRepository,
             UserRepository userRepository,
+            BusDriverRepository busDriverRepository,
             PollMapper pollMapper
     ) {
         this.pollRepository = pollRepository;
@@ -63,6 +67,7 @@ public class PollService {
         this.universityStudentRepository = universityStudentRepository;
         this.pollVoteRepository = pollVoteRepository;
         this.userRepository = userRepository;
+        this.busDriverRepository = busDriverRepository;
         this.pollMapper = pollMapper;
     }
 
@@ -132,6 +137,33 @@ public class PollService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<PollDTO> getPollsForDriver(UUID busDriverUserId) {
+        BusDriver busDriver = busDriverRepository.findByUser_UserId(busDriverUserId)
+                .orElseThrow(() -> new ObjectNotFoundException("Motorista não encontrado."));
+
+        Municipality municipality = busDriver.getMunicipality();
+        if (municipality == null) {
+            throw new ObjectNotFoundException("Município vinculado ao motorista não encontrado.");
+        }
+
+        LocalDate today = LocalDate.now();
+        List<Poll> polls = pollRepository.findByMunicipality_MunicipalityIdAndPollDateOrderByStartTimeAsc(
+                municipality.getMunicipalityId(),
+                today
+        );
+
+        if (polls.isEmpty()) {
+            polls = pollRepository.findAllByMunicipality_MunicipalityIdOrderByPollDateDescStartTimeAsc(
+                    municipality.getMunicipalityId()
+            );
+        }
+
+        return polls.stream()
+                .map(this::mapToPollDTO)
+                .toList();
+    }
+
     private Poll buildPollFromPollTemplate(PollTemplate pollTemplate, LocalDate today){
         LocalDateTime startTime = today.atTime(pollTemplate.getDefaultStartTime());
 
@@ -155,7 +187,7 @@ public class PollService {
     private PollDTO mapToPollDTO(Poll poll) {
         Map<UUID, Long> countTotalVotesByOption = pollVoteRepository.countVotesByOption(poll.getPollId())
                 .stream()
-                .collect(Collectors.toMap(OptionVoteCount::getOptionId, OptionVoteCount::getTotal));
+                .collect(Collectors.toMap(OptionVoteCount::getOptionId, OptionVoteCount::getTotal, (v1, v2) -> v1));
 
         List<PollOptionResponseDTO> options = poll.getOptions()
                 .stream()
@@ -174,8 +206,8 @@ public class PollService {
                         university.getUniversityId(),
                         university.getName(),
                         university.getCampus(),
-                        university.getCity().getCityName(),
-                        university.getCity().getState().getStateName()
+                        university.getCity() != null ? university.getCity().getCityName() : null,
+                        university.getCity() != null && university.getCity().getState() != null ? university.getCity().getState().getStateName() : null
                 ))
                 .collect(Collectors.toSet());
 

@@ -181,6 +181,26 @@ class PollControllerTest {
 
             verify(pollService).getPoll(userId, pollId);
         }
+
+        @Test
+        @DisplayName("GET /api/polls/driver - Lista enquetes para o motorista com sucesso (200 OK)")
+        void shouldGetPollsForDriverSuccessfully() throws Exception {
+            UUID userId = UUID.randomUUID();
+            UUID pollId = UUID.randomUUID();
+            PollDTO pollDTO = createSamplePollDTO(pollId);
+
+            when(pollService.getPollsForDriver(userId)).thenReturn(List.of(pollDTO));
+
+            mockMvc.perform(get("/api/polls/driver")
+                            .with(user(createBusDriverPrincipal(userId))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[0].pollId").value(pollId.toString()))
+                    .andExpect(jsonPath("$[0].routeName").value("Rota Universitária Manhã"))
+                    .andExpect(jsonPath("$[0].shift").value("Manhã"))
+                    .andExpect(jsonPath("$[0].confirmedVotesCount").value(15));
+
+            verify(pollService).getPollsForDriver(userId);
+        }
     }
 
     @Nested
@@ -245,6 +265,29 @@ class PollControllerTest {
         void shouldReturnForbiddenWhenGetPollByIdAsBusDriver() throws Exception {
             mockMvc.perform(get("/api/polls/{pollId}", UUID.randomUUID())
                             .with(user(createBusDriverPrincipal(UUID.randomUUID()))))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("GET /api/polls/driver - Falha com 401 Unauthorized quando não autenticado")
+        void shouldReturnUnauthorizedWhenGetPollsForDriverUnauthenticated() throws Exception {
+            mockMvc.perform(get("/api/polls/driver"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("GET /api/polls/driver - Falha com 403 Forbidden quando usuário for STUDENT")
+        void shouldReturnForbiddenWhenGetPollsForDriverAsStudent() throws Exception {
+            mockMvc.perform(get("/api/polls/driver")
+                            .with(user(createStudentPrincipal(UUID.randomUUID()))))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("GET /api/polls/driver - Falha com 403 Forbidden quando usuário for MUNICIPALITY")
+        void shouldReturnForbiddenWhenGetPollsForDriverAsMunicipality() throws Exception {
+            mockMvc.perform(get("/api/polls/driver")
+                            .with(user(createMunicipalityPrincipal(UUID.randomUUID()))))
                     .andExpect(status().isForbidden());
         }
     }

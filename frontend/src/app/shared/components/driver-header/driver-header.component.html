@@ -1,0 +1,44 @@
+<header class="driver-header sticky top-0 z-40 bg-[#003B35] text-white shadow-md">
+  <div class="driver-header__inner max-w-[1100px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
+    <!-- Logo -->
+    <a class="flex items-center gap-2.5 min-w-0" aria-label="A caminho! - Painel do motorista">
+      <span class="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-emerald-400 shrink-0">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 6v6" />
+          <path d="M15 6v6" />
+          <path d="M2 12h19.6" />
+          <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.6-.5-1-1-1H3c-.5 0-1 .4-1 1 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3" />
+          <circle cx="7" cy="18" r="2" />
+          <path d="M9 18h5" />
+          <circle cx="16" cy="18" r="2" />
+        </svg>
+      </span>
+      <span class="text-lg font-bold tracking-tight truncate">A caminho!</span>
+    </a>
+
+    <!-- Motorista + Sair -->
+    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="w-9 h-9 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-sm font-bold shrink-0" aria-hidden="true">
+          {{ driverName().charAt(0).toUpperCase() }}
+        </span>
+        <div class="hidden sm:flex flex-col min-w-0 leading-tight">
+          <span class="text-sm font-semibold truncate max-w-[200px]">{{ driverName() }}</span>
+          <span class="text-xs text-emerald-200/80">Motorista</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        (click)="onLogout()"
+        class="w-11 h-11 rounded-xl flex items-center justify-center text-emerald-100 hover:bg-white/10 hover:text-white transition-colors cursor-pointer active:scale-95 focus-visible:outline-2 focus-visible:outline-emerald-300"
+        title="Sair da conta"
+        aria-label="Sair da conta"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>

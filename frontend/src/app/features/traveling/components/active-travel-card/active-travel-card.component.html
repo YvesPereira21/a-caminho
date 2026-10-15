@@ -1,0 +1,75 @@
+<div class="active-travel-card bg-white rounded-2xl border border-emerald-200 shadow-sm p-5 sm:p-6 relative overflow-hidden transition-all hover:shadow-md">
+  <!-- Tarja sutil superior verde -->
+  <div class="absolute top-0 left-0 right-0 h-1.5 bg-[#16A34A]"></div>
+
+  <!-- Cabeçalho do Card: Status e Sentido -->
+  <div class="flex items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold tracking-wide">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>EM ANDAMENTO</span>
+      </span>
+    </div>
+
+    <!-- Sentido da Viagem -->
+    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">
+      @if (travel().direction === PollDirection.OUTBOUND) {
+        <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+        <span>Ida (Universidades)</span>
+      } @else {
+        <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Volta (Município)</span>
+      }
+    </div>
+  </div>
+
+  <!-- Informações Principais da Viagem -->
+  <div class="space-y-4 mb-6">
+    <!-- Métrica de Passageiros -->
+    <div class="flex items-center gap-3.5 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+      <div class="w-11 h-11 rounded-xl bg-emerald-100/80 text-emerald-800 flex items-center justify-center shrink-0">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </div>
+      <div>
+        <div class="text-xl sm:text-2xl font-extrabold text-slate-800 leading-none">
+          {{ travel().confirmedVotesCount || 0 }}
+        </div>
+        <div class="text-xs text-slate-500 font-medium mt-0.5">
+          Estudantes confirmados para embarque
+        </div>
+      </div>
+    </div>
+
+    <!-- Destinos / Universidades Atendidas -->
+    @if (travel().targetUniversities && travel().targetUniversities.length > 0) {
+      <div>
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Destinos Atendidos</span>
+        <div class="flex flex-wrap gap-1.5">
+          @for (uni of travel().targetUniversities; track uni.universityId) {
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 text-xs font-semibold shadow-2xs">
+              {{ uni.campus }}
+            </span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Ação Principal: Gerenciar Viagem -->
+  <button
+    type="button"
+    (click)="onManage()"
+    class="w-full min-h-[48px] px-4 py-3 bg-[#16A34A] hover:bg-[#15803D] active:scale-[0.99] text-white font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
+  >
+    <span>Acompanhar Viagem em Andamento</span>
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+    </svg>
+  </button>
+</div>

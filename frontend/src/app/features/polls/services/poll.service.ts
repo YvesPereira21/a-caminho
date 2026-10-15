@@ -22,4 +22,8 @@ export class PollService {
   getOpenPollsToStudent(): Observable<PollList[]> {
     return this.http.get<PollList[]>(`${this.apiUrl}/open`);
   }
+
+  getPollsForDriver(): Observable<Poll[]> {
+    return this.http.get<Poll[]>(`${this.apiUrl}/driver`);
+  }
 }

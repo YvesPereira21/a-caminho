@@ -26,15 +26,25 @@ public class PollController implements PollControllerOpenApi {
     private final PollService pollService;
 
     @Override
-    @PreAuthorize("hasAnyRole('MUNICIPALITY', 'STUDENT')")
-    @GetMapping("/{pollId}")
-    public ResponseEntity<PollDTO> getPoll(
-            @AuthenticationPrincipal(expression = "id") UUID userId,
-            @PathVariable UUID pollId
+    @PreAuthorize("hasRole('BUS_DRIVER')")
+    @GetMapping("/driver")
+    public ResponseEntity<List<PollDTO>> getPollsForDriver(
+            @AuthenticationPrincipal(expression = "id") UUID busDriverUserId
     ) {
-        log.info("Request to fetch poll ID: {} by user ID: {}", pollId, userId);
-        PollDTO pollDTO = pollService.getPoll(userId, pollId);
-        return ResponseEntity.ok(pollDTO);
+        log.info("Request to fetch polls for bus driver user ID: {}", busDriverUserId);
+        List<PollDTO> polls = pollService.getPollsForDriver(busDriverUserId);
+        return ResponseEntity.ok(polls);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/open")
+    public ResponseEntity<List<PollListDTO>> getOpenPollsToStudent(
+            @AuthenticationPrincipal(expression = "id") UUID studentUserId
+    ) {
+        log.info("Request to fetch open polls for student user ID: {}", studentUserId);
+        List<PollListDTO> polls = pollService.getOpenPollsToStudent(studentUserId);
+        return ResponseEntity.ok(polls);
     }
 
     @Override
@@ -49,13 +59,14 @@ public class PollController implements PollControllerOpenApi {
     }
 
     @Override
-    @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/open")
-    public ResponseEntity<List<PollListDTO>> getOpenPollsToStudent(
-            @AuthenticationPrincipal(expression = "id") UUID studentUserId
+    @PreAuthorize("hasAnyRole('MUNICIPALITY', 'STUDENT')")
+    @GetMapping("/{pollId:[a-fA-F0-9\\-]{36}}")
+    public ResponseEntity<PollDTO> getPoll(
+            @AuthenticationPrincipal(expression = "id") UUID userId,
+            @PathVariable UUID pollId
     ) {
-        log.info("Request to fetch open polls for student user ID: {}", studentUserId);
-        List<PollListDTO> polls = pollService.getOpenPollsToStudent(studentUserId);
-        return ResponseEntity.ok(polls);
+        log.info("Request to fetch poll ID: {} by user ID: {}", pollId, userId);
+        PollDTO pollDTO = pollService.getPoll(userId, pollId);
+        return ResponseEntity.ok(pollDTO);
     }
 }

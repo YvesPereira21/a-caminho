@@ -1,0 +1,175 @@
+<div
+  class="poll-card group relative rounded-xl transition-all duration-200 text-left p-4 sm:p-5"
+  [class.poll-card--selected]="isSelected()"
+  [class.poll-card--default]="!isSelected()"
+>
+  <!-- Informações Principais da Rota -->
+  <div class="space-y-3">
+    <!-- Linha superior: Turno e Votos -->
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Badge de Turno -->
+        <span
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold tracking-wide uppercase"
+          [ngClass]="{
+            'bg-amber-100 text-amber-900 border border-amber-200': shiftLabel() === 'Manhã',
+            'bg-sky-100 text-sky-900 border border-sky-200': shiftLabel() === 'Tarde',
+            'bg-indigo-100 text-indigo-900 border border-indigo-200': shiftLabel() === 'Noite',
+            'bg-slate-100 text-slate-800 border border-slate-200': shiftLabel() !== 'Manhã' && shiftLabel() !== 'Tarde' && shiftLabel() !== 'Noite'
+          }"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          Turno: {{ shiftLabel() }}
+        </span>
+
+        <!-- Destaque: Votos Confirmados -->
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-[#E6F4EA] text-[#137333] border border-[#CEEAD6]">
+          <svg class="w-4 h-4 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <polyline points="16 11 18 13 22 9" />
+          </svg>
+          {{ poll().confirmedVotesCount }} {{ poll().confirmedVotesCount === 1 ? 'voto confirmado' : 'votos confirmados' }}
+        </span>
+      </div>
+
+      <!-- Badge de Estado Selecionado (Desktop) -->
+      @if (isSelected()) {
+        <span class="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-[#16A34A] bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Ativa
+        </span>
+      }
+    </div>
+
+    <!-- Nome da Rota e Data -->
+    <div>
+      <h3 class="text-[17px] sm:text-[19px] font-bold text-[#1F2937] leading-snug">
+        {{ poll().routeName }}
+      </h3>
+      @if (formattedDate()) {
+        <p class="text-xs sm:text-sm text-[#64748B] flex items-center gap-1.5 mt-1">
+          <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+            <line x1="16" x2="16" y1="2" y2="6" />
+            <line x1="8" x2="8" y1="2" y2="6" />
+            <line x1="3" x2="21" y1="10" y2="10" />
+          </svg>
+          Data da operação: {{ formattedDate() }}
+        </p>
+      }
+    </div>
+
+    <!-- Universidades Atendidas -->
+    @if (targetUniversitiesList().length > 0) {
+      <div class="pt-0.5 flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-medium text-[#64748B] flex items-center gap-1 mr-1">
+          <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+          </svg>
+          Destinos:
+        </span>
+        @for (uni of targetUniversitiesList(); track uni.id) {
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+            {{ uni.name }}{{ uni.campus ? ' (' + uni.campus + ')' : '' }}
+          </span>
+        }
+      </div>
+    }
+
+    <!-- Paradas de Embarque / Itinerário -->
+    @if (optionsList().length > 0) {
+      <div class="mt-3 pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs sm:text-sm font-bold text-[#0F766E] flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-[#0F766E] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            Itinerário de Paradas ({{ optionsList().length }})
+          </span>
+          <span class="text-[11px] text-[#64748B] hidden sm:inline font-medium">Ordem de passagem</span>
+        </div>
+
+        <!-- Cards de Paradas em Grade Responsiva -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          @for (opt of optionsList(); track opt.optionId; let idx = $index) {
+            <div class="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-50/90 border border-slate-200/80 hover:bg-slate-100/90 transition-colors">
+              <span class="w-5 h-5 rounded-full bg-[#003B35] text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-2xs" [attr.aria-label]="'Parada ' + (idx + 1)">
+                {{ idx + 1 }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <div class="text-xs sm:text-[13px] font-semibold text-[#1F2937] leading-snug">
+                  {{ opt.stopName }}
+                </div>
+                @if (opt.voteCount > 0) {
+                  <div class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-0.5 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    {{ opt.voteCount }} {{ opt.voteCount === 1 ? 'aluno aguardando' : 'alunos aguardando' }}
+                  </div>
+                } @else {
+                  <div class="text-[10px] text-slate-400 mt-0.5">
+                    Nenhum aluno
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Ação Exclusiva: Botão com legenda Selecionar Enquete -->
+  <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+    <div class="text-xs text-[#64748B]">
+      @if (isSelected()) {
+        <span class="inline-flex items-center gap-1.5 font-semibold text-[#16A34A]">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Enquete selecionada para a viagem
+        </span>
+      } @else {
+        <span>Clique no botão ao lado para escolher esta enquete</span>
+      }
+    </div>
+
+    <button
+      type="button"
+      (click)="onSelectButtonClick($event)"
+      class="h-12 w-full sm:w-auto sm:min-w-[210px] px-6 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.98] shadow-xs"
+      [ngClass]="{
+        'bg-[#16A34A] text-white hover:bg-[#15803D] ring-2 ring-[#16A34A] ring-offset-2': isSelected(),
+        'bg-white text-slate-800 hover:bg-slate-50 border-2 border-slate-300 hover:border-[#16A34A] hover:text-[#16A34A]': !isSelected()
+      }"
+      [attr.aria-pressed]="isSelected()"
+    >
+      @if (isSelected()) {
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>Enquete selecionada</span>
+      } @else {
+        <svg class="w-4 h-4 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        <span>Selecionar enquete</span>
+      }
+    </button>
+  </div>
+</div>

@@ -34,4 +34,8 @@ public interface PollRepository extends JpaRepository<Poll, UUID> {
             UUID municipalityId,
             LocalDate pollDate
     );
+
+    List<Poll> findAllByMunicipality_MunicipalityIdOrderByPollDateDescStartTimeAsc(
+            UUID municipalityId
+    );
 }

@@ -1,0 +1,9 @@
+.driver-header__inner {
+  height: 60px;
+}
+
+@media (min-width: 640px) {
+  .driver-header__inner {
+    height: 64px;
+  }
+}

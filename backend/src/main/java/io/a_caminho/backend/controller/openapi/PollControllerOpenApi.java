@@ -114,4 +114,35 @@ public interface PollControllerOpenApi {
     ResponseEntity<List<PollListDTO>> getOpenPollsToStudent(
             @Parameter(hidden = true) UUID studentUserId
     );
+
+    @Operation(
+            summary = "Lista enquetes disponíveis para o motorista",
+            description = "Retorna as enquetes disponíveis no município do motorista autenticado para preparação de viagem."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de enquetes para o motorista recuperada com sucesso",
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PollDTO.class)))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Usuário não autenticado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado: apenas motoristas podem acessar este recurso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Perfil de motorista não encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            )
+    })
+    @SecurityRequirement(name = OpenApiConfig.BEARER_SECURITY_SCHEME)
+    ResponseEntity<List<PollDTO>> getPollsForDriver(
+            @Parameter(hidden = true) UUID busDriverUserId
+    );
 }

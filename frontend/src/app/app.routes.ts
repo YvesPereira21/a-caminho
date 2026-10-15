@@ -58,9 +58,23 @@ export const routes: Routes = [
     canActivate: [roleGuard],
     data: { roles: [UserRole.BUS_DRIVER, 'BUS_DRIVER', 'MOTORISTA'] },
     loadComponent: () =>
-      import('./features/placeholder/area-placeholder.component').then(
-        (m) => m.AreaPlaceholderComponent
+      import('./features/bus-drivers/components/driver-home/driver-home.component').then(
+        (m) => m.DriverHomeComponent
       )
+  },
+  {
+    path: 'driver/polls',
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.BUS_DRIVER, 'BUS_DRIVER', 'MOTORISTA'] },
+    loadComponent: () =>
+      import('./features/bus-drivers/components/poll-selection/poll-selection.component').then(
+        (m) => m.PollSelectionComponent
+      )
+  },
+  {
+    path: 'driver/prepare-travel',
+    redirectTo: 'driver/polls',
+    pathMatch: 'full'
   },
   {
     path: 'admin',
