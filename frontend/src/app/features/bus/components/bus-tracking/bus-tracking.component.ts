@@ -8,7 +8,8 @@ import { AuthService } from '../../../../core/auth/services/auth.service';
 import { PollService } from '../../../polls/services/poll.service';
 import { BusService } from '../../services/bus.service';
 import { BusTrackingWebSocketService } from '../../services/bus-tracking-websocket.service';
-import { BusLocation, Poll, PollList, PollOptionResponse, Shift } from '../../../../core/models';
+import { TravelService } from '../../../traveling/services/travel.service';
+import { BusLocation, Poll, PollList, PollOptionResponse, Shift, Travel, isInboundTravel } from '../../../../core/models';
 import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
 
 @Component({
@@ -23,6 +24,7 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
   private readonly pollService = inject(PollService);
   private readonly busService = inject(BusService);
   public readonly wsService = inject(BusTrackingWebSocketService);
+  private readonly travelService = inject(TravelService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -32,6 +34,8 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
   public readonly openPolls = signal<PollList[]>([]);
   public readonly selectedPoll = signal<Poll | null>(null);
   public readonly selectedPollId = signal<string | null>(null);
+  public readonly activeTravel = signal<Travel | null>(null);
+  public readonly isInboundTravel = isInboundTravel;
 
   public readonly currentBusLocation = signal<BusLocation | null>(null);
   public readonly lastUpdatedTime = signal<string | null>(null);
@@ -41,13 +45,14 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
   private inactivityCheckTimer: any = null;
 
   public readonly isBusInTransit = computed<boolean>(() => {
-    return this.currentBusLocation() !== null && this.openPolls().length > 0;
+    return this.activeTravel() !== null || this.currentBusLocation() !== null;
   });
 
   private wsSubscription: Subscription | null = null;
   private leafletMap: L.Map | null = null;
   private busMarker: L.Marker | null = null;
   private stopMarkers: L.Marker[] = [];
+  private mapResizeObserver: ResizeObserver | null = null;
 
   public mapOptions: L.MapOptions = {
     layers: [
@@ -78,10 +83,11 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
     this.wsService.connect();
     this.loadInitialData();
 
-    // Verifica periodicamente se o ônibus parou de enviar sinal (inatividade > 35s)
+    // Monitora sinal do veículo periodicamente
     this.inactivityCheckTimer = setInterval(() => {
       const last = this.lastLocationTimestamp();
-      if (last > 0 && Date.now() - last > 35000) {
+      // Apenas reseta localização se não houver viagem ativa em andamento
+      if (!this.activeTravel() && last > 0 && Date.now() - last > 60000) {
         if (this.currentBusLocation() !== null) {
           this.currentBusLocation.set(null);
           if (this.busMarker) {
@@ -108,17 +114,78 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
   }
 
   public onMapReady(map: L.Map): void {
+    this.mapResizeObserver?.disconnect();
     this.leafletMap = map;
+    this.busMarker = null;
+    this.stopMarkers = [];
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    setTimeout(() => {
-      map.invalidateSize();
-      this.refreshMapElements();
-    }, 250);
+    map.invalidateSize();
+    this.refreshMapElements();
+    const location = this.currentBusLocation();
+    if (location) {
+      if (this.isAutoCenter()) {
+        map.panTo([location.latitude, location.longitude], { animate: false });
+      }
+      this.updateBusMarkerOnMap(location.latitude, location.longitude);
+    }
+
+    // O painel e o mapa mudam de tamanho nos breakpoints, sem redimensionar a janela.
+    this.mapResizeObserver = new ResizeObserver(([entry]) => {
+      if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+        map.invalidateSize({ pan: false });
+        this.busMarker?.getPopup()?.update();
+      }
+    });
+    this.mapResizeObserver.observe(map.getContainer());
   }
 
   public loadInitialData(): void {
     this.isLoading.set(true);
+
+    // 1. Prioridade: verificar se há viagem ativa em andamento para o estudante
+    this.travelService.getActiveTravelsForStudent().subscribe({
+      next: (travels) => {
+        if (travels && travels.length > 0) {
+          const travel = travels[0];
+          this.activeTravel.set(travel);
+
+          const busId = travel.bus?.busId;
+          if (busId) {
+            this.checkCachedBusLocation(busId);
+            this.startTrackingForBus(busId);
+          } else {
+            this.startTrackingGeneral();
+          }
+
+          if (travel.pollId) {
+            this.selectedPollId.set(travel.pollId);
+            this.pollService.getPoll(travel.pollId).subscribe({
+              next: (poll) => {
+                this.selectedPoll.set(poll);
+                this.isLoading.set(false);
+                this.refreshMapElements();
+              },
+              error: () => {
+                this.isLoading.set(false);
+              }
+            });
+          } else {
+            this.isLoading.set(false);
+          }
+        } else {
+          this.activeTravel.set(null);
+          this.loadOpenPollsFallback();
+        }
+      },
+      error: () => {
+        this.activeTravel.set(null);
+        this.loadOpenPollsFallback();
+      }
+    });
+  }
+
+  private loadOpenPollsFallback(): void {
     this.pollService.getOpenPollsToStudent().subscribe({
       next: (polls) => {
         this.openPolls.set(polls);
@@ -126,7 +193,7 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
           const paramPollId = this.route.snapshot.queryParamMap.get('pollId');
           const chosenId = paramPollId && polls.some((p) => p.pollId === paramPollId) ? paramPollId : polls[0].pollId;
           this.selectPoll(chosenId);
-          this.checkCachedBusLocation();
+          this.startTrackingGeneral();
         } else {
           this.isLoading.set(false);
         }
@@ -138,14 +205,11 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
     });
   }
 
-  private checkCachedBusLocation(): void {
-    this.busService.getLatestLocation('f0000000-0000-0000-0000-000000000001').subscribe({
+  private checkCachedBusLocation(busId: string): void {
+    this.busService.getLatestLocation(busId).subscribe({
       next: (loc) => {
         if (loc && loc.latitude != null && loc.longitude != null) {
-          const time = loc.timestamp ? new Date(loc.timestamp).getTime() : 0;
-          if (time > 0 && Date.now() - time < 35000) {
-            this.onNewBusLocation(loc);
-          }
+          this.onNewBusLocation(loc);
         }
       },
       error: () => {
@@ -163,7 +227,7 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
         this.selectedPoll.set(poll);
         this.isLoading.set(false);
         this.refreshMapElements();
-        this.startTrackingForPoll(poll);
+        this.startTrackingGeneral();
       },
       error: () => {
         this.isLoading.set(false);
@@ -171,13 +235,36 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
     });
   }
 
-  private startTrackingForPoll(poll: Poll): void {
+  private startTrackingForBus(busId: string): void {
     if (this.wsSubscription) {
       this.wsSubscription.unsubscribe();
       this.wsSubscription = null;
     }
 
-    // Inscrição no canal WebSocket STOMP geral de atualizações ao vivo
+    const subGroup = new Subscription();
+    subGroup.add(
+      this.wsService.listenBusLocation(busId).subscribe({
+        next: (loc) => this.onNewBusLocation(loc)
+      })
+    );
+    subGroup.add(
+      this.wsService.listenAllLocations().subscribe({
+        next: (loc) => {
+          if (!loc.busId || loc.busId === busId) {
+            this.onNewBusLocation(loc);
+          }
+        }
+      })
+    );
+    this.wsSubscription = subGroup;
+  }
+
+  private startTrackingGeneral(): void {
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+      this.wsSubscription = null;
+    }
+
     this.wsSubscription = this.wsService.listenAllLocations().subscribe({
       next: (loc) => {
         this.onNewBusLocation(loc);
@@ -186,22 +273,14 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
   }
 
   private onNewBusLocation(loc: BusLocation): void {
-    const wasInTransit = this.isBusInTransit();
     this.currentBusLocation.set(loc);
     this.lastLocationTimestamp.set(Date.now());
     this.lastUpdatedTime.set(this.formatTime(new Date()));
-    this.updateBusMarkerOnMap(loc.latitude, loc.longitude);
-
-    if (!wasInTransit && this.leafletMap) {
-      setTimeout(() => {
-        this.leafletMap?.invalidateSize();
-        this.refreshMapElements();
-      }, 150);
-    }
 
     if (this.isAutoCenter() && this.leafletMap) {
-      this.leafletMap.panTo([loc.latitude, loc.longitude]);
+      this.leafletMap.panTo([loc.latitude, loc.longitude], { animate: false });
     }
+    this.updateBusMarkerOnMap(loc.latitude, loc.longitude);
   }
 
   private updateBusMarkerOnMap(lat: number, lng: number): void {
@@ -229,17 +308,54 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
       iconAnchor: [22, 22]
     });
 
+    const driverName = this.activeTravel()?.busDriver?.busDriverName || 'Motorista';
+    const busName = this.activeTravel()?.bus?.busName ? `(${this.activeTravel()?.bus?.busName})` : '';
+    const directionLabel = isInboundTravel(this.activeTravel()?.direction) ? 'Volta' : 'Ida';
+
+    const popupContent = this.createPopupContent(
+      'Ônibus Universitário em trânsito',
+      `${driverName} ${busName}`.trim(),
+      `Sentido: ${directionLabel} • Atualizado em tempo real`
+    );
+
     if (this.busMarker) {
       this.busMarker.setLatLng([lat, lng]);
+      this.busMarker.setPopupContent(popupContent);
     } else {
       this.busMarker = L.marker([lat, lng], { icon: busIcon, zIndexOffset: 1000 }).addTo(this.leafletMap);
-      this.busMarker.bindPopup(`
-        <div style="font-family: Inter, sans-serif; padding: 6px; font-size: 13px;">
-          <strong style="color: #16A34A;">Ônibus Universitário em trânsito</strong><br>
-          <span style="color: #64748B; font-size: 11px;">Rastreamento em tempo real</span>
-        </div>
-      `);
+      this.busMarker.bindPopup(popupContent, this.trackingPopupOptions()).openPopup();
     }
+  }
+
+  private trackingPopupOptions(): L.PopupOptions {
+    return {
+      className: 'tracking-popup',
+      minWidth: 200,
+      maxWidth: 280,
+      autoPanPaddingTopLeft: L.point(16, 112),
+      autoPanPaddingBottomRight: L.point(16, 140)
+    };
+  }
+
+  private createPopupContent(title: string, details: string, status?: string): HTMLElement {
+    const content = document.createElement('div');
+    content.className = 'tracking-popup-details';
+    const heading = document.createElement('strong');
+    heading.className = 'tracking-popup-title';
+    heading.textContent = title;
+    const description = document.createElement('span');
+    description.className = 'tracking-popup-description';
+    description.textContent = details;
+    content.append(heading, description);
+
+    if (status) {
+      const metadata = document.createElement('span');
+      metadata.className = 'tracking-popup-status';
+      metadata.textContent = status;
+      content.append(metadata);
+    }
+
+    return content;
   }
 
   private refreshMapElements(): void {
@@ -273,16 +389,19 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
 
         const marker = L.marker(pointCoords, { icon: stopIcon })
           .addTo(this.leafletMap!)
-          .bindPopup(`
-            <div style="font-family: Inter, sans-serif; padding: 4px; font-size: 12px;">
-              <span style="font-size: 10px; font-weight: 700; color: #16A34A; text-transform: uppercase;">Parada #${index + 1}</span><br>
-              <strong style="color: #0F172A; font-size: 13px;">${opt.stopName}</strong>
-            </div>
-          `);
+          .bindPopup(
+            this.createPopupContent(`Parada #${index + 1}`, opt.stopName),
+            this.trackingPopupOptions()
+          );
 
         this.stopMarkers.push(marker);
       }
     });
+
+    const busLoc = this.currentBusLocation();
+    if (busLoc && busLoc.latitude != null && busLoc.longitude != null) {
+      latLngs.push([busLoc.latitude, busLoc.longitude]);
+    }
 
     // Enquadra o mapa para exibir todas as paradas
     if (latLngs.length > 1) {
@@ -296,7 +415,8 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
     this.isAutoCenter.update((v) => !v);
     if (this.isAutoCenter() && this.currentBusLocation() && this.leafletMap) {
       const loc = this.currentBusLocation()!;
-      this.leafletMap.panTo([loc.latitude, loc.longitude]);
+      this.leafletMap.panTo([loc.latitude, loc.longitude], { animate: false });
+      this.busMarker?.getPopup()?.update();
     }
   }
 
@@ -341,6 +461,7 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.mapResizeObserver?.disconnect();
     if (this.inactivityCheckTimer) {
       clearInterval(this.inactivityCheckTimer);
       this.inactivityCheckTimer = null;

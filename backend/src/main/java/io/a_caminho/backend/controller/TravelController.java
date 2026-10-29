@@ -68,6 +68,17 @@ public class TravelController implements TravelControllerOpenApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/active/student")
+    public ResponseEntity<List<TravelDTO>> getActiveTravelsForStudent(
+            @AuthenticationPrincipal(expression = "id") UUID studentUserId
+    ) {
+        log.info("Request to fetch active travels for student user ID: {}", studentUserId);
+        List<TravelDTO> travels = travelService.getActiveTravelsForStudent(studentUserId);
+        return ResponseEntity.ok(travels);
+    }
+
+    @Override
     @PreAuthorize("hasRole('BUS_DRIVER')")
     @GetMapping("/driver")
     public ResponseEntity<List<TravelDTO>> getAllTravelsByDriver(

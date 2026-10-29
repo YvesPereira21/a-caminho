@@ -53,6 +53,23 @@ export class PollCardComponent {
     }
   });
 
+  public readonly departureTime = computed(() => {
+    const raw = this.poll().startTime;
+    if (!raw) return '';
+    try {
+      if (raw.includes('T')) {
+        const timePart = raw.split('T')[1];
+        return timePart.substring(0, 5);
+      }
+      if (raw.includes(':')) {
+        return raw.substring(0, 5);
+      }
+      return '';
+    } catch {
+      return '';
+    }
+  });
+
   public readonly targetUniversitiesList = computed(() => {
     return this.poll().targetUniversities || [];
   });

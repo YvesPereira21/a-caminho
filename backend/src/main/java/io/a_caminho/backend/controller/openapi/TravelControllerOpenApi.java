@@ -124,6 +124,37 @@ public interface TravelControllerOpenApi {
     );
 
     @Operation(
+            summary = "Busca viagens ativas disponíveis para o estudante",
+            description = "Recupera as viagens atualmente em andamento (status EM_ANDAMENTO) pertencentes ao município e universidade do estudante autenticado."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Viagens ativas recuperadas com sucesso",
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TravelDTO.class)))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Usuário não autenticado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado: apenas estudantes podem acessar este recurso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Estudante não encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            )
+    })
+    @SecurityRequirement(name = OpenApiConfig.BEARER_SECURITY_SCHEME)
+    ResponseEntity<List<TravelDTO>> getActiveTravelsForStudent(
+            @Parameter(hidden = true) UUID studentUserId
+    );
+
+    @Operation(
             summary = "Lista o histórico de viagens do motorista",
             description = "Retorna todas as viagens realizadas pelo motorista autenticado, ordenadas da mais recente para a mais antiga."
     )

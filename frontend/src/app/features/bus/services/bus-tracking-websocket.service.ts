@@ -85,6 +85,39 @@ export class BusTrackingWebSocketService implements OnDestroy {
     }
   }
 
+  public sendLocation(busId: string, latitude: number, longitude: number): void {
+    if (!this.stompClient) {
+      this.initClient();
+    }
+
+    const payload = {
+      busId,
+      latitude,
+      longitude
+    };
+
+    if (this.stompClient?.connected) {
+      this.stompClient.publish({
+        destination: '/app/location',
+        body: JSON.stringify(payload)
+      });
+    } else {
+      if (!this.stompClient?.active) {
+        this.connect();
+      }
+      const interval = setInterval(() => {
+        if (this.stompClient?.connected) {
+          clearInterval(interval);
+          this.stompClient.publish({
+            destination: '/app/location',
+            body: JSON.stringify(payload)
+          });
+        }
+      }, 500);
+      setTimeout(() => clearInterval(interval), 10000);
+    }
+  }
+
   public listenBusLocation(busId: string): Observable<BusLocation> {
     const topic = `/topic/buses/${busId}/location`;
     this.ensureSubscribed(topic);

@@ -6,7 +6,7 @@ import io.a_caminho.backend.model.Travel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {BusMapper.class})
 public interface TravelMapper {
 
     @Mapping(target = "travelId", ignore = true)
@@ -25,6 +25,7 @@ public interface TravelMapper {
 
 
     @Mapping(target = "confirmedVotesCount", source = "poll.confirmedVotesCount")
+    @Mapping(target = "pollId", source = "poll.pollId")
     @Mapping(target = "busDriver.email", source = "busDriver.user.email")
     TravelDTO toDTO(Travel travel);
 }

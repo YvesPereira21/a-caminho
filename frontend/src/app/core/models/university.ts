@@ -11,6 +11,7 @@ export interface UniversityResponse {
   campus?: string;
   cityName: string;
   stateName: string;
+  voteCount?: number;
 }
 
 export interface UniversitySimple {

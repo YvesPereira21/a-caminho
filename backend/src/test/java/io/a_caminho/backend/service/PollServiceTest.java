@@ -18,6 +18,8 @@ import io.a_caminho.backend.model.UniversityStudent;
 import io.a_caminho.backend.model.User;
 import io.a_caminho.backend.model.enums.Shift;
 import io.a_caminho.backend.model.enums.UserRole;
+import io.a_caminho.backend.model.BusDriver;
+import io.a_caminho.backend.repository.BusDriverRepository;
 import io.a_caminho.backend.repository.MunicipalityRepository;
 import io.a_caminho.backend.repository.PollRepository;
 import io.a_caminho.backend.repository.PollTemplateRepository;
@@ -76,6 +78,9 @@ class PollServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private BusDriverRepository busDriverRepository;
 
     @Mock
     private PollMapper pollMapper;
@@ -310,6 +315,31 @@ class PollServiceTest {
         }
 
         @Test
+        @DisplayName("Deve retornar PollDTO com sucesso quando usuário for motorista do mesmo município")
+        void shouldReturnPollDTOWhenBusDriverIsFromSameMunicipality() {
+            UUID driverUserId = UUID.randomUUID();
+            User driverUser = User.builder()
+                    .userId(driverUserId)
+                    .role(UserRole.BUS_DRIVER)
+                    .build();
+            BusDriver driver = BusDriver.builder()
+                    .user(driverUser)
+                    .municipality(municipality)
+                    .build();
+
+            when(pollRepository.findById(pollId)).thenReturn(Optional.of(poll));
+            when(userRepository.findById(driverUserId)).thenReturn(Optional.of(driverUser));
+            when(busDriverRepository.findByUser_UserId(driverUserId)).thenReturn(Optional.of(driver));
+            when(pollVoteRepository.countVotesByOption(pollId)).thenReturn(Collections.emptyList());
+
+            PollDTO result = pollService.getPoll(driverUserId, pollId);
+
+            assertNotNull(result);
+            assertEquals(pollId, result.pollId());
+            assertEquals("Rota Universitária Manhã", result.routeName());
+        }
+
+        @Test
         @DisplayName("Deve lançar ObjectNotFoundException quando enquete não for encontrada")
         void shouldThrowObjectNotFoundExceptionWhenPollNotFound() {
             when(pollRepository.findById(pollId)).thenReturn(Optional.empty());
@@ -418,8 +448,13 @@ class PollServiceTest {
         @Test
         @DisplayName("Deve lançar UserIsNotOwnerException quando usuário possuir outra role não autorizada")
         void shouldThrowUserIsNotOwnerExceptionWhenUserHasOtherRole() {
+            User adminUser = User.builder()
+                    .userId(otherMunicipalityUserId)
+                    .role(UserRole.ADMIN)
+                    .build();
+
             when(pollRepository.findById(pollId)).thenReturn(Optional.of(poll));
-            when(userRepository.findById(otherMunicipalityUserId)).thenReturn(Optional.of(otherUser));
+            when(userRepository.findById(otherMunicipalityUserId)).thenReturn(Optional.of(adminUser));
 
             UserIsNotOwnerException exception = assertThrows(
                     UserIsNotOwnerException.class,
@@ -427,6 +462,34 @@ class PollServiceTest {
             );
 
             assertEquals("Você não tem permissão para visualizar esta enquete.", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("Deve lançar CrossMunicipalityAccessException quando motorista for de outro município")
+        void shouldThrowCrossMunicipalityAccessExceptionWhenBusDriverIsFromDifferentMunicipality() {
+            UUID driverUserId = UUID.randomUUID();
+            User driverUser = User.builder()
+                    .userId(driverUserId)
+                    .role(UserRole.BUS_DRIVER)
+                    .build();
+            Municipality otherMuni = Municipality.builder()
+                    .municipalityId(otherMunicipalityId)
+                    .build();
+            BusDriver driver = BusDriver.builder()
+                    .user(driverUser)
+                    .municipality(otherMuni)
+                    .build();
+
+            when(pollRepository.findById(pollId)).thenReturn(Optional.of(poll));
+            when(userRepository.findById(driverUserId)).thenReturn(Optional.of(driverUser));
+            when(busDriverRepository.findByUser_UserId(driverUserId)).thenReturn(Optional.of(driver));
+
+            CrossMunicipalityAccessException exception = assertThrows(
+                    CrossMunicipalityAccessException.class,
+                    () -> pollService.getPoll(driverUserId, pollId)
+            );
+
+            assertEquals("O motorista não pertence ao município responsável por esta enquete.", exception.getMessage());
         }
     }
 

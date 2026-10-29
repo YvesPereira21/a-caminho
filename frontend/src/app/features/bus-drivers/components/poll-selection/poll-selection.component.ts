@@ -101,10 +101,6 @@ export class PollSelectionComponent implements OnInit {
     const poll = this.selectedPoll();
     if (!poll) return;
 
-    // Conforme o comportamento do sistema, prepara a transição para a próxima etapa ou persiste a seleção
-    this.actionFeedback.set(`Enquete "${poll.routeName}" selecionada com sucesso!`);
-    
-    // Armazena no sessionStorage para caso o motorista prossiga para a etapa de ônibus
     try {
       sessionStorage.setItem('selected_poll_id', poll.pollId);
       sessionStorage.setItem('selected_poll_route', poll.routeName);
@@ -112,9 +108,10 @@ export class PollSelectionComponent implements OnInit {
       // Ignora erro de storage se indisponível
     }
 
-    setTimeout(() => {
-      this.actionFeedback.set(null);
-    }, 4000);
+    this.router.navigate(['/driver/prepare-travel'], {
+      queryParams: { pollId: poll.pollId },
+      state: { poll }
+    });
   }
 
   public onBackToDashboard(): void {

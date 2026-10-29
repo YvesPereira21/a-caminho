@@ -23,6 +23,10 @@ export class TravelService {
     return this.http.get<Travel>(`${this.apiUrl}/active`);
   }
 
+  getActiveTravelsForStudent(): Observable<Travel[]> {
+    return this.http.get<Travel[]>(`${this.apiUrl}/active/student`);
+  }
+
   getAllTravelsByDriver(): Observable<Travel[]> {
     return this.http.get<Travel[]>(`${this.apiUrl}/driver`);
   }

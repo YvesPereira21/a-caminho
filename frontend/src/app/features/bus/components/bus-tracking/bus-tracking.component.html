@@ -118,12 +118,14 @@
     >
       <!-- Área do Mapa Leaflet em Tela Cheia -->
       <main class="flex-1 relative h-full w-full bg-slate-100 min-w-0">
-        <div
-          leaflet
-          [leafletOptions]="mapOptions"
-          (leafletMapReady)="onMapReady($event)"
-          class="w-full h-full z-10"
-        ></div>
+        @if (!isLoading() && isBusInTransit()) {
+          <div
+            leaflet
+            [leafletOptions]="mapOptions"
+            (leafletMapReady)="onMapReady($event)"
+            class="student-tracking-map w-full h-full z-10"
+          ></div>
+        }
 
         <!-- Canto Superior Esquerdo DENTRO do Mapa: Status "Ao vivo" + Nome da Rota -->
         <div class="absolute top-3.5 left-3.5 z-20 flex items-start gap-2 max-w-[calc(100%-70px)] sm:max-w-md pointer-events-none">
@@ -160,6 +162,15 @@
                 </span>
               }
 
+              @if (activeTravel()) {
+                <span
+                  class="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                  [ngClass]="isInboundTravel(activeTravel()?.direction) ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
+                >
+                  {{ isInboundTravel(activeTravel()?.direction) ? 'Volta' : 'Ida' }}
+                </span>
+              }
+
               @if (selectedPoll()) {
                 <span class="text-[10px] font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md">
                   {{ formattedShift() }}
@@ -171,6 +182,15 @@
             <h2 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate leading-snug">
               {{ selectedPoll()?.routeName || 'Rastreamento de Ônibus' }}
             </h2>
+
+            @if (activeTravel()?.busDriver) {
+              <p class="text-[11px] text-slate-500 truncate mt-0.5">
+                Motorista: <span class="font-semibold text-slate-700">{{ activeTravel()?.busDriver?.busDriverName }}</span>
+                @if (activeTravel()?.bus?.busName) {
+                  • Ônibus: <span class="font-semibold text-slate-700">{{ activeTravel()?.bus?.busName }}</span>
+                }
+              </p>
+            }
           </div>
         </div>
 
@@ -211,7 +231,15 @@
             <div class="w-full flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Itinerário</span>
-                <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-800 font-bold border border-emerald-100">
+                @if (activeTravel()) {
+                  <span
+                    class="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                    [ngClass]="isInboundTravel(activeTravel()?.direction) ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
+                  >
+                    {{ isInboundTravel(activeTravel()?.direction) ? 'Volta' : 'Ida' }}
+                  </span>
+                }
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 font-bold border border-slate-200">
                   {{ stopsList().length }} paradas
                 </span>
               </div>
@@ -244,6 +272,15 @@
                     >
                       {{ item.routeName }}
                     </button>
+                  }
+                </div>
+              }
+
+              @if (activeTravel()?.busDriver) {
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
+                  <p><span class="text-slate-400">Motorista:</span> <strong class="text-slate-700">{{ activeTravel()?.busDriver?.busDriverName }}</strong></p>
+                  @if (activeTravel()?.bus?.busName) {
+                    <p class="mt-0.5"><span class="text-slate-400">Ônibus:</span> <strong class="text-slate-700">{{ activeTravel()?.bus?.busName }}</strong></p>
                   }
                 </div>
               }
@@ -288,24 +325,47 @@
       <!-- DESKTOP ONLY: Painel Lateral de Rota & Itinerário -->
       <aside class="hidden lg:flex w-[380px] xl:w-[420px] bg-white border-l border-slate-200 flex-col h-full z-15 shrink-0 shadow-lg lg:shadow-none">
         <div class="p-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Rotas do dia</span>
-            <span class="text-xs text-slate-500">{{ openPolls().length }} disponível(is)</span>
-          </div>
-
-          @if (openPolls().length > 1) {
-            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
-              @for (item of openPolls(); track item.pollId) {
-                <button
-                  type="button"
-                  (click)="selectPoll(item.pollId)"
-                  [class]="selectedPollId() === item.pollId ? 'bg-[#003B35] text-white border-[#003B35]' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'"
-                  class="px-3 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap transition-all shadow-2xs cursor-pointer"
-                >
-                  {{ item.routeName }}
-                </button>
-              }
+          @if (activeTravel()) {
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Viagem em Andamento</span>
+              <span
+                class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                [ngClass]="isInboundTravel(activeTravel()?.direction) ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
+              >
+                Sentido {{ isInboundTravel(activeTravel()?.direction) ? 'Volta' : 'Ida' }}
+              </span>
             </div>
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900 truncate">
+              {{ selectedPoll()?.routeName || 'Rota Universitária' }}
+            </h3>
+            @if (activeTravel()?.busDriver) {
+              <div class="mt-2 text-xs text-slate-600 space-y-0.5">
+                <p class="truncate"><span class="text-slate-400">Motorista:</span> <strong class="text-slate-700">{{ activeTravel()?.busDriver?.busDriverName }}</strong></p>
+                @if (activeTravel()?.bus?.busName) {
+                  <p class="truncate"><span class="text-slate-400">Veículo:</span> <strong class="text-slate-700">{{ activeTravel()?.bus?.busName }}</strong></p>
+                }
+              </div>
+            }
+          } @else {
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Rotas do dia</span>
+              <span class="text-xs text-slate-500">{{ openPolls().length }} disponível(is)</span>
+            </div>
+
+            @if (openPolls().length > 1) {
+              <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                @for (item of openPolls(); track item.pollId) {
+                  <button
+                    type="button"
+                    (click)="selectPoll(item.pollId)"
+                    [class]="selectedPollId() === item.pollId ? 'bg-[#003B35] text-white border-[#003B35]' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'"
+                    class="px-3 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap transition-all shadow-2xs cursor-pointer"
+                  >
+                    {{ item.routeName }}
+                  </button>
+                }
+              </div>
+            }
           }
         </div>
 

@@ -1,0 +1,61 @@
+.map-card-container {
+  height: 380px;
+  width: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .map-card-container {
+    height: 280px;
+  }
+}
+
+:host ::ng-deep .leaflet-container {
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #f1f5f9;
+}
+
+:host ::ng-deep .stop-point-marker {
+  background: transparent;
+  border: none;
+}
+
+:host ::ng-deep .bus-pulse-marker {
+  background: transparent;
+  border: none;
+}
+
+@keyframes bus-radar-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes bus-radar-pulse-blue {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}

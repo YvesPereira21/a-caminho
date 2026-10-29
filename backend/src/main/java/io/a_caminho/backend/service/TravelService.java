@@ -14,6 +14,7 @@ import io.a_caminho.backend.model.Poll;
 import io.a_caminho.backend.model.PollVote;
 import io.a_caminho.backend.model.Travel;
 import io.a_caminho.backend.model.University;
+import io.a_caminho.backend.model.UniversityStudent;
 import io.a_caminho.backend.model.enums.PollDirection;
 import io.a_caminho.backend.model.enums.TravelStatus;
 import io.a_caminho.backend.repository.BusDriverRepository;
@@ -22,11 +23,13 @@ import io.a_caminho.backend.repository.MunicipalityRepository;
 import io.a_caminho.backend.repository.PollRepository;
 import io.a_caminho.backend.repository.PollVoteRepository;
 import io.a_caminho.backend.repository.TravelRepository;
+import io.a_caminho.backend.repository.UniversityStudentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -41,6 +44,7 @@ public class TravelService {
     private final BusRepository busRepository;
     private final PollRepository pollRepository;
     private final PollVoteRepository pollVoteRepository;
+    private final UniversityStudentRepository universityStudentRepository;
 
     public TravelService(
             TravelRepository travelRepository,
@@ -49,7 +53,8 @@ public class TravelService {
             MunicipalityRepository municipalityRepository,
             BusRepository busRepository,
             PollRepository pollRepository,
-            PollVoteRepository pollVoteRepository
+            PollVoteRepository pollVoteRepository,
+            UniversityStudentRepository universityStudentRepository
     ) {
         this.travelRepository = travelRepository;
         this.travelMapper = travelMapper;
@@ -58,6 +63,7 @@ public class TravelService {
         this.busRepository = busRepository;
         this.pollRepository = pollRepository;
         this.pollVoteRepository = pollVoteRepository;
+        this.universityStudentRepository = universityStudentRepository;
     }
 
     @Transactional
@@ -91,12 +97,15 @@ public class TravelService {
             throw new IllegalArgumentException("O ônibus selecionado já está em uma viagem em andamento.");
         }
 
-        Set<University> universities = poll.getTargetUniversities();
+        Set<University> universities = poll.getTargetUniversities() != null
+                ? new HashSet<>(poll.getTargetUniversities())
+                : new HashSet<>();
 
         Travel newTravel = travelMapper.toEntity(travelDTO);
         newTravel.setTravelDate(LocalDate.now());
         newTravel.setStatus(TravelStatus.IN_PROGRESS);
-        newTravel.setDirection(PollDirection.OUTBOUND);
+        PollDirection direction = travelDTO.direction() != null ? travelDTO.direction() : PollDirection.OUTBOUND;
+        newTravel.setDirection(direction);
         newTravel.setDepartureTime(LocalTime.now());
         newTravel.setReturnTime(travelDTO.returnTime());
         newTravel.setShift(poll.getShift());
@@ -126,6 +135,36 @@ public class TravelService {
                 .orElseThrow(() -> new ObjectNotFoundException("Nenhuma viagem em andamento encontrada para este motorista."));
 
         return travelMapper.toDTO(travel);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TravelDTO> getActiveTravelsForStudent(UUID studentUserId) {
+        UniversityStudent student = universityStudentRepository.findByUser_UserId(studentUserId)
+                .orElseThrow(() -> new ObjectNotFoundException("Estudante não encontrado."));
+
+        if (student.getMunicipality() == null) {
+            return List.of();
+        }
+
+        UUID municipalityId = student.getMunicipality().getMunicipalityId();
+        UUID universityId = student.getUniversity() != null ? student.getUniversity().getUniversityId() : null;
+
+        List<Travel> travels = travelRepository.findActiveTravelsForStudent(
+                municipalityId,
+                universityId,
+                TravelStatus.IN_PROGRESS
+        );
+
+        if (travels.isEmpty()) {
+            travels = travelRepository.findByMunicipality_MunicipalityIdAndStatus(
+                    municipalityId,
+                    TravelStatus.IN_PROGRESS
+            );
+        }
+
+        return travels.stream()
+                .map(travelMapper::toDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)

@@ -13,6 +13,7 @@ public interface UniversityMapper {
     @Mapping(source = "name", target = "name")
     @Mapping(source = "city.cityName", target = "cityName")
     @Mapping(source = "city.state.stateName", target = "stateName")
+    @Mapping(target = "voteCount", constant = "0L")
     UniversityResponseDTO toResponse(University university);
 
     @Mapping(target = "universityId", ignore = true)

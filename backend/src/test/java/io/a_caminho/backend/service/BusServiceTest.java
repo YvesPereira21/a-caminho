@@ -11,6 +11,7 @@ import io.a_caminho.backend.model.Bus;
 import io.a_caminho.backend.model.BusDriver;
 import io.a_caminho.backend.model.Municipality;
 import io.a_caminho.backend.model.User;
+import io.a_caminho.backend.model.enums.TravelStatus;
 import io.a_caminho.backend.model.enums.UserRole;
 import io.a_caminho.backend.repository.BusDriverRepository;
 import io.a_caminho.backend.repository.BusRepository;
@@ -298,6 +299,8 @@ class BusServiceTest {
                     .thenReturn(Optional.of(busDriver));
             when(busRepository.findAllByMunicipality_MunicipalityId(municipalityId))
                     .thenReturn(List.of(bus));
+            when(travelRepository.existsByBus_BusIdAndStatus(bus.getBusId(), TravelStatus.IN_PROGRESS))
+                    .thenReturn(false);
             when(busMapper.toDTO(bus)).thenReturn(busDTO);
 
             List<BusDTO> result = busService.getAllBusesForDriver(busDriverUserId);
@@ -306,6 +309,34 @@ class BusServiceTest {
             assertEquals(1, result.size());
             assertEquals("Ônibus 01", result.get(0).busName());
             verify(busRepository).findAllByMunicipality_MunicipalityId(municipalityId);
+        }
+
+        @Test
+        @DisplayName("Deve filtrar ônibus que já estão com viagem em andamento")
+        void shouldFilterOutBusesWithInProgressTravels() {
+            Bus busyBus = Bus.builder()
+                    .busId(UUID.randomUUID())
+                    .busName("Ônibus Ocupado")
+                    .seatsQuantity(40)
+                    .municipality(municipality)
+                    .build();
+
+            when(busDriverRepository.findByUser_UserId(busDriverUserId))
+                    .thenReturn(Optional.of(busDriver));
+            when(busRepository.findAllByMunicipality_MunicipalityId(municipalityId))
+                    .thenReturn(List.of(bus, busyBus));
+            when(travelRepository.existsByBus_BusIdAndStatus(bus.getBusId(), TravelStatus.IN_PROGRESS))
+                    .thenReturn(false);
+            when(travelRepository.existsByBus_BusIdAndStatus(busyBus.getBusId(), TravelStatus.IN_PROGRESS))
+                    .thenReturn(true);
+            when(busMapper.toDTO(bus)).thenReturn(busDTO);
+
+            List<BusDTO> result = busService.getAllBusesForDriver(busDriverUserId);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("Ônibus 01", result.get(0).busName());
+            verify(busMapper, never()).toDTO(busyBus);
         }
 
         @Test

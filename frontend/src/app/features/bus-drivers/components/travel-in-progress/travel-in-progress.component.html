@@ -1,0 +1,535 @@
+<div class="min-h-screen bg-[#F8FAFC] text-[#1F2937] font-['Inter',sans-serif]">
+  <!-- Cabeçalho do Motorista -->
+  <app-driver-header
+    [driverName]="driverName()"
+    [email]="driverEmail()"
+    (back)="onBackToDashboard()"
+    (logout)="onLogout()"
+  ></app-driver-header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 sm:px-6 sm:py-8 space-y-6">
+    <!-- Estado de Carregamento -->
+    <div *ngIf="isLoading()" class="space-y-6 animate-pulse">
+      <div class="h-8 bg-slate-200 rounded-lg w-48"></div>
+      <div class="h-32 bg-white rounded-xl border border-slate-200 p-6"></div>
+      <div class="h-96 bg-white rounded-xl border border-slate-200"></div>
+    </div>
+
+    <!-- Estado de Erro -->
+    <div
+      *ngIf="!isLoading() && hasError()"
+      class="bg-white rounded-2xl border border-red-200 p-6 sm:p-8 text-center max-w-lg mx-auto shadow-sm"
+    >
+      <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-slate-800 mb-2">Viagem não encontrada</h2>
+      <p class="text-sm text-slate-600 mb-6">{{ errorMessage() }}</p>
+      <button
+        type="button"
+        (click)="onBackToDashboard()"
+        class="inline-flex items-center justify-center px-6 min-h-[48px] rounded-xl bg-[#16A34A] hover:bg-green-700 text-white font-bold transition-colors cursor-pointer"
+      >
+        Voltar ao Painel
+      </button>
+    </div>
+
+    <!-- Conteúdo Principal da Viagem em Andamento -->
+    <div *ngIf="!isLoading() && !hasError()" class="space-y-6">
+
+      <!-- Barra de Título Superior e Navegação Responsiva -->
+      <div class="space-y-3">
+        <!-- Linha Superior com Botão Voltar e Status Operacional Limpo -->
+        <div class="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            (click)="onBackToDashboard()"
+            class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 px-3.5 py-2 rounded-xl transition-all shadow-2xs cursor-pointer active:scale-98"
+          >
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Voltar ao painel</span>
+          </button>
+
+          <!-- Status Operacional Sem Background e Sem Ponto Piscando -->
+          <span
+            *ngIf="isOutbound()"
+            class="text-xs sm:text-sm font-bold text-emerald-700 shrink-0"
+          >
+            Ida em rota
+          </span>
+          <span
+            *ngIf="!isOutbound()"
+            class="text-xs sm:text-sm font-bold text-blue-700 shrink-0"
+          >
+            Volta em rota
+          </span>
+        </div>
+
+        <!-- Título e Metadados da Rota -->
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            {{ isOutbound() ? 'Viagem de Ida em Andamento' : 'Viagem de Volta em Andamento' }}
+          </h1>
+
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 mt-2 text-xs sm:text-sm text-slate-500">
+            <span class="font-semibold text-slate-800">{{ routeName() }}</span>
+            <span class="text-slate-300">•</span>
+            <span
+              class="font-semibold inline-flex items-center gap-1"
+              [ngClass]="isOutbound() ? 'text-emerald-700' : 'text-blue-700'"
+            >
+              {{ isOutbound() ? 'Sentido: Universidades' : 'Sentido: Retorno ao Município' }}
+            </span>
+            <ng-container *ngIf="shiftFormatted()">
+              <span class="text-slate-300">•</span>
+              <span>Turno: <strong class="text-slate-700 font-semibold">{{ shiftFormatted() }}</strong></span>
+            </ng-container>
+            <ng-container *ngIf="formattedDate()">
+              <span class="text-slate-300">•</span>
+              <span>{{ formattedDate() }}</span>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mapa da Rota em Card Branco -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-sm space-y-3">
+        <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              [ngClass]="isOutbound() ? 'bg-emerald-50 text-[#16A34A]' : 'bg-blue-50 text-blue-600'"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 truncate">Mapa</h3>
+              <p class="text-xs text-slate-500 truncate">
+                {{ isOutbound() ? 'Trajeto de ida conectando paradas às universidades' : 'Trajeto de retorno dos estudantes ao município' }}
+              </p>
+            </div>
+          </div>
+
+          <div *ngIf="lastSignalTime()" class="text-xs text-slate-500 shrink-0">
+            Último sinal: <strong class="text-slate-700 font-semibold">{{ lastSignalTime() }}</strong>
+          </div>
+        </div>
+
+        <!-- Container Leaflet -->
+        <div class="map-card-container border border-slate-200/80">
+          <div
+            leaflet
+            [leafletOptions]="mapOptions"
+            (leafletMapReady)="onMapReady($event)"
+            style="height: 100%; width: 100%;"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Ordem de Passagem (Lista Ordenada com Cabeçalho Não-Sobreposto) -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-4">
+        <!-- Cabeçalho em 2 Níveis para Prevenir Qualquer Sobreposição -->
+        <div class="flex items-start gap-3 pb-3 border-b border-slate-100">
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+            [ngClass]="isOutbound() ? 'bg-emerald-50 text-[#003B35]' : 'bg-blue-50 text-[#1E3A8A]'"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 truncate">Ordem de passagem</h3>
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 shrink-0 whitespace-nowrap">
+                {{ stops().length }} paradas
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5 truncate">
+              {{ isOutbound() ? 'Pontos no município em ordem de coleta' : 'Pontos no município em ordem de desembarque' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="divide-y divide-slate-100">
+          <div
+            *ngFor="let stop of stops(); let i = index; trackBy: trackByStopId"
+            class="py-3 flex items-center justify-between gap-3 first:pt-0 last:pb-0"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <div
+                class="w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs"
+                [ngClass]="isOutbound() ? 'bg-[#003B35]' : 'bg-[#1E3A8A]'"
+              >
+                {{ i + 1 }}
+              </div>
+              <div class="truncate">
+                <span class="text-sm font-semibold text-slate-900 block truncate">
+                  {{ stop.stopName }}
+                </span>
+                <span class="text-xs text-slate-500">
+                  {{ stop.voteCount }} {{ isOutbound() ? 'aluno(s) aguardando' : 'aluno(s) com desembarque previsto' }}
+                </span>
+              </div>
+            </div>
+            <span
+              class="text-xs font-medium px-2 py-0.5 rounded-md shrink-0"
+              [ngClass]="isOutbound() ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'"
+            >
+              Parada {{ i + 1 }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demandas por Universidade e Ponto de Embarque -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Quantidade por Universidade -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-4">
+          <div class="pb-3 border-b border-slate-100">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 truncate">Demanda por Universidade</h3>
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 shrink-0 whitespace-nowrap">
+                {{ universities().length }} instituições
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5 truncate">
+              {{ isOutbound() ? 'Estudantes com destino a cada instituição' : 'Estudantes embarcados em cada instituição' }}
+            </p>
+          </div>
+
+          <div *ngIf="universities().length === 0" class="text-sm text-slate-500 py-4 text-center">
+            Nenhuma universidade registrada nesta rota.
+          </div>
+
+          <div *ngIf="universities().length > 0" class="space-y-4">
+            <div *ngFor="let uni of universities(); trackBy: trackByUniId" class="space-y-1.5">
+              <div class="flex items-center justify-between text-sm">
+                <span class="font-medium text-slate-800 truncate" [title]="uni.name">
+                  {{ uni.name }}
+                  <span *ngIf="uni.campus" class="text-slate-500 font-normal">({{ uni.campus }})</span>
+                </span>
+                <span class="font-bold text-slate-900 shrink-0 ml-2">
+                  {{ uni.voteCount || 0 }} aluno(s)
+                </span>
+              </div>
+              <div class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all duration-500"
+                  [ngClass]="isOutbound() ? 'bg-[#16A34A]' : 'bg-[#2563EB]'"
+                  [style.width.%]="maxUniVotes() > 0 ? (((uni.voteCount || 0) / maxUniVotes()) * 100) : 0"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantidade por Ponto de Embarque / Parada -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-4">
+          <div class="pb-3 border-b border-slate-100">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 truncate">Demanda por Parada</h3>
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 shrink-0 whitespace-nowrap">
+                {{ stops().length }} paradas
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5 truncate">
+              {{ isOutbound() ? 'Estudantes previstos para embarque em cada parada' : 'Estudantes previstos para desembarque em cada parada' }}
+            </p>
+          </div>
+
+          <div *ngIf="stops().length === 0" class="text-sm text-slate-500 py-4 text-center">
+            Nenhum ponto de parada registrado.
+          </div>
+
+          <div *ngIf="stops().length > 0" class="space-y-4">
+            <div *ngFor="let stop of stops(); let i = index; trackBy: trackByStopId" class="space-y-1.5">
+              <div class="flex items-center justify-between text-sm">
+                <span class="font-medium text-slate-800 truncate" [title]="stop.stopName">
+                  {{ i + 1 }}. {{ stop.stopName }}
+                </span>
+                <span class="font-bold text-slate-900 shrink-0 ml-2">
+                  {{ stop.voteCount }} aluno(s)
+                </span>
+              </div>
+              <div class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all duration-500"
+                  [ngClass]="isOutbound() ? 'bg-[#16A34A]' : 'bg-[#2563EB]'"
+                  [style.width.%]="maxStopVotes() > 0 ? ((stop.voteCount / maxStopVotes()) * 100) : 0"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Card Secundário: Informações da Viagem / Operação -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-4">
+        <!-- Cabeçalho do Card com Alinhamento Otimizado para Mobile e Desktop -->
+        <div class="flex items-start gap-3 pb-3 border-b border-slate-100">
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+            [ngClass]="isOutbound() ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 truncate">
+                Informações da Viagem
+              </h3>
+              <span
+                class="text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 whitespace-nowrap"
+                [ngClass]="isOutbound() ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'"
+              >
+                {{ isOutbound() ? 'Sentido Ida' : 'Sentido Volta' }}
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5 truncate">
+              Veículo alocado, cronograma e telemetria
+            </p>
+          </div>
+        </div>
+
+        <!-- 3 Blocos de Informação Operacional -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+          <!-- Bloco 1: Veículo Alocado -->
+          <div class="p-4 rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-slate-50 transition-colors flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Veículo Alocado</span>
+                <span class="w-6 h-6 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 6v6" /><path d="M15 6v6" /><path d="M2 12h19.6" />
+                    <circle cx="7" cy="18" r="2" /><circle cx="16" cy="18" r="2" />
+                  </svg>
+                </span>
+              </div>
+              <span class="text-sm sm:text-base font-bold text-slate-900 block mt-2 leading-snug">
+                {{ bus()?.busName || 'Ônibus em operação' }}
+              </span>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
+              <span class="font-medium">Capacidade:</span>
+              <strong class="text-slate-800 font-bold">{{ bus()?.seatsQuantity || 45 }} assentos</strong>
+            </div>
+          </div>
+
+          <!-- Bloco 2: Horários da Rota -->
+          <div class="p-4 rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-slate-50 transition-colors flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Horários da Rota</span>
+                <span class="w-6 h-6 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 mt-2">
+                <div
+                  class="p-2 rounded-lg"
+                  [ngClass]="isOutbound() ? 'bg-emerald-50/80 border border-emerald-200/80' : 'bg-white border border-slate-200/70'"
+                >
+                  <span
+                    class="text-[10px] font-semibold uppercase tracking-wider block"
+                    [ngClass]="isOutbound() ? 'text-emerald-700' : 'text-slate-400'"
+                  >
+                    Saída (Ida)
+                  </span>
+                  <span
+                    class="text-sm font-extrabold block mt-0.5"
+                    [ngClass]="isOutbound() ? 'text-emerald-900' : 'text-slate-800'"
+                  >
+                    {{ departureTimeFormatted() }}
+                  </span>
+                </div>
+
+                <div
+                  class="p-2 rounded-lg"
+                  [ngClass]="!isOutbound() ? 'bg-blue-50/80 border border-blue-200/80' : 'bg-white border border-slate-200/70'"
+                >
+                  <span
+                    class="text-[10px] font-semibold uppercase tracking-wider block"
+                    [ngClass]="!isOutbound() ? 'text-blue-700' : 'text-slate-400'"
+                  >
+                    Retorno (Volta)
+                  </span>
+                  <span
+                    class="text-sm font-extrabold block mt-0.5"
+                    [ngClass]="!isOutbound() ? 'text-blue-900' : 'text-slate-800'"
+                  >
+                    {{ returnTimeFormatted() }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
+              <span class="font-medium">Etapa ativa:</span>
+              <strong class="font-bold" [ngClass]="isOutbound() ? 'text-emerald-700' : 'text-blue-700'">
+                {{ isOutbound() ? 'Ida às faculdades' : 'Retorno ao município' }}
+              </strong>
+            </div>
+          </div>
+
+          <!-- Bloco 3: Status Operacional (Sem Background e Sem Ponto) -->
+          <div class="p-4 rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-slate-50 transition-colors flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status Operacional</span>
+                <span class="w-6 h-6 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </span>
+              </div>
+
+              <div class="mt-2">
+                <span
+                  *ngIf="isOutbound()"
+                  class="text-sm font-bold text-emerald-700 block"
+                >
+                  Em trânsito (Ida)
+                </span>
+                <span
+                  *ngIf="!isOutbound()"
+                  class="text-sm font-bold text-blue-700 block"
+                >
+                  Em trânsito (Volta)
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
+              <span class="font-medium">Telemetria GPS:</span>
+              <span class="flex items-center gap-1.5 font-bold" [ngClass]="lastSignalTime() ? 'text-emerald-700' : 'text-slate-500'">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="lastSignalTime() ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                {{ lastSignalTime() ? 'Sinal: ' + lastSignalTime() : 'Aguardando sinal' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Ação: Finalizar Viagem de Ida (Quando em Ida) -->
+      <div
+        *ngIf="isOutbound()"
+        class="bg-white rounded-2xl border border-emerald-200/90 p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#16A34A]"></span>
+            <h4 class="text-base font-bold text-slate-900">Chegada ao Destino (Ida)</h4>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-xl">
+            Ao desembarcar todos os estudantes nas faculdades, finalize a viagem de ida. A transmissão de localização será pausada e você poderá iniciar a viagem de volta mais tarde no painel.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          (click)="openConfirmModal()"
+          [disabled]="isCompleting()"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 min-h-[48px] rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50 cursor-pointer whitespace-nowrap"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          FINALIZAR VIAGEM DE IDA
+        </button>
+      </div>
+
+      <!-- Barra de Ação: Finalizar Viagem de Volta (Quando em Volta) -->
+      <div
+        *ngIf="!isOutbound()"
+        class="bg-white rounded-2xl border border-blue-200/90 p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+            <h4 class="text-base font-bold text-slate-900">Encerramento da Operação (Volta)</h4>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-xl">
+            Ao concluir todos os desembarques no município e o trajeto de retorno, finalize a viagem de volta e conclua o serviço do dia.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          (click)="openConfirmModal()"
+          [disabled]="isCompleting()"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 min-h-[48px] rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50 cursor-pointer whitespace-nowrap"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          FINALIZAR VIAGEM DE VOLTA
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal de Confirmação de Finalização -->
+  <div
+    *ngIf="showConfirmModal()"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
+  >
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div
+        class="w-12 h-12 rounded-full flex items-center justify-center mx-auto"
+        [ngClass]="isOutbound() ? 'bg-emerald-100 text-[#16A34A]' : 'bg-blue-100 text-blue-600'"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+
+      <div class="text-center">
+        <h3 class="text-lg font-bold text-slate-900">
+          {{ isOutbound() ? 'Finalizar Viagem de Ida?' : 'Finalizar Viagem de Volta?' }}
+        </h3>
+        <p class="text-xs sm:text-sm text-slate-600 mt-2">
+          {{ isOutbound() ? 'Tem certeza de que deseja finalizar a viagem de ida? Ao desembarcar nas faculdades, o trajeto de ida será encerrado e a transmissão de localização será pausada. Mais tarde, você poderá iniciar a viagem de volta no painel.' : 'Tem certeza de que deseja finalizar a viagem de volta? Esta ação registrará a conclusão oficial da rota de retorno no município e liberará o veículo.' }}
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeConfirmModal()"
+          [disabled]="isCompleting()"
+          class="px-4 min-h-[48px] rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="onCompleteTravel()"
+          [disabled]="isCompleting()"
+          class="px-6 min-h-[48px] rounded-xl text-white font-bold transition-colors inline-flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+          [ngClass]="isOutbound() ? 'bg-[#16A34A] hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'"
+        >
+          <span *ngIf="isCompleting()" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          {{ isOutbound() ? 'Sim, finalizar ida' : 'Sim, finalizar volta' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

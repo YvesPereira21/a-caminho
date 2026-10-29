@@ -24,6 +24,7 @@ import io.a_caminho.backend.repository.PollVoteRepository;
 import io.a_caminho.backend.repository.UniversityStudentRepository;
 import io.a_caminho.backend.repository.UserRepository;
 import io.a_caminho.backend.repository.projection.OptionVoteCount;
+import io.a_caminho.backend.repository.projection.UniversityVoteCount;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +107,8 @@ public class PollService {
             validateMunicipalityAccess(poll, userId);
         } else if (user.getRole() == UserRole.STUDENT) {
             validateStudentAccess(poll, userId);
+        } else if (user.getRole() == UserRole.BUS_DRIVER) {
+            validateBusDriverAccess(poll, userId);
         } else {
             throw new UserIsNotOwnerException("Você não tem permissão para visualizar esta enquete.");
         }
@@ -189,6 +193,12 @@ public class PollService {
                 .stream()
                 .collect(Collectors.toMap(OptionVoteCount::getOptionId, OptionVoteCount::getTotal, (v1, v2) -> v1));
 
+        Map<UUID, Long> countTotalVotesByUniversity = poll.getPollId() != null
+                ? pollVoteRepository.countVotesByUniversity(poll.getPollId())
+                        .stream()
+                        .collect(Collectors.toMap(UniversityVoteCount::getUniversityId, UniversityVoteCount::getTotal, (v1, v2) -> v1))
+                : Collections.emptyMap();
+
         List<PollOptionResponseDTO> options = poll.getOptions()
                 .stream()
                 .map(option -> new PollOptionResponseDTO(
@@ -207,7 +217,8 @@ public class PollService {
                         university.getName(),
                         university.getCampus(),
                         university.getCity() != null ? university.getCity().getCityName() : null,
-                        university.getCity() != null && university.getCity().getState() != null ? university.getCity().getState().getStateName() : null
+                        university.getCity() != null && university.getCity().getState() != null ? university.getCity().getState().getStateName() : null,
+                        countTotalVotesByUniversity.getOrDefault(university.getUniversityId(), 0L)
                 ))
                 .collect(Collectors.toSet());
 
@@ -245,6 +256,17 @@ public class PollService {
                 .anyMatch(u -> u.getUniversityId().equals(student.getUniversity().getUniversityId()));
         if (!studentUniversityEligible) {
             throw new CanNotVoteException("O estudante não pertence à universidade atendida por esta enquete.");
+        }
+    }
+
+    private void validateBusDriverAccess(Poll poll, UUID userId) {
+        BusDriver busDriver = busDriverRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("Motorista não encontrado."));
+
+        boolean sameMunicipality = poll.getMunicipality().getMunicipalityId()
+                .equals(busDriver.getMunicipality().getMunicipalityId());
+        if (!sameMunicipality) {
+            throw new CrossMunicipalityAccessException("O motorista não pertence ao município responsável por esta enquete.");
         }
     }
 }

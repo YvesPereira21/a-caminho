@@ -19,5 +19,12 @@ public record UniversityResponseDTO(
         String cityName,
 
         @Schema(description = "Nome do estado da universidade", example = "Paraíba")
-        String stateName
-) {}
+        String stateName,
+
+        @Schema(description = "Total de votos confirmados para esta universidade na enquete", example = "12")
+        Long voteCount
+) {
+    public UniversityResponseDTO(UUID id, String name, String campus, String cityName, String stateName) {
+        this(id, name, campus, cityName, stateName, 0L);
+    }
+}

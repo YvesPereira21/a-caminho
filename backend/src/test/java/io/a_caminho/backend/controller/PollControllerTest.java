@@ -72,6 +72,14 @@ class PollControllerTest {
                 .build());
     }
 
+    private UserPrincipal createAdminPrincipal(UUID userId) {
+        return UserPrincipal.create(User.builder()
+                .userId(userId)
+                .email("admin@acaminho.com")
+                .role(UserRole.ADMIN)
+                .build());
+    }
+
     private PollListDTO createSamplePollListDTO(UUID pollId) {
         return new PollListDTO(
                 pollId,
@@ -183,6 +191,25 @@ class PollControllerTest {
         }
 
         @Test
+        @DisplayName("GET /api/polls/{pollId} - Consulta detalhes da enquete com sucesso como MOTORISTA do mesmo município (200 OK)")
+        void shouldGetPollDetailsSuccessfullyWhenBusDriverOfSameMunicipality() throws Exception {
+            UUID userId = UUID.randomUUID();
+            UUID pollId = UUID.randomUUID();
+            PollDTO pollDTO = createSamplePollDTO(pollId);
+
+            when(pollService.getPoll(userId, pollId)).thenReturn(pollDTO);
+
+            mockMvc.perform(get("/api/polls/{pollId}", pollId)
+                            .with(user(createBusDriverPrincipal(userId))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.pollId").value(pollId.toString()))
+                    .andExpect(jsonPath("$.routeName").value("Rota Universitária Manhã"))
+                    .andExpect(jsonPath("$.shift").value("Manhã"));
+
+            verify(pollService).getPoll(userId, pollId);
+        }
+
+        @Test
         @DisplayName("GET /api/polls/driver - Lista enquetes para o motorista com sucesso (200 OK)")
         void shouldGetPollsForDriverSuccessfully() throws Exception {
             UUID userId = UUID.randomUUID();
@@ -261,11 +288,26 @@ class PollControllerTest {
         }
 
         @Test
-        @DisplayName("GET /api/polls/{pollId} - Falha com 403 Forbidden quando usuário for BUS_DRIVER")
-        void shouldReturnForbiddenWhenGetPollByIdAsBusDriver() throws Exception {
+        @DisplayName("GET /api/polls/{pollId} - Falha com 403 Forbidden quando usuário for ADMIN")
+        void shouldReturnForbiddenWhenGetPollByIdAsAdmin() throws Exception {
             mockMvc.perform(get("/api/polls/{pollId}", UUID.randomUUID())
-                            .with(user(createBusDriverPrincipal(UUID.randomUUID()))))
+                            .with(user(createAdminPrincipal(UUID.randomUUID()))))
                     .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("GET /api/polls/{pollId} - Falha com 403 Forbidden quando motorista for de outro município")
+        void shouldReturnForbiddenWhenGetPollByIdAsDriverFromOtherMunicipality() throws Exception {
+            UUID userId = UUID.randomUUID();
+            UUID pollId = UUID.randomUUID();
+
+            when(pollService.getPoll(userId, pollId))
+                    .thenThrow(new CrossMunicipalityAccessException("O motorista não pertence ao município responsável por esta enquete."));
+
+            mockMvc.perform(get("/api/polls/{pollId}", pollId)
+                            .with(user(createBusDriverPrincipal(userId))))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.errors[0]").value("O motorista não pertence ao município responsável por esta enquete."));
         }
 
         @Test

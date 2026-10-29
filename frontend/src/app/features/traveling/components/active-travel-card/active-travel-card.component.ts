@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PollDirection, Travel } from '../../../../core/models';
+import { isOutboundTravel, PollDirection, Travel } from '../../../../core/models';
 
 @Component({
   selector: 'app-active-travel-card',
@@ -14,7 +14,7 @@ export class ActiveTravelCardComponent {
   public readonly travel = input.required<Travel>();
   public readonly manage = output<string>();
 
-  public readonly PollDirection = PollDirection;
+  public readonly isOutbound = computed(() => isOutboundTravel(this.travel().direction));
 
   public onManage(): void {
     this.manage.emit(this.travel().travelId);

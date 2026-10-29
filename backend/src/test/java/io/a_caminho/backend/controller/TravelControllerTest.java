@@ -1,6 +1,7 @@
 package io.a_caminho.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.a_caminho.backend.dto.bus.BusDTO;
 import io.a_caminho.backend.dto.busdriver.BusDriverResponseDTO;
 import io.a_caminho.backend.dto.poll.PollPassengerDTO;
 import io.a_caminho.backend.dto.travel.TravelCancelDTO;
@@ -11,6 +12,7 @@ import io.a_caminho.backend.exception.ObjectNotFoundException;
 import io.a_caminho.backend.exception.UserIsNotOwnerException;
 import io.a_caminho.backend.model.User;
 import io.a_caminho.backend.model.enums.PollDirection;
+import io.a_caminho.backend.model.enums.Shift;
 import io.a_caminho.backend.model.enums.TravelStatus;
 import io.a_caminho.backend.model.enums.UserRole;
 import io.a_caminho.backend.security.UserPrincipal;
@@ -26,6 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collections;
@@ -74,8 +77,12 @@ class TravelControllerTest {
     }
 
     private UserPrincipal createStudentPrincipal() {
+        return createStudentPrincipal(UUID.randomUUID());
+    }
+
+    private UserPrincipal createStudentPrincipal(UUID userId) {
         return UserPrincipal.create(User.builder()
-                .userId(UUID.randomUUID())
+                .userId(userId)
                 .email("estudante@ufpb.br")
                 .role(UserRole.STUDENT)
                 .build());
@@ -87,9 +94,17 @@ class TravelControllerTest {
                 "Severino Motorista",
                 "motorista@municipio.gov.br"
         );
+        BusDTO busResponse = new BusDTO(UUID.randomUUID(), "Ônibus 01", 45);
         return new TravelDTO(
                 travelId,
+                TravelStatus.IN_PROGRESS,
                 direction,
+                LocalDate.now(),
+                LocalTime.of(7, 0),
+                LocalTime.of(12, 0),
+                Shift.MORNING,
+                busResponse,
+                UUID.randomUUID(),
                 driverResponse,
                 20,
                 Collections.emptySet()
@@ -213,6 +228,24 @@ class TravelControllerTest {
         }
 
         @Test
+        @DisplayName("GET /api/travels/active/student - Busca viagens ativas do estudante com sucesso (200 OK)")
+        void shouldGetActiveTravelsForStudentSuccessfully() throws Exception {
+            UUID studentUserId = UUID.randomUUID();
+            UUID travelId = UUID.randomUUID();
+            TravelDTO responseDTO = createSampleTravelDTO(travelId, PollDirection.OUTBOUND);
+
+            when(travelService.getActiveTravelsForStudent(studentUserId)).thenReturn(List.of(responseDTO));
+
+            mockMvc.perform(get("/api/travels/active/student")
+                            .with(user(createStudentPrincipal(studentUserId))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[0].travelId").value(travelId.toString()))
+                    .andExpect(jsonPath("$[0].status").value("Em andamento"));
+
+            verify(travelService).getActiveTravelsForStudent(studentUserId);
+        }
+
+        @Test
         @DisplayName("GET /api/travels/{id}/passengers - Lista passageiros da viagem com sucesso (200 OK)")
         void shouldGetTravelPassengersSuccessfully() throws Exception {
             UUID driverUserId = UUID.randomUUID();
@@ -320,6 +353,9 @@ class TravelControllerTest {
             mockMvc.perform(get("/api/travels/active"))
                     .andExpect(status().isUnauthorized());
 
+            mockMvc.perform(get("/api/travels/active/student"))
+                    .andExpect(status().isUnauthorized());
+
             mockMvc.perform(get("/api/travels/driver"))
                     .andExpect(status().isUnauthorized());
 
@@ -408,6 +444,18 @@ class TravelControllerTest {
         void shouldReturn403WhenStudentAccessesTravelPassengers() throws Exception {
             mockMvc.perform(get("/api/travels/{travelId}/passengers", travelId)
                             .with(user(createStudentPrincipal())))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("GET /api/travels/active/student - Deve retornar 403 Forbidden para motorista ou prefeitura")
+        void shouldReturn403WhenNonStudentAccessesActiveTravelsForStudent() throws Exception {
+            mockMvc.perform(get("/api/travels/active/student")
+                            .with(user(createBusDriverPrincipal(UUID.randomUUID()))))
+                    .andExpect(status().isForbidden());
+
+            mockMvc.perform(get("/api/travels/active/student")
+                            .with(user(createMunicipalityPrincipal(UUID.randomUUID()))))
                     .andExpect(status().isForbidden());
         }
 

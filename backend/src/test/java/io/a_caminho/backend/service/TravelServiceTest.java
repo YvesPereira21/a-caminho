@@ -1,5 +1,6 @@
 package io.a_caminho.backend.service;
 
+import io.a_caminho.backend.dto.bus.BusDTO;
 import io.a_caminho.backend.dto.busdriver.BusDriverResponseDTO;
 import io.a_caminho.backend.dto.poll.PollPassengerDTO;
 import io.a_caminho.backend.dto.travel.TravelCreateDTO;
@@ -28,6 +29,7 @@ import io.a_caminho.backend.repository.MunicipalityRepository;
 import io.a_caminho.backend.repository.PollRepository;
 import io.a_caminho.backend.repository.PollVoteRepository;
 import io.a_caminho.backend.repository.TravelRepository;
+import io.a_caminho.backend.repository.UniversityStudentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -81,6 +83,9 @@ class TravelServiceTest {
 
     @Mock
     private PollVoteRepository pollVoteRepository;
+
+    @Mock
+    private UniversityStudentRepository universityStudentRepository;
 
     @InjectMocks
     private TravelService travelService;
@@ -212,9 +217,18 @@ class TravelServiceTest {
                 "motorista@municipio.gov.br"
         );
 
+        BusDTO busResponseDTO = new BusDTO(busId, "Ônibus 01", 45);
+
         travelDTO = new TravelDTO(
                 travelId,
+                TravelStatus.IN_PROGRESS,
                 PollDirection.OUTBOUND,
+                LocalDate.now(),
+                LocalTime.of(7, 0),
+                LocalTime.of(22, 30),
+                Shift.MORNING,
+                busResponseDTO,
+                pollId,
                 driverResponseDTO,
                 25,
                 Collections.emptySet()
@@ -897,6 +911,90 @@ class TravelServiceTest {
 
             assertEquals("Não é possível cancelar uma viagem que já foi concluída ou cancelada.", exception.getMessage());
             verify(travelRepository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de getActiveTravelsForStudent (Viagens Ativas do Estudante)")
+    class GetActiveTravelsForStudentTests {
+
+        private UUID studentUserId;
+        private UniversityStudent student;
+        private University university;
+
+        @BeforeEach
+        void setUpStudent() {
+            studentUserId = UUID.randomUUID();
+            university = University.builder()
+                    .universityId(UUID.randomUUID())
+                    .name("UFCG")
+                    .build();
+            student = UniversityStudent.builder()
+                    .universityStudentId(UUID.randomUUID())
+                    .studentName("Lucas Gabriel")
+                    .municipality(municipality)
+                    .university(university)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("Deve retornar viagens ativas filtradas para o estudante com sucesso")
+        void shouldReturnActiveTravelsForStudentSuccessfully() {
+            when(universityStudentRepository.findByUser_UserId(studentUserId)).thenReturn(Optional.of(student));
+            when(travelRepository.findActiveTravelsForStudent(municipalityId, university.getUniversityId(), TravelStatus.IN_PROGRESS))
+                    .thenReturn(List.of(travel));
+            when(travelMapper.toDTO(travel)).thenReturn(travelDTO);
+
+            List<TravelDTO> result = travelService.getActiveTravelsForStudent(studentUserId);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals(travelDTO, result.get(0));
+            verify(travelRepository).findActiveTravelsForStudent(municipalityId, university.getUniversityId(), TravelStatus.IN_PROGRESS);
+        }
+
+        @Test
+        @DisplayName("Deve recorrer ao fallback por município caso a busca com universidade não encontre viagens")
+        void shouldFallbackToMunicipalityActiveTravelsWhenUniversitySpecificIsEmpty() {
+            when(universityStudentRepository.findByUser_UserId(studentUserId)).thenReturn(Optional.of(student));
+            when(travelRepository.findActiveTravelsForStudent(municipalityId, university.getUniversityId(), TravelStatus.IN_PROGRESS))
+                    .thenReturn(Collections.emptyList());
+            when(travelRepository.findByMunicipality_MunicipalityIdAndStatus(municipalityId, TravelStatus.IN_PROGRESS))
+                    .thenReturn(List.of(travel));
+            when(travelMapper.toDTO(travel)).thenReturn(travelDTO);
+
+            List<TravelDTO> result = travelService.getActiveTravelsForStudent(studentUserId);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals(travelDTO, result.get(0));
+            verify(travelRepository).findByMunicipality_MunicipalityIdAndStatus(municipalityId, TravelStatus.IN_PROGRESS);
+        }
+
+        @Test
+        @DisplayName("Deve lançar ObjectNotFoundException quando estudante não for encontrado")
+        void shouldThrowObjectNotFoundExceptionWhenStudentNotFound() {
+            when(universityStudentRepository.findByUser_UserId(studentUserId)).thenReturn(Optional.empty());
+
+            ObjectNotFoundException exception = assertThrows(
+                    ObjectNotFoundException.class,
+                    () -> travelService.getActiveTravelsForStudent(studentUserId)
+            );
+
+            assertEquals("Estudante não encontrado.", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista vazia se estudante não possuir município vinculado")
+        void shouldReturnEmptyListWhenStudentHasNoMunicipality() {
+            student.setMunicipality(null);
+            when(universityStudentRepository.findByUser_UserId(studentUserId)).thenReturn(Optional.of(student));
+
+            List<TravelDTO> result = travelService.getActiveTravelsForStudent(studentUserId);
+
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
+            verify(travelRepository, never()).findActiveTravelsForStudent(any(), any(), any());
         }
     }
 }

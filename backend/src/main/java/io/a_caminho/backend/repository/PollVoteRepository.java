@@ -2,6 +2,7 @@ package io.a_caminho.backend.repository;
 
 import io.a_caminho.backend.model.PollVote;
 import io.a_caminho.backend.repository.projection.OptionVoteCount;
+import io.a_caminho.backend.repository.projection.UniversityVoteCount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -20,6 +21,11 @@ public interface PollVoteRepository extends JpaRepository<PollVote, UUID> {
             "FROM PollVote pv WHERE pv.poll.pollId = :pollId" +
             " GROUP BY pv.option.optionId")
     List<OptionVoteCount> countVotesByOption(UUID pollId);
+
+    @Query("SELECT pv.student.university.universityId AS universityId, COUNT(pv) AS total " +
+            "FROM PollVote pv WHERE pv.poll.pollId = :pollId " +
+            "GROUP BY pv.student.university.universityId")
+    List<UniversityVoteCount> countVotesByUniversity(@Param("pollId") UUID pollId);
 
     Optional<PollVote> findByPoll_PollIdAndStudent_User_UserId(UUID pollId, UUID studentUserId);
 

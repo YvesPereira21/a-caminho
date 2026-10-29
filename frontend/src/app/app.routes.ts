@@ -73,8 +73,21 @@ export const routes: Routes = [
   },
   {
     path: 'driver/prepare-travel',
-    redirectTo: 'driver/polls',
-    pathMatch: 'full'
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.BUS_DRIVER, 'BUS_DRIVER', 'MOTORISTA'] },
+    loadComponent: () =>
+      import('./features/bus-drivers/components/prepare-travel/prepare-travel.component').then(
+        (m) => m.PrepareTravelComponent
+      )
+  },
+  {
+    path: 'driver/travel-in-progress',
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.BUS_DRIVER, 'BUS_DRIVER', 'MOTORISTA'] },
+    loadComponent: () =>
+      import(
+        './features/bus-drivers/components/travel-in-progress/travel-in-progress.component'
+      ).then((m) => m.TravelInProgressComponent)
   },
   {
     path: 'admin',

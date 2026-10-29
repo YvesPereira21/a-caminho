@@ -10,6 +10,7 @@ import io.a_caminho.backend.mapper.BusMapper;
 import io.a_caminho.backend.model.Bus;
 import io.a_caminho.backend.model.BusDriver;
 import io.a_caminho.backend.model.Municipality;
+import io.a_caminho.backend.model.enums.TravelStatus;
 import io.a_caminho.backend.repository.BusDriverRepository;
 import io.a_caminho.backend.repository.BusRepository;
 import io.a_caminho.backend.repository.MunicipalityRepository;
@@ -90,6 +91,7 @@ public class BusService {
 
         return busRepository.findAllByMunicipality_MunicipalityId(busDriver.getMunicipality().getMunicipalityId())
                 .stream()
+                .filter(bus -> !travelRepository.existsByBus_BusIdAndStatus(bus.getBusId(), TravelStatus.IN_PROGRESS))
                 .map(busMapper::toDTO)
                 .toList();
     }

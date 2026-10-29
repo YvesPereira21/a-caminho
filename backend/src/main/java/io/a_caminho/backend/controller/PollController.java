@@ -59,7 +59,7 @@ public class PollController implements PollControllerOpenApi {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('MUNICIPALITY', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('MUNICIPALITY', 'STUDENT', 'BUS_DRIVER')")
     @GetMapping("/{pollId:[a-fA-F0-9\\-]{36}}")
     public ResponseEntity<PollDTO> getPoll(
             @AuthenticationPrincipal(expression = "id") UUID userId,

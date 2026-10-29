@@ -113,24 +113,86 @@
         </div>
       </section>
 
-      <!-- Grade Operacional: Card de Viagem Ativa e Preparar Viagem -->
-      <section class="space-y-4">
-        <div class="grid grid-cols-1" [ngClass]="hasActiveTravel() ? 'lg:grid-cols-2 gap-5 sm:gap-6' : 'max-w-xl mx-auto'">
-          <!-- Card de Destaque: Viagem Ativa (se existir) -->
-          @if (hasActiveTravel()) {
-            <app-active-travel-card
-              [travel]="activeTravel()!"
-              (manage)="onManageTravel($event)"
-            ></app-active-travel-card>
-          }
+      <!-- Grade Operacional: Card de Viagem Ativa OU Iniciar Retorno OU Preparar Viagem -->
+      <section class="max-w-2xl mx-auto">
+        @if (hasActiveTravel()) {
+          <!-- Card de Destaque: Viagem Ativa -->
+          <app-active-travel-card
+            [travel]="activeTravel()!"
+            (manage)="onManageTravel($event)"
+          ></app-active-travel-card>
+        } @else if (todayCompletedOutbound()) {
+          <!-- Card de Destaque: Iniciar Viagem de Volta -->
+          <div class="bg-white rounded-2xl border border-blue-200 p-5 sm:p-6 shadow-xs hover:shadow-sm transition-all space-y-5">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex items-start gap-3.5 min-w-0">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100">
+                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      RETORNO DISPONÍVEL
+                    </span>
+                    <span class="text-xs text-slate-500">Ida Concluída</span>
+                  </div>
+                  <h3 class="text-base sm:text-lg font-bold text-slate-900 mt-1 truncate">
+                    Iniciar Viagem de Volta
+                  </h3>
+                  <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    A viagem de ida foi finalizada. Inicie o trajeto de retorno para trazer os estudantes ao município.
+                  </p>
+                </div>
+              </div>
+            </div>
 
+            <!-- Detalhes do Retorno -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+              <div>
+                <span class="text-slate-500 block">Veículo Utilizado na Ida:</span>
+                <strong class="text-slate-800 text-sm block mt-0.5">
+                  {{ todayCompletedOutbound()?.bus?.busName || 'Ônibus da Frota' }}
+                </strong>
+              </div>
+              <div>
+                <span class="text-slate-500 block">Sentido do Percurso:</span>
+                <strong class="text-blue-700 text-sm block mt-0.5">
+                  Volta (Município)
+                </strong>
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-1">
+              <button
+                type="button"
+                (click)="onStartReturnTravel()"
+                class="w-full sm:flex-1 min-h-[48px] px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer"
+              >
+                <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                </svg>
+                INICIAR VIAGEM DE VOLTA
+              </button>
+              <button
+                type="button"
+                (click)="onPrepareTravel()"
+                class="w-full sm:w-auto px-4 min-h-[48px] rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Outra viagem
+              </button>
+            </div>
+          </div>
+        } @else {
           <!-- Card de Preparar Viagem -->
           <app-prepare-travel-card
-            [hasActiveTravel]="hasActiveTravel()"
+            [hasActiveTravel]="false"
             [availableBusesCount]="buses().length"
             (prepare)="onPrepareTravel()"
           ></app-prepare-travel-card>
-        </div>
+        }
       </section>
 
       <!-- Seção: Histórico de Viagens -->
@@ -143,7 +205,7 @@
             </h2>
           </div>
           <span class="text-[11px] sm:text-xs text-[#64748B] font-medium shrink-0 bg-slate-100 px-2 py-0.5 rounded-full">
-            {{ recentTravels().length }} {{ recentTravels().length === 1 ? 'viagem' : 'viagens' }}
+            {{ recentTravels().length }} {{ recentTravels().length === 1 ? 'viagem anterior' : 'viagens anteriores' }}
           </span>
         </div>
 
@@ -157,7 +219,7 @@
             </div>
             <h4 class="text-xs sm:text-sm font-bold text-slate-700">Nenhuma viagem anterior registrada</h4>
             <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              Quando você concluir ou realizar viagens no sistema, elas ficarão listadas aqui para seu acompanhamento.
+              Quando você concluir viagens no sistema, elas ficarão listadas aqui para seu acompanhamento.
             </p>
           </div>
         } @else {
@@ -168,7 +230,7 @@
                 <!-- Ícone e Informações -->
                 <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                   <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-700 shrink-0 border border-slate-100">
-                    @if (t.direction === PollDirection.OUTBOUND) {
+                    @if (isOutbound(t.direction)) {
                       <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                       </svg>
@@ -182,7 +244,7 @@
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-nowrap min-w-0">
                       <span class="text-xs sm:text-sm font-bold text-slate-800 truncate">
-                        {{ t.direction === PollDirection.OUTBOUND ? 'Viagem de Ida' : 'Viagem de Volta' }}
+                        {{ isOutbound(t.direction) ? 'Viagem de Ida' : 'Viagem de Volta' }}
                       </span>
                       <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 shrink-0">
                         #{{ t.travelId.substring(0, 6) }}
@@ -195,24 +257,19 @@
                         <span class="shrink-0 text-slate-300">&bull;</span>
                         <span class="truncate">{{ t.targetUniversities[0].campus }}</span>
                       }
+                      @if (t.travelDate) {
+                        <span class="shrink-0 text-slate-300">&bull;</span>
+                        <span class="shrink-0">{{ t.travelDate }}</span>
+                      }
                     </div>
                   </div>
                 </div>
 
-                <!-- Ação -->
+                <!-- Status da viagem anterior -->
                 <div class="shrink-0">
-                  <button
-                    type="button"
-                    (click)="onManageTravel(t.travelId)"
-                    class="h-8 sm:h-9 px-2.5 sm:px-3.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1 active:scale-95"
-                    aria-label="Ver detalhes da viagem"
-                  >
-                    <span class="hidden sm:inline">Ver detalhes</span>
-                    <span class="sm:hidden text-[11px]">Ver</span>
-                    <svg class="w-3.5 h-3.5 text-slate-400 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    Concluída
+                  </span>
                 </div>
               </div>
             }

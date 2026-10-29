@@ -6,7 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth/services/auth.service';
 import { TravelService } from '../../../traveling/services/travel.service';
 import { BusService } from '../../../bus/services/bus.service';
-import { Bus, PollDirection, Travel } from '../../../../core/models';
+import { Bus, isCompletedTravel, isOutboundTravel, PollDirection, Travel } from '../../../../core/models';
 import { DriverHeaderComponent } from '../../../../shared/components/driver-header/driver-header.component';
 import { ActiveTravelCardComponent } from '../../../traveling/components/active-travel-card/active-travel-card.component';
 import { PrepareTravelCardComponent } from '../../../traveling/components/prepare-travel-card/prepare-travel-card.component';
@@ -54,8 +54,49 @@ export class DriverHomeComponent implements OnInit {
     return this.activeTravel() !== null;
   });
 
+  public readonly todayCompletedOutbound = computed<Travel | null>(() => {
+    if (this.hasActiveTravel()) return null;
+    const today = new Date().toISOString().split('T')[0];
+    const travels = this.recentTravels();
+    return travels.find((t) => {
+      const isToday = !t.travelDate || t.travelDate === today || t.travelDate.startsWith(today);
+      const isCompleted = isCompletedTravel(t.status);
+      const isOut = isOutboundTravel(t.direction);
+      const hasInboundForSamePoll = travels.some((other) =>
+        other.pollId === t.pollId &&
+        !isOutboundTravel(other.direction) &&
+        isCompletedTravel(other.status)
+      );
+      return isToday && isCompleted && isOut && !hasInboundForSamePoll;
+    }) || null;
+  });
+
+  public isOutbound(direction?: string | PollDirection | null): boolean {
+    return isOutboundTravel(direction);
+  }
+
   ngOnInit(): void {
+    if (history.state?.notificationMessage) {
+      this.notificationMessage.set(history.state.notificationMessage);
+      setTimeout(() => this.notificationMessage.set(null), 6000);
+    }
     this.loadDashboardData();
+  }
+
+  public onStartReturnTravel(): void {
+    const outbound = this.todayCompletedOutbound();
+    if (!outbound || !outbound.pollId) return;
+
+    this.router.navigate(['/driver/prepare-travel'], {
+      queryParams: {
+        pollId: outbound.pollId,
+        direction: 'INBOUND'
+      },
+      state: {
+        direction: PollDirection.INBOUND,
+        preselectedBusId: outbound.bus?.busId
+      }
+    });
   }
 
   public loadDashboardData(): void {
@@ -75,7 +116,11 @@ export class DriverHomeComponent implements OnInit {
     }).subscribe({
       next: ({ active, all, buses }) => {
         this.activeTravel.set(active);
-        this.recentTravels.set(all);
+        // Filtra para que a viagem ativa não apareça duplicada no histórico de viagens anteriores
+        const pastTravels = active
+          ? all.filter((t) => t.travelId !== active.travelId)
+          : all;
+        this.recentTravels.set(pastTravels);
         this.buses.set(buses);
         this.isLoading.set(false);
       },
@@ -90,9 +135,10 @@ export class DriverHomeComponent implements OnInit {
     this.router.navigate(['/driver/polls']);
   }
 
-  public onManageTravel(travelId: string): void {
-    this.notificationMessage.set(`Acessando painel da viagem: ${travelId}`);
-    setTimeout(() => this.notificationMessage.set(null), 4000);
+  public onManageTravel(travelId?: string): void {
+    this.router.navigate(['/driver/travel-in-progress'], {
+      state: { travel: this.activeTravel() }
+    });
   }
 
   public onLogout(): void {
