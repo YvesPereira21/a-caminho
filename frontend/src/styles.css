@@ -36,7 +36,7 @@ button:not(:disabled),
 /* Popups criados pelo Leaflet ficam fora do escopo de estilos do Angular. */
 .student-tracking-map .tracking-popup .leaflet-popup-content {
   /* Sobrepõe a largura inline calculada pelo Leaflet, inclusive em telas estreitas. */
-  width: min(280px, calc(100vw - 88px)) !important;
+  width: min(280px, calc(100cqw - 72px)) !important;
   margin: 14px 20px 14px 14px;
   font-family: inherit;
   font-size: 12px;
@@ -63,10 +63,4 @@ button:not(:disabled),
 .tracking-popup-status {
   color: #64748b;
   font-size: 11px;
-}
-
-@media (max-width: 1023px) {
-  .student-tracking-map .leaflet-bottom {
-    bottom: 126px;
-  }
 }

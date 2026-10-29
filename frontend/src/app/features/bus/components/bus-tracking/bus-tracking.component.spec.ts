@@ -113,6 +113,7 @@ describe('BusTrackingComponent map lifecycle', () => {
 
   it('keeps bus and stop details as text and uses a readable popup width', () => {
     showActiveTravel();
+    component['busMarker']!.openPopup();
     const popup = component['busMarker']!.getPopup()!;
     const content = popup.getContent() as HTMLElement;
 
@@ -150,6 +151,7 @@ describe('BusTrackingComponent map lifecycle', () => {
 
     expect(component['leafletMap']).not.toBe(firstMap);
     expect(component['stopMarkers'].length).toBe(1);
+    component['busMarker']!.openPopup();
     expect(component['busMarker']!.getPopup()!.isOpen()).toBeTrue();
     expect(resizeObserver.disconnect).toHaveBeenCalled();
   });

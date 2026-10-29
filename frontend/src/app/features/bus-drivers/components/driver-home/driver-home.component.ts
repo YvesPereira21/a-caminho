@@ -6,10 +6,9 @@ import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth/services/auth.service';
 import { TravelService } from '../../../traveling/services/travel.service';
 import { BusService } from '../../../bus/services/bus.service';
-import { Bus, isCompletedTravel, isOutboundTravel, PollDirection, Travel } from '../../../../core/models';
+import { Bus, isCompletedTravel, isOutboundTravel, Poll, PollDirection, Travel } from '../../../../core/models';
+import { PollService } from '../../../polls/services/poll.service';
 import { DriverHeaderComponent } from '../../../../shared/components/driver-header/driver-header.component';
-import { ActiveTravelCardComponent } from '../../../traveling/components/active-travel-card/active-travel-card.component';
-import { PrepareTravelCardComponent } from '../../../traveling/components/prepare-travel-card/prepare-travel-card.component';
 
 @Component({
   selector: 'app-driver-home',
@@ -17,9 +16,7 @@ import { PrepareTravelCardComponent } from '../../../traveling/components/prepar
   imports: [
     CommonModule,
     RouterModule,
-    DriverHeaderComponent,
-    ActiveTravelCardComponent,
-    PrepareTravelCardComponent
+    DriverHeaderComponent
   ],
   templateUrl: './driver-home.component.html',
   styleUrl: './driver-home.component.css',
@@ -29,11 +26,13 @@ export class DriverHomeComponent implements OnInit {
   public readonly authService = inject(AuthService);
   private readonly travelService = inject(TravelService);
   private readonly busService = inject(BusService);
+  private readonly pollService = inject(PollService);
   private readonly router = inject(Router);
 
   public readonly isLoading = signal<boolean>(true);
   public readonly hasError = signal<boolean>(false);
   public readonly activeTravel = signal<Travel | null>(null);
+  public readonly activePoll = signal<Poll | null>(null);
   public readonly recentTravels = signal<Travel[]>([]);
   public readonly buses = signal<Bus[]>([]);
   public readonly notificationMessage = signal<string | null>(null);
@@ -116,6 +115,13 @@ export class DriverHomeComponent implements OnInit {
     }).subscribe({
       next: ({ active, all, buses }) => {
         this.activeTravel.set(active);
+        this.activePoll.set(null);
+        if (active?.pollId) {
+          this.pollService.getPoll(active.pollId).subscribe({
+            next: (poll) => this.activePoll.set(poll),
+            error: () => this.activePoll.set(null)
+          });
+        }
         // Filtra para que a viagem ativa não apareça duplicada no histórico de viagens anteriores
         const pastTravels = active
           ? all.filter((t) => t.travelId !== active.travelId)

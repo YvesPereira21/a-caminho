@@ -10,11 +10,10 @@ import { BusService } from '../../services/bus.service';
 import { BusTrackingWebSocketService } from '../../services/bus-tracking-websocket.service';
 import { TravelService } from '../../../traveling/services/travel.service';
 import { BusLocation, Poll, PollList, PollOptionResponse, Shift, Travel, isInboundTravel } from '../../../../core/models';
-import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-bus-tracking',
-  imports: [CommonModule, RouterModule, LeafletModule, SidebarComponent],
+  imports: [CommonModule, RouterModule, LeafletModule],
   templateUrl: './bus-tracking.component.html',
   styleUrl: './bus-tracking.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -323,7 +322,7 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
       this.busMarker.setPopupContent(popupContent);
     } else {
       this.busMarker = L.marker([lat, lng], { icon: busIcon, zIndexOffset: 1000 }).addTo(this.leafletMap);
-      this.busMarker.bindPopup(popupContent, this.trackingPopupOptions()).openPopup();
+      this.busMarker.bindPopup(popupContent, this.trackingPopupOptions());
     }
   }
 
@@ -426,6 +425,7 @@ export class BusTrackingComponent implements OnInit, OnDestroy {
       this.leafletMap.flyTo([opt.latitude, opt.longitude], 16, { duration: 1 });
       if (this.isMobileSheetExpanded()) {
         this.isMobileSheetExpanded.set(false);
+        this.leafletMap.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   }

@@ -1,280 +1,35 @@
-<!-- Cabeçalho Superior Fixo Operacional do Motorista -->
-<app-driver-header
-  [driverName]="driverName()"
-  [email]="driverEmail()"
-  (logout)="onLogout()"
-></app-driver-header>
-
-<!-- Notificação Toast Flutuante -->
-@if (notificationMessage()) {
-  <div class="fixed bottom-6 right-6 z-50 bg-[#003B35] text-white px-4 py-3 rounded-xl shadow-lg border border-emerald-700/50 flex items-center gap-2 text-xs sm:text-sm animate-in fade-in slide-in-from-bottom-2">
-    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    <span>{{ notificationMessage() }}</span>
-  </div>
-}
-
-<div class="driver-container min-h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans antialiased text-[#1F2937]">
-  <main class="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
-    
-    <!-- Estado de Carregamento -->
-    @if (isLoading()) {
-      <div class="flex flex-col items-center justify-center py-20 text-center">
-        <span class="loading loading-spinner loading-lg text-[#16A34A] mb-3"></span>
-        <h3 class="text-sm sm:text-base font-bold text-slate-700">Carregando painel do motorista...</h3>
-        <p class="text-xs text-slate-500 mt-1">Buscando status de viagens e frota disponível.</p>
-      </div>
-    } @else if (hasError()) {
-      <!-- Estado de Erro -->
-      <div class="bg-white rounded-2xl border border-rose-200 p-6 sm:p-8 text-center max-w-md mx-auto shadow-xs">
-        <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-3">
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+<app-driver-header [driverName]="driverName()" [email]="driverEmail()" (logout)="onLogout()"></app-driver-header>
+<div class="driver-shell">
+  <main class="driver-content">
+    @if (notificationMessage()) { <div class="notice" role="status">{{ notificationMessage() }}</div> }
+    @if (isLoading()) { <section class="empty" aria-live="polite"><span class="loading loading-spinner text-emerald-700"></span><h2>Carregando painel do motorista...</h2></section> }
+    @else if (hasError()) { <section class="empty"><h2>Não foi possível carregar o painel</h2><p>Tente novamente em instantes.</p><button type="button" class="primary" (click)="loadDashboardData()">Tentar novamente</button></section> }
+    @else {
+      <div class="page-heading"><span class="eyebrow">Painel do motorista</span><h1>Olá, {{ driverName() }}.</h1><p>Suas viagens em um só lugar.</p></div>
+      @if (activeTravel(); as travel) {
+        <div class="driver-grid">
+          <section class="journey driver-card">
+            <span class="travel-status"><span></span>{{ isOutbound(travel.direction) ? 'Ida' : 'Volta' }} em andamento</span>
+            <h2>{{ activePoll()?.routeName || 'Viagem em andamento' }}</h2>
+            <p class="subheading">{{ isOutbound(travel.direction) ? 'Sentido ida' : 'Sentido volta' }} @if (travel.targetUniversities.length) { · {{ travel.targetUniversities[0].campus }} }</p>
+            <div class="vehicle"><span class="vehicle-icon" aria-hidden="true">↗</span><div><strong>{{ travel.bus?.busName || 'Ônibus em operação' }}</strong>@if (travel.bus?.seatsQuantity) { <p>{{ travel.bus?.seatsQuantity }} assentos</p> }</div></div>
+            <div class="facts"><div><span>Confirmados</span><strong>{{ travel.confirmedVotesCount || 0 }} {{ travel.confirmedVotesCount === 1 ? 'estudante' : 'estudantes' }}</strong></div><div><span>Saída</span><strong>{{ travel.departureTime ? travel.departureTime.substring(0, 5) : 'Não informada' }}</strong></div></div>
+            <button type="button" class="primary" (click)="onManageTravel(travel.travelId)">Gerenciar viagem <span aria-hidden="true">→</span></button>
+          </section>
+          <aside class="itinerary driver-card"><span class="eyebrow">Itinerário da viagem</span><h2>{{ activePoll()?.routeName || 'Sua rota' }}</h2>
+            @if (activePoll()) { <p>{{ activePoll()?.options?.length || 0 }} paradas nesta rota.</p><ol>@for (stop of activePoll()!.options; track stop.optionId; let idx = $index) { <li><span class="stop-number">{{ idx + 1 }}</span><div><strong>{{ stop.stopName }}</strong><small>{{ stop.voteCount }} {{ stop.voteCount === 1 ? 'estudante' : 'estudantes' }}</small></div></li> }</ol> }
+            @else { <p>Os detalhes do itinerário estarão disponíveis ao gerenciar a viagem.</p> }
+            <button type="button" class="text-link" (click)="onManageTravel(travel.travelId)">Ver detalhes da viagem →</button>
+          </aside>
         </div>
-        <h3 class="text-base font-bold text-slate-800">Falha ao carregar dados</h3>
-        <p class="text-xs text-slate-500 mt-1 mb-4">Não foi possível consultar os dados do motorista no momento.</p>
-        <button
-          type="button"
-          (click)="loadDashboardData()"
-          class="px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
-        >
-          Tentar novamente
-        </button>
-      </div>
-    } @else {
-      <!-- Saudação Inicial e Subtítulo -->
-      <section class="space-y-1">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#1F2937] tracking-tight">
-          Olá, {{ driverName() }}!
-        </h1>
-        <p class="text-sm sm:text-base text-[#64748B]">
-          Acompanhe suas viagens e prepare sua próxima saída
-        </p>
-      </section>
-
-      <!-- Indicadores Operacionais Compactos -->
-      <section class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <!-- Indicador 1: Status da Operação -->
-        <div class="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-2xs flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            [ngClass]="hasActiveTravel() ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500'"
-          >
-            @if (hasActiveTravel()) {
-              <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-            } @else {
-              <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-            }
-          </div>
-          <div>
-            <span class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">Status da Operação</span>
-            <span class="text-xs sm:text-sm font-bold text-slate-800">
-              {{ hasActiveTravel() ? 'Viagem em Andamento' : 'Livre para Iniciar' }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Indicador 2: Viagens Realizadas -->
-        <div class="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-2xs flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-          </div>
-          <div>
-            <span class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">Viagens do Motorista</span>
-            <span class="text-xs sm:text-sm font-bold text-slate-800">
-              {{ recentTravels().length }} registradas
-            </span>
-          </div>
-        </div>
-
-        <!-- Indicador 3: Veículo Vinculado à Frota -->
-        <div class="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-2xs flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M8 6v6" />
-              <path d="M15 6v6" />
-              <path d="M2 12h19.6" />
-              <circle cx="7" cy="18" r="2" />
-              <circle cx="16" cy="18" r="2" />
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <span class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">Frota Atribuída</span>
-            <span class="text-xs sm:text-sm font-bold text-slate-800 truncate block">
-              {{ buses().length > 0 ? buses()[0].busName : 'Nenhum veículo vinculado' }}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Grade Operacional: Card de Viagem Ativa OU Iniciar Retorno OU Preparar Viagem -->
-      <section class="max-w-2xl mx-auto">
-        @if (hasActiveTravel()) {
-          <!-- Card de Destaque: Viagem Ativa -->
-          <app-active-travel-card
-            [travel]="activeTravel()!"
-            (manage)="onManageTravel($event)"
-          ></app-active-travel-card>
-        } @else if (todayCompletedOutbound()) {
-          <!-- Card de Destaque: Iniciar Viagem de Volta -->
-          <div class="bg-white rounded-2xl border border-blue-200 p-5 sm:p-6 shadow-xs hover:shadow-sm transition-all space-y-5">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex items-start gap-3.5 min-w-0">
-                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100">
-                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
-                  </svg>
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                      RETORNO DISPONÍVEL
-                    </span>
-                    <span class="text-xs text-slate-500">Ida Concluída</span>
-                  </div>
-                  <h3 class="text-base sm:text-lg font-bold text-slate-900 mt-1 truncate">
-                    Iniciar Viagem de Volta
-                  </h3>
-                  <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    A viagem de ida foi finalizada. Inicie o trajeto de retorno para trazer os estudantes ao município.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Detalhes do Retorno -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-              <div>
-                <span class="text-slate-500 block">Veículo Utilizado na Ida:</span>
-                <strong class="text-slate-800 text-sm block mt-0.5">
-                  {{ todayCompletedOutbound()?.bus?.busName || 'Ônibus da Frota' }}
-                </strong>
-              </div>
-              <div>
-                <span class="text-slate-500 block">Sentido do Percurso:</span>
-                <strong class="text-blue-700 text-sm block mt-0.5">
-                  Volta (Município)
-                </strong>
-              </div>
-            </div>
-
-            <!-- Botões de Ação -->
-            <div class="flex flex-col sm:flex-row items-center gap-3 pt-1">
-              <button
-                type="button"
-                (click)="onStartReturnTravel()"
-                class="w-full sm:flex-1 min-h-[48px] px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer"
-              >
-                <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
-                </svg>
-                INICIAR VIAGEM DE VOLTA
-              </button>
-              <button
-                type="button"
-                (click)="onPrepareTravel()"
-                class="w-full sm:w-auto px-4 min-h-[48px] rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
-              >
-                Outra viagem
-              </button>
-            </div>
-          </div>
-        } @else {
-          <!-- Card de Preparar Viagem -->
-          <app-prepare-travel-card
-            [hasActiveTravel]="false"
-            [availableBusesCount]="buses().length"
-            (prepare)="onPrepareTravel()"
-          ></app-prepare-travel-card>
-        }
-      </section>
-
-      <!-- Seção: Histórico de Viagens -->
-      <section class="space-y-3 sm:space-y-4 pt-1 sm:pt-2">
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-1.5 sm:w-2 h-4 sm:h-5 rounded-full bg-[#16A34A] shrink-0" aria-hidden="true"></span>
-            <h2 class="text-sm sm:text-base font-bold text-[#1F2937] truncate">
-              Histórico Recente de Viagens
-            </h2>
-          </div>
-          <span class="text-[11px] sm:text-xs text-[#64748B] font-medium shrink-0 bg-slate-100 px-2 py-0.5 rounded-full">
-            {{ recentTravels().length }} {{ recentTravels().length === 1 ? 'viagem anterior' : 'viagens anteriores' }}
-          </span>
-        </div>
-
-        @if (recentTravels().length === 0) {
-          <!-- Estado Vazio de Viagens -->
-          <div class="bg-white rounded-xl sm:rounded-2xl border border-dashed border-slate-200 p-6 sm:p-8 text-center">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-2">
-              <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h4 class="text-xs sm:text-sm font-bold text-slate-700">Nenhuma viagem anterior registrada</h4>
-            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              Quando você concluir viagens no sistema, elas ficarão listadas aqui para seu acompanhamento.
-            </p>
-          </div>
-        } @else {
-          <!-- Lista de Viagens em Cards Empilhados -->
-          <div class="space-y-2.5 sm:space-y-3">
-            @for (t of recentTravels(); track t.travelId) {
-              <div class="bg-white rounded-xl border border-[#E2E8F0] p-3 sm:p-4 shadow-2xs hover:border-slate-300 transition-colors flex items-center justify-between gap-2.5 sm:gap-4">
-                <!-- Ícone e Informações -->
-                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-700 shrink-0 border border-slate-100">
-                    @if (isOutbound(t.direction)) {
-                      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    } @else {
-                      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                      </svg>
-                    }
-                  </div>
-
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5 flex-nowrap min-w-0">
-                      <span class="text-xs sm:text-sm font-bold text-slate-800 truncate">
-                        {{ isOutbound(t.direction) ? 'Viagem de Ida' : 'Viagem de Volta' }}
-                      </span>
-                      <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 shrink-0">
-                        #{{ t.travelId.substring(0, 6) }}
-                      </span>
-                    </div>
-
-                    <div class="flex items-center gap-1.5 mt-0.5 text-[11px] sm:text-xs text-[#64748B] min-w-0">
-                      <span class="shrink-0 font-medium text-slate-600">{{ t.confirmedVotesCount || 0 }} alunos</span>
-                      @if (t.targetUniversities && t.targetUniversities.length > 0) {
-                        <span class="shrink-0 text-slate-300">&bull;</span>
-                        <span class="truncate">{{ t.targetUniversities[0].campus }}</span>
-                      }
-                      @if (t.travelDate) {
-                        <span class="shrink-0 text-slate-300">&bull;</span>
-                        <span class="shrink-0">{{ t.travelDate }}</span>
-                      }
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Status da viagem anterior -->
-                <div class="shrink-0">
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                    Concluída
-                  </span>
-                </div>
-              </div>
-            }
-          </div>
-        }
+      } @else if (todayCompletedOutbound()) {
+        <section class="journey driver-card single"><span class="travel-status">Retorno disponível</span><h2>Iniciar viagem de volta</h2><p class="subheading">A viagem de ida foi concluída. Prepare o retorno ao município.</p><div class="vehicle"><span class="vehicle-icon" aria-hidden="true">↗</span><div><strong>{{ todayCompletedOutbound()?.bus?.busName || 'Ônibus da frota' }}</strong><p>Veículo utilizado na ida</p></div></div><div class="actions"><button type="button" class="primary" (click)="onStartReturnTravel()">Iniciar viagem de volta →</button><button type="button" class="secondary" (click)="onPrepareTravel()">Outra viagem</button></div></section>
+      } @else {
+        <section class="journey driver-card single"><span class="travel-status">Disponível</span><h2>Prepare sua próxima viagem</h2><p class="subheading">Escolha uma enquete e o ônibus para iniciar o percurso.</p><div class="vehicle"><span class="vehicle-icon" aria-hidden="true">↗</span><div><strong>{{ buses().length }} {{ buses().length === 1 ? 'ônibus disponível' : 'ônibus disponíveis' }}</strong><p>Frota do seu município</p></div></div><button type="button" class="primary" (click)="onPrepareTravel()">Preparar viagem →</button></section>
+      }
+      <section class="history"><div class="history-heading"><h2>Viagens recentes</h2><span>{{ recentTravels().length }} {{ recentTravels().length === 1 ? 'viagem' : 'viagens' }}</span></div>
+        @if (recentTravels().length === 0) { <p class="history-empty">Suas viagens concluídas aparecerão aqui.</p> }
+        @else { @for (t of recentTravels(); track t.travelId) { <div class="history-row"><span class="history-icon" aria-hidden="true">✓</span><div><strong>Viagem de {{ isOutbound(t.direction) ? 'ida' : 'volta' }}</strong><p>{{ t.bus?.busName || 'Transporte universitário' }} @if (t.travelDate) { · {{ t.travelDate | date:'dd/MM/yyyy' }} }</p></div><span class="history-status">{{ t.status }}</span></div> } }
       </section>
     }
   </main>

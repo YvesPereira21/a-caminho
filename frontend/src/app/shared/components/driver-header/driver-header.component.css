@@ -1,9 +1,1 @@
-.driver-header__inner {
-  height: 60px;
-}
-
-@media (min-width: 640px) {
-  .driver-header__inner {
-    height: 64px;
-  }
-}
+:host{display:block}.driver-header{background:#fcfdfb;color:#263932;border-bottom:1px solid #dde4dd}.driver-header__inner{height:68px;max-width:1440px;margin:auto;padding:0 clamp(20px,3vw,40px);display:flex;align-items:center;justify-content:space-between;gap:16px}.driver-brand{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:750;letter-spacing:-.5px;white-space:nowrap}.brand-dot{color:#23634f}.brand-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#23634f;color:#fcfdfb;font-size:22px}.driver-account{display:flex;align-items:center;gap:10px;color:#607067;font-size:12px}.avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#e8efe7;color:#23634f;font-weight:700}.driver-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.driver-account button{min-height:44px;padding:0 10px;color:#607067}.driver-account button:focus-visible{outline:2px solid #23634f;outline-offset:3px}@media(max-width:767px){.driver-header__inner{padding:0 18px}.driver-name{display:none}}
