@@ -1,4 +1,6 @@
+import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
+import { AuthService } from './core/auth/services/auth.service';
 import { roleGuard } from './core/guards/role.guard';
 import { UserRole } from './core/models';
 
@@ -88,6 +90,16 @@ export const routes: Routes = [
       import(
         './features/bus-drivers/components/travel-in-progress/travel-in-progress.component'
       ).then((m) => m.TravelInProgressComponent)
+  },
+  {
+    path: 'admin',
+    canMatch: [() => inject(AuthService).isMunicipality()],
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.MUNICIPALITY, 'PREFEITURA', 'MUNICIPALITY'] },
+    loadComponent: () =>
+      import('./features/municipalities/components/municipality-dashboard/municipality-dashboard.component').then(
+        (m) => m.MunicipalityDashboardComponent
+      )
   },
   {
     path: 'admin',

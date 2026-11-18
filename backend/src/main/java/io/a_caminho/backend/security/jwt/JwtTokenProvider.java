@@ -32,6 +32,7 @@ public class JwtTokenProvider {
                     .withSubject(user.getEmail())
                     .withClaim("id", user.getUserId() != null ? user.getUserId().toString() : null)
                     .withClaim("role", user.getRole() != null ? user.getRole().name() : "STUDENT")
+                    .withClaim("name", user.getName())
                     .withIssuedAt(new Date())
                     .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                     .sign(algorithm);

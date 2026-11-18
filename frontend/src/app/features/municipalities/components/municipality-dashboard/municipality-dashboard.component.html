@@ -1,0 +1,52 @@
+<div class="dashboard bg-[#F8FAFC] text-[#1F2937]">
+  @if (menuOpen()) { <button type="button" class="menu-backdrop" aria-label="Fechar menu" (click)="menuOpen.set(false)"></button> }
+  <aside class="sidebar bg-[#003B35] text-white" [class.open]="menuOpen()" id="municipality-menu">
+    <div class="brand"><span class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="14" rx="3"/><path d="M4 11h16M7 18v2m10-2v2M8 15h.01M16 15h.01"/></svg></span><strong>A caminho!</strong><button type="button" class="close-menu" aria-label="Fechar menu" (click)="menuOpen.set(false)">×</button></div>
+    <p class="municipality">{{ municipalityLabel() }}</p>
+    <nav aria-label="Navegação da prefeitura">
+      <button type="button" class="nav-item selected bg-[#16A34A]" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Início</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M5 11h14M8 19v2m8-2v2M8 15h.01M16 15h.01"/></svg>Ônibus</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h6a4 4 0 0 1 0 8H9a2 2 0 0 0 0 4h8"/></svg>Rotas</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>Motoristas</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-5 9 5-9 5-9-5ZM6 11v5c3 3 9 3 12 0v-5M21 9v7"/></svg>Universidades</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5a3 3 0 0 1 0 6m1 3a5 5 0 0 1 4 5v1"/></svg>Estudantes</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 10h6m-6 4h6m-6 4h4"/></svg>Enquetes</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>Viagens</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16M6 16v-4m4 4V8m4 8v-6m4 6V4"/></svg>Relatórios</button>
+    </nav>
+    <button type="button" class="logout" (click)="auth.logout()">Sair</button>
+  </aside>
+  <div class="workspace">
+    <main class="content">
+      <div class="heading-row"><button type="button" class="menu-button bg-white border border-[#E2E8F0]" aria-label="Abrir menu" [attr.aria-expanded]="menuOpen()" aria-controls="municipality-menu" (click)="menuOpen.set(!menuOpen())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div><span class="municipality-heading text-[#0F766E]">{{ municipalityLabel() }}</span><h1>Visão geral</h1><p class="text-[#64748B]">Situação do transporte universitário do seu município.</p></div></div>
+      @if (hasErrors()) { <div class="load-error bg-amber-50 text-amber-900 border border-amber-200" role="status"><span>Não foi possível carregar todas as informações.</span><button type="button" (click)="loadDashboard()">Tentar novamente</button></div> }
+      <section class="metrics" aria-label="Indicadores do município">
+        <article class="metric bg-white border border-[#E2E8F0] shadow-sm"><div><span>Ônibus em viagem</span><span class="metric-icon" aria-hidden="true">↗</span></div><strong>{{ isLoading() ? '…' : activeBusCount() === null ? '—' : activeBusCount() }}</strong><p>{{ !isLoading() && travels() === null ? 'Consulta indisponível' : 'Veículos em viagens em andamento' }}</p></article>
+        <article class="metric bg-white border border-[#E2E8F0] shadow-sm"><div><span>Frota cadastrada</span><span class="metric-icon" aria-hidden="true">▣</span></div><strong>{{ isLoading() ? '…' : buses() === null ? '—' : buses()!.length }}</strong><p>{{ !isLoading() && buses() === null ? 'Consulta indisponível' : 'Ônibus do município' }}</p></article>
+        <article class="metric bg-white border border-[#E2E8F0] shadow-sm"><div><span>Modelos de rota</span><span class="metric-icon" aria-hidden="true">⌁</span></div><strong>{{ isLoading() ? '…' : templates() === null ? '—' : templates()!.length }}</strong><p>{{ !isLoading() && templates() === null ? 'Consulta indisponível' : 'Modelos de enquete cadastrados' }}</p></article>
+        <article class="metric bg-white border border-[#E2E8F0] shadow-sm"><div><span>Viagens registradas</span><span class="metric-icon" aria-hidden="true">⌾</span></div><strong>{{ isLoading() ? '…' : travels() === null ? '—' : travels()!.length }}</strong><p>{{ !isLoading() && travels() === null ? 'Consulta indisponível' : 'Histórico municipal' }}</p></article>
+      </section>
+      <div class="overview">
+        <section class="panel bg-white border border-[#E2E8F0] shadow-sm"><div class="panel-heading"><div><h2>Localização da frota</h2><p>Últimas posições recebidas dos ônibus</p></div><button type="button" class="refresh border border-[#E2E8F0] hover:bg-slate-50" (click)="loadDashboard()" [disabled]="isLoading()">Atualizar</button></div>
+          @if (isLoading()) { <div class="empty-map bg-[#F8FAFC]"><p>Carregando localizações...</p></div> }
+          @else if (locations() === null || buses() === null) { <div class="empty-map bg-[#F8FAFC]"><h3>Localizações indisponíveis</h3><p>Não foi possível consultar a frota e suas posições.</p></div> }
+          @else if (visibleLocations().length === 0) { <div class="empty-map bg-[#F8FAFC]"><div class="empty-icon" aria-hidden="true">⌾</div><h3>Nenhuma localização disponível</h3><p>As posições dos ônibus aparecerão aqui quando forem recebidas.</p></div> }
+          @else { <div class="map" leaflet [leafletOptions]="mapOptions" (leafletMapReady)="onMapReady($event)" aria-label="Mapa das últimas posições dos ônibus"></div> }
+          <footer>Última posição recebida por veículo. Atualize para consultar novos dados.</footer>
+        </section>
+        <section class="panel bg-white border border-[#E2E8F0] shadow-sm"><div class="panel-heading"><div><h2>Status dos ônibus</h2><p>Viagens e disponibilidade de posição</p></div></div>
+          @if (isLoading()) { <div class="empty-list"><p>Carregando frota...</p></div> }
+          @else if (buses() === null) { <div class="empty-list"><h3>Frota indisponível</h3><p>Não foi possível consultar os ônibus.</p></div> }
+          @else if (buses()!.length === 0) { <div class="empty-list"><div class="empty-icon" aria-hidden="true">▣</div><h3>Nenhum ônibus cadastrado</h3><p>A frota do município aparecerá aqui.</p></div> }
+          @else { <ul class="bus-list">@for (bus of buses(); track bus.busId) { <li><div><strong>{{ bus.busName }}</strong><small>@if (locations() === null) { Posição indisponível } @else { @if (locations()![bus.busId]; as loc) { @if (loc.timestamp) { Última posição: {{ loc.timestamp | date:'dd/MM/yyyy HH:mm' }} } @else { Posição recebida · horário indisponível } } @else { Sem posição recebida } }</small></div><span class="bus-status" [class.bus-active]="activeTravelFor(bus.busId)">@if (travels() === null) { Viagem indisponível } @else { {{ activeTravelFor(bus.busId) ? 'Em viagem' : 'Sem viagem em andamento' }} }</span></li> }</ul> }
+        </section>
+      </div>
+      <section class="panel trips bg-white border border-[#E2E8F0] shadow-sm"><div class="panel-heading"><div><h2>Viagens recentes</h2><p>Histórico do município</p></div></div>
+        @if (isLoading()) { <div class="trip-empty">Carregando viagens...</div> }
+        @else if (travels() === null) { <div class="trip-empty">Não foi possível consultar as viagens.</div> }
+        @else if (recentTravels().length === 0) { <div class="trip-empty"><strong>Nenhuma viagem registrada</strong><p>As viagens do município aparecerão aqui.</p></div> }
+        @else { <div class="travel-list">@for (travel of recentTravels(); track travel.travelId) { <div class="travel-row"><div><strong>{{ travel.bus?.busName || 'Ônibus não informado' }}</strong><p>@if (travel.busDriver) { {{ travel.busDriver.busDriverName }} } @else { Motorista não informado } @if (travel.travelDate) { · {{ travel.travelDate | date:'dd/MM/yyyy' }} }</p></div><span>{{ travel.status }}</span></div> }</div> }
+      </section>
+    </main>
+  </div>
+</div>

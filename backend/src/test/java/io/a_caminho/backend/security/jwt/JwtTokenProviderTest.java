@@ -1,7 +1,9 @@
 package io.a_caminho.backend.security.jwt;
 
 import io.a_caminho.backend.model.User;
+import io.a_caminho.backend.model.Municipality;
 import io.a_caminho.backend.model.enums.UserRole;
+import com.auth0.jwt.JWT;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -43,6 +45,18 @@ class JwtTokenProviderTest {
             assertNotNull(token);
             String subject = jwtTokenProvider.validateToken(token);
             assertEquals("estudante@ufpb.br", subject);
+        }
+
+        @Test
+        @DisplayName("Deve incluir o nome da prefeitura no token para restauração da sessão")
+        void shouldIncludeMunicipalityNameInToken() {
+            Municipality municipality = Municipality.builder().municipalityName("Guarabira").build();
+            User user = User.builder().userId(UUID.randomUUID()).email("prefeitura@example.com")
+                    .role(UserRole.MUNICIPALITY).municipality(municipality).build();
+
+            String token = jwtTokenProvider.generateToken(user);
+
+            assertEquals("Guarabira", JWT.decode(token).getClaim("name").asString());
         }
 
         @Test

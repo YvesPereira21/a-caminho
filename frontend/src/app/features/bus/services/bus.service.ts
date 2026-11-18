@@ -23,6 +23,10 @@ export class BusService {
     return this.http.get<BusLocation>(`${this.apiUrl}/${busId}/location`);
   }
 
+  getMunicipalityLocations(): Observable<Record<string, BusLocation>> {
+    return this.http.get<Record<string, BusLocation>>(`${this.apiUrl}/locations`);
+  }
+
   getAllBusesByMunicipality(): Observable<Bus[]> {
     return this.http.get<Bus[]>(this.apiUrl);
   }
