@@ -92,6 +92,24 @@ export const routes: Routes = [
       ).then((m) => m.TravelInProgressComponent)
   },
   {
+    path: 'admin/drivers',
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.MUNICIPALITY, 'PREFEITURA', 'MUNICIPALITY'] },
+    loadComponent: () =>
+      import('./features/bus-drivers/components/municipality-drivers/municipality-drivers.component').then(
+        (m) => m.MunicipalityDriversComponent
+      )
+  },
+  {
+    path: 'admin/routes',
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.MUNICIPALITY, 'PREFEITURA', 'MUNICIPALITY'] },
+    loadComponent: () =>
+      import('./features/poll-templates/components/municipality-routes/municipality-routes.component').then(
+        (m) => m.MunicipalityRoutesComponent
+      )
+  },
+  {
     path: 'admin/buses',
     canActivate: [roleGuard],
     data: { roles: [UserRole.MUNICIPALITY, 'PREFEITURA', 'MUNICIPALITY'] },

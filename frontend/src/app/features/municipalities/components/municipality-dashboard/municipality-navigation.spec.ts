@@ -71,6 +71,34 @@ describe('Navegação do dashboard da prefeitura', () => {
     expect(TestBed.inject(Router).url).toBe('/admin');
   });
 
+  it('navega entre o início e a tela de motoristas', async () => {
+    login(UserRole.MUNICIPALITY);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/admin', MunicipalityDashboardComponent);
+    (harness.routeNativeElement as HTMLElement).querySelector<HTMLButtonElement>('[routerLink="/admin/drivers"]')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    TestBed.inject(HttpTestingController).expectOne(req => req.url.endsWith('/bus-drivers')).flush([]);
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/admin/drivers');
+    (harness.routeNativeElement as HTMLElement).querySelector<HTMLButtonElement>('[routerLink="/admin"]')!.click();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/admin');
+  });
+
+  it('navega entre o início e a tela de rotas', async () => {
+    login(UserRole.MUNICIPALITY);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/admin', MunicipalityDashboardComponent);
+    (harness.routeNativeElement as HTMLElement).querySelector<HTMLButtonElement>('[routerLink="/admin/routes"]')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/admin/routes');
+    (harness.routeNativeElement as HTMLElement).querySelector<HTMLButtonElement>('[routerLink="/admin"]')!.click();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/admin');
+  });
+
   it('abre e fecha o menu e atualiza os dados; mantém módulos futuros desativados', async () => {
     login(UserRole.MUNICIPALITY);
     const harness = await RouterTestingHarness.create();
@@ -84,7 +112,7 @@ describe('Navegação do dashboard da prefeitura', () => {
     root.querySelector<HTMLButtonElement>('.close-menu')!.click(); harness.detectChanges();
     expect(menu.getAttribute('aria-expanded')).toBe('false');
     expect(sidebar.classList.contains('open')).toBeFalse();
-    expect(root.querySelectorAll('nav button:disabled').length).toBe(7);
+    expect(root.querySelectorAll('nav button:disabled').length).toBe(5);
     root.querySelector<HTMLButtonElement>('.refresh')!.click();
     expect(buses).toHaveBeenCalledTimes(2);
   });

@@ -1,0 +1,50 @@
+<div class="dashboard bg-[#F8FAFC] text-[#1F2937]">
+  @if (menuOpen()) { <button type="button" class="menu-backdrop" aria-label="Fechar menu" (click)="menuOpen.set(false)"></button> }
+  <aside class="sidebar bg-[#003B35] text-white" [class.open]="menuOpen()" id="municipality-menu">
+    <div class="brand"><span class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="14" rx="3"/><path d="M4 11h16M7 18v2m10-2v2M8 15h.01M16 15h.01"/></svg></span><strong>A caminho!</strong><button type="button" class="close-menu" aria-label="Fechar menu" (click)="menuOpen.set(false)">×</button></div>
+    <p class="municipality">{{ municipalityLabel() }}</p>
+    <nav aria-label="Navegação da prefeitura">
+      <button type="button" class="nav-item" routerLink="/admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Início</button>
+      <button class="nav-item" type="button" routerLink="/admin/buses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M5 11h14M8 19v2m8-2v2M8 15h.01M16 15h.01"/></svg>Ônibus</button>
+      <button class="nav-item" type="button" routerLink="/admin/routes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h6a4 4 0 0 1 0 8H9a2 2 0 0 0 0 4h8"/></svg>Rotas</button>
+      <button class="nav-item selected bg-[#16A34A]" type="button" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>Motoristas</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-5 9 5-9 5-9-5ZM6 11v5c3 3 9 3 12 0v-5M21 9v7"/></svg>Universidades</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5a3 3 0 0 1 0 6m1 3a5 5 0 0 1 4 5v1"/></svg>Estudantes</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 10h6m-6 4h6m-6 4h4"/></svg>Enquetes</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>Viagens</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16M6 16v-4m4 4V8m4 8v-6m4 6V4"/></svg>Relatórios</button>
+    </nav>
+    <button type="button" class="logout" (click)="auth.logout()">Sair</button>
+  </aside>
+  <div class="workspace">
+    <header class="topbar bg-white border-b border-[#E2E8F0]"><button type="button" class="menu-button border border-[#E2E8F0]" aria-label="Abrir menu" [attr.aria-expanded]="menuOpen()" aria-controls="municipality-menu" (click)="menuOpen.set(true)">☰</button><strong>{{ municipalityLabel() }}</strong></header>
+    <main class="content">
+      <div class="page-heading"><div><h1>Motoristas</h1><p>Gerencie os motoristas do transporte universitário</p></div><button class="create-button" type="button" (click)="openCreate()"><span aria-hidden="true">＋</span> Cadastrar motorista</button></div>
+      <div class="filters"><label>Pesquisar motoristas<input type="search" placeholder="Buscar por nome, e-mail ou identificação" [value]="query()" (input)="query.set($any($event.target).value)"></label><label>Buscar em<select [value]="field()" (change)="field.set($any($event.target).value)"><option value="all">Todos os campos</option><option value="name">Nome</option><option value="email">E-mail</option><option value="id">Identificação</option></select></label></div>
+      <section class="directory bg-white border border-[#E2E8F0] shadow-sm" aria-labelledby="drivers-title">
+        <div class="list-heading"><h2 id="drivers-title">Motoristas cadastrados</h2>@if (!loading() && !loadError()) { <span>{{ filtered().length }} {{ filtered().length === 1 ? 'motorista' : 'motoristas' }}</span> }</div>
+        @if (loading()) { <p class="empty">Carregando motoristas...</p> } @else if (loadError()) { <p class="empty" role="alert">Não foi possível carregar os motoristas. <button type="button" class="retry" (click)="load()">Tentar novamente</button></p> } @else {
+          <table><thead><tr><th>Motorista</th><th>E-mail</th><th>Identificação</th><th>Ações</th></tr></thead><tbody>@for (driver of filtered(); track driver.busDriverId) { <tr><td><ng-container [ngTemplateOutlet]="identity" [ngTemplateOutletContext]="{ $implicit: driver }" /></td><td>{{ driver.email }}</td><td class="identifier">{{ driver.busDriverId.slice(0, 8) }}…</td><td><ng-container [ngTemplateOutlet]="details" [ngTemplateOutletContext]="{ $implicit: driver }" /></td></tr> }</tbody></table>
+          <ul class="mobile-cards">@for (driver of filtered(); track driver.busDriverId) { <li><ng-container [ngTemplateOutlet]="identity" [ngTemplateOutletContext]="{ $implicit: driver }" /><dl><dt>E-mail</dt><dd>{{ driver.email }}</dd><dt>Identificação</dt><dd class="identifier">{{ driver.busDriverId.slice(0, 8) }}…</dd></dl><ng-container [ngTemplateOutlet]="details" [ngTemplateOutletContext]="{ $implicit: driver }" /></li> }</ul>
+          @if (!filtered().length) { <p class="empty">Nenhum motorista encontrado.</p> }
+          <p class="notice" role="status">{{ notice() }}</p>
+        }
+      </section>
+    </main>
+  </div>
+</div>
+<ng-template #identity let-driver><div class="identity"><span class="avatar" aria-hidden="true">{{ initials(driver.busDriverName) }}</span><strong>{{ driver.busDriverName }}</strong></div></ng-template>
+<ng-template #details let-driver><button type="button" class="secondary details" [attr.aria-label]="'Ver detalhes de ' + driver.busDriverName" (click)="openDetails(driver)">Detalhes</button></ng-template>
+<dialog #dialog aria-labelledby="dialog-title" (close)="clearPassword()" (cancel)="saving() ? $event.preventDefault() : null">
+  <div class="dialog-header"><h2 id="dialog-title">{{ mode() === 'create' ? 'Cadastrar motorista' : 'Detalhes do motorista' }}</h2><button type="button" class="close" aria-label="Fechar" [disabled]="saving()" (click)="close()">×</button></div>
+  @if (mode() === 'create') { <form [formGroup]="form" (ngSubmit)="save()">
+    <label for="driver-name">Nome completo</label><input id="driver-name" formControlName="name" autocomplete="name" [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched">
+    @if (form.controls.name.invalid && form.controls.name.touched) { <p class="error" role="alert">Informe o nome do motorista.</p> }
+    <label for="driver-email">E-mail de acesso</label><input id="driver-email" type="email" formControlName="email" autocomplete="off" [attr.aria-invalid]="form.controls.email.invalid && form.controls.email.touched">
+    @if (form.controls.email.invalid && form.controls.email.touched) { <p class="error" role="alert">Informe um e-mail válido.</p> }
+    <label for="driver-password">Senha de acesso</label><input id="driver-password" type="password" formControlName="password" autocomplete="new-password" aria-describedby="password-hint" [attr.aria-invalid]="form.controls.password.invalid && form.controls.password.touched"><p id="password-hint" class="field-help">Mínimo de 6 caracteres.</p>
+    @if (form.controls.password.invalid && form.controls.password.touched) { <p class="error" role="alert">Informe uma senha com pelo menos 6 caracteres.</p> }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+    <div class="dialog-actions"><button class="secondary" type="button" [disabled]="saving()" (click)="close()">Cancelar</button><button class="create-button" type="submit" [disabled]="saving()">{{ saving() ? 'Cadastrando...' : 'Cadastrar motorista' }}</button></div>
+  </form> } @else { @if (selected(); as driver) { <div class="dialog-body"><ng-container [ngTemplateOutlet]="identity" [ngTemplateOutletContext]="{ $implicit: driver }" /><dl><dt>E-mail</dt><dd>{{ driver.email }}</dd><dt>Identificação no sistema</dt><dd class="identifier">{{ driver.busDriverId }}</dd></dl><div class="dialog-actions"><button class="secondary" type="button" (click)="close()">Fechar</button></div></div> } }
+</dialog>

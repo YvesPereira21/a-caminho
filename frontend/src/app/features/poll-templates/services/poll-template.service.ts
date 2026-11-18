@@ -15,6 +15,10 @@ export class PollTemplateService {
     return this.http.post<PollTemplate>(this.apiUrl, pollTemplateCreateDTO);
   }
 
+  updatePollTemplate(templateId: string, data: PollTemplateCreate): Observable<PollTemplate> {
+    return this.http.put<PollTemplate>(`${this.apiUrl}/${templateId}`, data);
+  }
+
   getAllPollTemplates(): Observable<PollTemplate[]> {
     return this.http.get<PollTemplate[]>(this.apiUrl);
   }
