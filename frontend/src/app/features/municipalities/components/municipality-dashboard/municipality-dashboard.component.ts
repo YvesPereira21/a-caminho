@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnIni
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
+import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../../../../core/auth/services/auth.service';
@@ -13,7 +14,7 @@ import { TravelService } from '../../../traveling/services/travel.service';
 @Component({
   selector: 'app-municipality-dashboard',
   standalone: true,
-  imports: [CommonModule, LeafletModule],
+  imports: [CommonModule, LeafletModule, RouterLink],
   templateUrl: './municipality-dashboard.component.html',
   styleUrl: './municipality-dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

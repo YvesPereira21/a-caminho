@@ -92,6 +92,15 @@ export const routes: Routes = [
       ).then((m) => m.TravelInProgressComponent)
   },
   {
+    path: 'admin/buses',
+    canActivate: [roleGuard],
+    data: { roles: [UserRole.MUNICIPALITY, 'PREFEITURA', 'MUNICIPALITY'] },
+    loadComponent: () =>
+      import('./features/bus/components/municipality-buses/municipality-buses.component').then(
+        (m) => m.MunicipalityBusesComponent
+      )
+  },
+  {
     path: 'admin',
     canMatch: [() => inject(AuthService).isMunicipality()],
     canActivate: [roleGuard],

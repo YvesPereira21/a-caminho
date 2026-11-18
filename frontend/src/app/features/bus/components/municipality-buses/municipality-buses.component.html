@@ -1,0 +1,65 @@
+<div class="dashboard bg-[#F8FAFC] text-[#1F2937]">
+  @if (menuOpen()) { <button type="button" class="menu-backdrop" aria-label="Fechar menu" (click)="menuOpen.set(false)"></button> }
+  <aside class="sidebar bg-[#003B35] text-white" [class.open]="menuOpen()" id="municipality-menu">
+    <div class="brand"><span class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="14" rx="3"/><path d="M4 11h16M7 18v2m10-2v2M8 15h.01M16 15h.01"/></svg></span><strong>A caminho!</strong><button type="button" class="close-menu" aria-label="Fechar menu" (click)="menuOpen.set(false)">×</button></div>
+    <p class="municipality">{{ municipalityLabel() }}</p>
+    <nav aria-label="Navegação da prefeitura">
+      <button type="button" class="nav-item" routerLink="/admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Início</button>
+      <button class="nav-item selected bg-[#16A34A]" type="button" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M5 11h14M8 19v2m8-2v2M8 15h.01M16 15h.01"/></svg>Ônibus</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h6a4 4 0 0 1 0 8H9a2 2 0 0 0 0 4h8"/></svg>Rotas</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>Motoristas</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-5 9 5-9 5-9-5ZM6 11v5c3 3 9 3 12 0v-5M21 9v7"/></svg>Universidades</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5a3 3 0 0 1 0 6m1 3a5 5 0 0 1 4 5v1"/></svg>Estudantes</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 10h6m-6 4h6m-6 4h4"/></svg>Enquetes</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>Viagens</button>
+      <button class="nav-item" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16M6 16v-4m4 4V8m4 8v-6m4 6V4"/></svg>Relatórios</button>
+    </nav>
+    <button type="button" class="logout" (click)="auth.logout()">Sair</button>
+  </aside>
+  <div class="workspace">
+    <header class="topbar bg-white border-b border-[#E2E8F0]">
+      <button type="button" class="menu-button border border-[#E2E8F0]" aria-label="Abrir menu" [attr.aria-expanded]="menuOpen()" aria-controls="municipality-menu" (click)="menuOpen.set(true)">☰</button>
+      <strong>{{ municipalityLabel() }}</strong>
+    </header>
+    <main class="content">
+      <div class="page-heading">
+        <div><h1>Ônibus</h1><p>Gerencie os veículos do transporte universitário.</p></div>
+        <button class="create-button" type="button" (click)="open('create')"><span aria-hidden="true">＋</span> Cadastrar ônibus</button>
+      </div>
+      <section class="inventory bg-white border border-[#E2E8F0] shadow-sm" aria-label="Frota cadastrada">
+        <div class="filters">
+          <label>Pesquisar ônibus<input type="search" placeholder="Buscar pelo nome" [value]="query()" (input)="query.set($any($event.target).value)"></label>
+          <label>Capacidade<select [value]="capacity()" (change)="capacity.set($any($event.target).value)"><option value="">Todas as capacidades</option>@for (seat of capacities(); track seat) { <option [value]="seat">{{ seat }} assentos</option> }</select></label>
+        </div>
+        @if (loading()) { <p class="empty">Carregando ônibus...</p> }
+        @else if (loadError()) { <div class="empty" role="alert">Não foi possível carregar a frota. <button type="button" class="retry" (click)="load()">Tentar novamente</button></div> }
+        @else {
+          <table><thead><tr><th>Identificação</th><th>Capacidade</th><th>Ações</th></tr></thead><tbody>
+            @for (bus of filtered(); track bus.busId) { <tr><td><div class="vehicle-name"><span class="vehicle-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M5 11h14M8 19v2m8-2v2M8 15h.01M16 15h.01"/></svg></span><strong>{{ bus.busName }}</strong></div></td><td>{{ bus.seatsQuantity }} assentos</td><td><ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{ $implicit: bus }" /></td></tr> }
+          </tbody></table>
+          <ul class="mobile-cards">@for (bus of filtered(); track bus.busId) { <li><div class="vehicle-name"><span class="vehicle-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M5 11h14M8 19v2m8-2v2M8 15h.01M16 15h.01"/></svg></span><strong>{{ bus.busName }}</strong></div><p>{{ bus.seatsQuantity }} assentos</p><ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{ $implicit: bus }" /></li> }</ul>
+          @if (filtered().length === 0) { <p class="empty">{{ buses().length ? 'Nenhum ônibus encontrado com esses filtros.' : 'Nenhum ônibus cadastrado.' }}</p> }
+          <footer>{{ filtered().length }} {{ filtered().length === 1 ? 'veículo exibido' : 'veículos exibidos' }} <span role="status">{{ notice() }}</span></footer>
+        }
+      </section>
+    </main>
+  </div>
+</div>
+<ng-template #actions let-bus><div class="actions" role="group" [attr.aria-label]="'Ações de ' + bus.busName"><button type="button" (click)="open('view', bus)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>Detalhes</button><button type="button" (click)="open('edit', bus)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4-.8L20 7l-3-3L5 16l-1 4Zm10-13 3 3"/></svg>Editar</button><button type="button" (click)="open('delete', bus)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg>Excluir</button></div></ng-template>
+<dialog #dialog aria-labelledby="dialog-title" (cancel)="saving() ? $event.preventDefault() : null">
+  <div class="dialog-header"><h2 id="dialog-title">{{ mode() === 'create' ? 'Cadastrar ônibus' : mode() === 'edit' ? 'Editar ônibus' : mode() === 'view' ? 'Detalhes do ônibus' : 'Excluir ônibus' }}</h2><button type="button" class="close" aria-label="Fechar" [disabled]="saving()" (click)="close()">×</button></div>
+  @if (mode() === 'create' || mode() === 'edit') {
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label for="bus-name">Identificação do ônibus</label><input id="bus-name" formControlName="busName" placeholder="Ex.: Ônibus Universitário 01" [attr.aria-invalid]="form.controls.busName.invalid && form.controls.busName.touched" />
+      @if (form.controls.busName.invalid && form.controls.busName.touched) { <p class="error" role="alert">Informe o nome do ônibus.</p> }
+      <label for="bus-seats">Quantidade de assentos</label><input id="bus-seats" type="number" min="1" step="1" formControlName="seatsQuantity" placeholder="Ex.: 44" [attr.aria-invalid]="form.controls.seatsQuantity.invalid && form.controls.seatsQuantity.touched" />
+      @if (form.controls.seatsQuantity.invalid && form.controls.seatsQuantity.touched) { <p class="error" role="alert">Informe um número inteiro de assentos a partir de 1.</p> }
+      @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+      <div class="dialog-actions"><button type="button" [disabled]="saving()" (click)="close()">Cancelar</button><button class="create-button" type="submit" [disabled]="saving()">{{ saving() ? 'Salvando...' : 'Salvar ônibus' }}</button></div>
+    </form>
+  } @else if (mode() === 'view') {
+    <div class="dialog-body"><dl><dt>Identificação</dt><dd>{{ selected()?.busName }}</dd><dt>Capacidade</dt><dd>{{ selected()?.seatsQuantity }} assentos</dd></dl></div>
+  } @else {
+    <div class="dialog-body"><p>Excluir <strong>{{ selected()?.busName }}</strong> da frota?</p>@if (error()) { <p class="error" role="alert">{{ error() }}</p> }<div class="dialog-actions"><button type="button" [disabled]="saving()" (click)="close()">Cancelar</button><button type="button" class="danger" [disabled]="saving()" (click)="remove()">{{ saving() ? 'Excluindo...' : 'Excluir ônibus' }}</button></div></div>
+  }
+</dialog>

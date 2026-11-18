@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { MunicipalityDashboardComponent } from './municipality-dashboard.component';
 import { AuthService } from '../../../../core/auth/services/auth.service';
@@ -21,6 +22,7 @@ describe('MunicipalityDashboardComponent', () => {
     TestBed.configureTestingModule({
       imports: [MunicipalityDashboardComponent],
       providers: [
+        provideRouter([]),
         { provide: AuthService, useValue: { currentUser: signal({ name: 'Guarabira', email: 'prefeitura@example.com' }) } },
         { provide: BusService, useValue: busService },
         { provide: PollTemplateService, useValue: { getAllPollTemplates: () => of([]) } },

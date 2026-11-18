@@ -56,6 +56,21 @@ describe('Navegação do dashboard da prefeitura', () => {
     expect(TestBed.inject(Router).url).toBe('/admin');
   });
 
+  it('navega entre o início e a tela de ônibus', async () => {
+    login(UserRole.MUNICIPALITY);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/admin', MunicipalityDashboardComponent);
+    const dashboard = harness.routeNativeElement as HTMLElement;
+    dashboard.querySelector<HTMLButtonElement>('[routerLink="/admin/buses"]')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/admin/buses');
+    const busesPage = harness.routeNativeElement as HTMLElement;
+    busesPage.querySelector<HTMLButtonElement>('[routerLink="/admin"]')!.click();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/admin');
+  });
+
   it('abre e fecha o menu e atualiza os dados; mantém módulos futuros desativados', async () => {
     login(UserRole.MUNICIPALITY);
     const harness = await RouterTestingHarness.create();
@@ -69,7 +84,7 @@ describe('Navegação do dashboard da prefeitura', () => {
     root.querySelector<HTMLButtonElement>('.close-menu')!.click(); harness.detectChanges();
     expect(menu.getAttribute('aria-expanded')).toBe('false');
     expect(sidebar.classList.contains('open')).toBeFalse();
-    expect(root.querySelectorAll('nav button:disabled').length).toBe(8);
+    expect(root.querySelectorAll('nav button:disabled').length).toBe(7);
     root.querySelector<HTMLButtonElement>('.refresh')!.click();
     expect(buses).toHaveBeenCalledTimes(2);
   });
